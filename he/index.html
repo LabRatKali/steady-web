@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Steady — פחות טלפון, יותר חיים. אנטי־התמכרות לעצמך ולהורים באנדרואיד." />
+  <title>Steady — פחות טלפון. יותר חיים.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../styles.css?v=14" />
+</head>
+<body>
+  <div class="atmosphere" aria-hidden="true">
+    <span class="orb orb-a"></span>
+    <span class="orb orb-b"></span>
+    <span class="orb orb-c"></span>
+    <span class="veil"></span>
+  </div>
+  <div class="grain" aria-hidden="true"></div>
+
+  <header class="top">
+    <a class="logo" href="./" aria-label="Steady">
+      <svg class="logo-mark" viewBox="0 0 32 32" aria-hidden="true">
+        <path d="M8 14.5V24a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V14.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M6 15.5 16 7l10 8.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M13 26v-6.5a1.5 1.5 0 0 1 1.5-1.5h3a1.5 1.5 0 0 1 1.5 1.5V26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <span>Steady</span>
+    </a>
+    <div class="lang-switch" aria-label="שפה">
+      <a href="../index.html" lang="en" hreflang="en">EN</a>
+      <a href="./" lang="he" hreflang="he" aria-current="page">עב</a>
+      <a href="../yi/" lang="yi" hreflang="yi">יי</a>
+    </div>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">תפריט</button>
+    <nav id="site-nav">
+      <a href="#paths">מסלולים</a>
+      <a href="#about">מי בנה</a>
+      <a href="#download">הורדה</a>
+      <a href="../privacy.html">פרטיות</a>
+      <a href="#contact">יצירת קשר</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="brand">Steady</p>
+        <h1>פחות טלפון.<br />יותר חיים.</h1>
+        <p class="lede">
+          אנטי־התמכרות <strong>לעצמך</strong> ו<strong>למשפחות</strong> באנדרואיד.
+          נעלים את היום ל־Work, Focus, Learning, Fun ו־Sleep —
+          או מנהלים טלפון של ילד עם Ask → Approve, שעת שינה ומבנה אמיתי.
+        </p>
+        <div class="actions">
+          <a class="btn primary" href="#download">הורדה לאנדרואיד</a>
+          <a class="btn ghost" href="../setup.html">מדריך התקנה (אנגלית)</a>
+        </div>
+        <p class="hero-note">Steady הוא הבית שלך. זמן טלפון מוגבל. עצירה ברורה.</p>
+      </div>
+      <div class="hero-stage" aria-hidden="true">
+        <div class="hero-glow"></div>
+        <div class="device">
+          <div class="device-notch"></div>
+          <p class="device-brand">Steady</p>
+          <p class="device-mode">Focus · אנטי־התמכרות</p>
+          <div class="device-ring">
+            <svg viewBox="0 0 120 120" class="ring-svg">
+              <circle cx="60" cy="60" r="52" class="ring-track" />
+              <circle cx="60" cy="60" r="52" class="ring-value" />
+            </svg>
+            <div class="ring-label">
+              <strong>14:20</strong>
+              <span>נותר היום</span>
+            </div>
+          </div>
+          <div class="device-row">
+            <span>Work</span>
+            <span class="live">Focus</span>
+            <span>Sleep</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="truth reveal">
+      <div class="truth-grid">
+        <article>
+          <p class="truth-num">5–6 שעות</p>
+          <p>זמן טלפון ממוצע שמבוגרים רבים מאבדים ביום — לעיתים בלי לשים לב.</p>
+        </article>
+        <article>
+          <p class="truth-num">כוח רצון</p>
+          <p>בדרך כלל מפסיד לפיד. Steady לא מחכה למצב רוח טוב יותר — הוא מחזיק את התוכנית.</p>
+        </article>
+        <article>
+          <p class="truth-num">שני מסלולים</p>
+          <p>מיקוד עצמי בשבילך. הורות לטלפון של ילד. אותו מנוע רגוע בשניהם.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="paths" class="block paths reveal">
+      <p class="eyebrow">בחרו מסלול</p>
+      <h2>למי מיועד הטלפון הזה?</h2>
+      <p class="section-lead">Steady נבנה לשניהם — רוב אפליקציות זמן המסך בוחרות רק אחד.</p>
+      <div class="path-tabs" role="tablist">
+        <button type="button" class="path-tab is-active" role="tab" aria-selected="true" data-path="you">בשבילך</button>
+        <button type="button" class="path-tab" role="tab" aria-selected="false" data-path="parents">להורים</button>
+      </div>
+      <div class="path-panels">
+        <div class="path-panel is-active" data-panel="you">
+          <div class="path-copy">
+            <h3>להחזיר לעצמך את הזמן.</h3>
+            <p>בחרו <strong>הטלפון הזה בשבילי</strong>. הגדירו לוח יום. עשו את Steady למסך הבית. קחו Day off כשצריך — ואז חזרו.</p>
+            <ul class="check-list">
+              <li>מצב מיקוד עצמי עם קודי נעילה ששומרים עליכם כנים</li>
+              <li>לוחות יום ל־Work, Focus, Learning, Fun ו־Sleep</li>
+              <li>אישור חבר אופציונלי כשרוצים הארכה</li>
+            </ul>
+          </div>
+          <aside class="path-aside">
+            <p class="aside-label">נסו קודם</p>
+            <p class="aside-title">Focus · אנטי־התמכרות</p>
+            <p>שעון יומי קצר. אפליקציות עבודה ולמידה. מצמצם גלילה חסרת מטרה — הערב, לא «מתישהו».</p>
+          </aside>
+        </div>
+        <div class="path-panel" data-panel="parents" hidden>
+          <div class="path-copy">
+            <h3>מבנה לטלפון של ילד.</h3>
+            <p>ילד · הורה · שניהם. בידור לא חופשי כברירת מחדל — הם מבקשים, אתם מאשרים. שעת שינה, הפסקות, משימות משפחתיות.</p>
+            <ul class="check-list">
+              <li>Ask → Approve לבידור</li>
+              <li>רשימת משימות משפחתית לפני Fun (אופציונלי)</li>
+              <li>שעות בית ספר, שעת שינה, בונוס סוף שבוע</li>
+            </ul>
+          </div>
+          <aside class="path-aside">
+            <p class="aside-label">הכי חזק</p>
+            <p class="aside-title">שני טלפונים</p>
+            <p>טלפון ילד + טלפון הורה עם קוד משפחה. מצב «שניהם» על טלפון אחד עובד — שמרו את ה־PIN בסוד.</p>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <section id="about" class="block about reveal">
+      <p class="eyebrow">מי בנה את זה</p>
+      <h2>כלי עצמאי לפחות טלפון — לא מותג מעקב.</h2>
+      <p class="section-lead">
+        Steady נבנה על ידי מפתח עצמאי (Lab Rat Computers /
+        <a href="mailto:labratcomputers@gmail.com">labratcomputers@gmail.com</a>).
+        הרשאות חזקות (Device Admin, Accessibility, Usage) נועדו לאכוף תוכנית על המכשיר —
+        לא למכור פרסומות. לפני התקנה על טלפון של ילד, קראו את
+        <a href="../privacy.html">מדיניות הפרטיות (אנגלית)</a>.
+      </p>
+    </section>
+
+    <section id="download" class="block download reveal">
+      <div class="download-panel">
+        <p class="eyebrow">הורידו את Steady</p>
+        <h2>הורדת APK לאנדרואיד.</h2>
+        <p class="section-lead">חינם. מיקוד עצמי + הורות. לוחות יום, Steady כבית, Day off, משימות משפחה.</p>
+        <div class="actions">
+          <a class="btn primary" id="apk-link" href="https://github.com/LabRatKali/steady-web/releases/latest/download/steady-latest.apk">הורדת APK</a>
+          <a class="btn ghost" href="../setup.html">מדריך (EN)</a>
+          <a class="btn ghost" href="../privacy.html">פרטיות</a>
+        </div>
+        <p class="fine" id="version-line" data-template="גרסה אחרונה: %s">גרסה אחרונה: v1.1.10</p>
+        <p class="fine sideload-note">
+          אנדרואיד יציג אזהרת אבטחה כי זה לא מ־Play Store — זה צפוי ל־APK ישיר.
+          אתם מורידים את Steady מהאתר הזה. אשרו התקנה מהדפדפן כשיבקשו.
+        </p>
+        <p class="fine">קראו את <a href="../privacy.html">מדיניות הפרטיות</a> לפני התקנה על טלפון של ילד.</p>
+      </div>
+    </section>
+
+    <section class="block faq-block reveal">
+      <p class="eyebrow">שאלות</p>
+      <h2>מה אנשים באמת שואלים.</h2>
+      <div class="faq-groups">
+        <div class="faq-group">
+          <div class="faq">
+            <details open>
+              <summary>איך מתקינים?</summary>
+              <p>הורידו את ה־APK → פתחו את הקובץ → אשרו התקנה מהדפדפן אם אנדרואיד מבקש → פתחו את Steady.</p>
+            </details>
+            <details>
+              <summary>אילו נתונים נאספים?</summary>
+              <p>בלי פרסומות ובלי SDK לניתוח. רוב הנעילות והטיימרים נשארים במכשיר. צימוד משפחה ואישורים יכולים להסתנכרן כשמשתמשים בזה. פירוט: <a href="../privacy.html">פרטיות</a>.</p>
+            </details>
+            <details>
+              <summary>האפליקציה תומכת בעברית?</summary>
+              <p>כן — בתוך Steady אפשר לבחור עברית (וגם יידיש, ספרדית, רוסית). האתר כאן בעברית לדף הבית; מדריך ההתקנה המלא עדיין באנגלית.</p>
+            </details>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="contact" class="block contact reveal">
+      <p class="eyebrow">אדם בצד השני</p>
+      <h2>צרו קשר עם המפתח.</h2>
+      <p class="section-lead">רעיונות, שאלות הורות, באגים — כתבו בכל זמן.</p>
+      <div class="actions">
+        <a class="btn primary" href="mailto:labratcomputers@gmail.com?subject=Steady%20-%20Hello">labratcomputers@gmail.com</a>
+        <a class="btn ghost" href="../index.html#faq">עוד שאלות (EN)</a>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div>
+      <p class="footer-brand">Steady</p>
+      <p>פחות טלפון. יותר חיים. Steady הוא הבית שלך.</p>
+    </div>
+    <div class="footer-links">
+      <a href="#paths">מסלולים</a>
+      <a href="#download">הורדה</a>
+      <a href="../privacy.html">פרטיות</a>
+      <a href="../setup.html">Setup</a>
+      <a href="mailto:labratcomputers@gmail.com">יצירת קשר</a>
+    </div>
+  </footer>
+  <script src="../site.js?v=14"></script>
+</body>
+</html>
