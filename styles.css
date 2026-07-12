@@ -202,6 +202,10 @@ html[dir="rtl"] .check-list li::before {
   right: 0;
 }
 
+html[dir="rtl"] [dir="ltr"] {
+  unicode-bidi: isolate;
+}
+
 .nav-toggle {
   display: none;
   border: 1px solid var(--line);
