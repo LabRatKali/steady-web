@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Privacy policy for Steady — what stays on the phone, what syncs for families, and what never leaves the device." />
+  <title>Privacy — Steady</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css?v=14" />
+</head>
+<body>
+  <div class="atmosphere" aria-hidden="true">
+    <span class="orb orb-a"></span>
+    <span class="orb orb-b"></span>
+    <span class="orb orb-c"></span>
+    <span class="veil"></span>
+  </div>
+  <div class="grain" aria-hidden="true"></div>
+
+  <header class="top">
+    <a class="logo" href="index.html" aria-label="Steady home">
+      <svg class="logo-mark" viewBox="0 0 32 32" aria-hidden="true">
+        <path d="M8 14.5V24a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V14.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M6 15.5 16 7l10 8.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M13 26v-6.5a1.5 1.5 0 0 1 1.5-1.5h3a1.5 1.5 0 0 1 1.5 1.5V26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <span>Steady</span>
+    </a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
+    <nav id="site-nav">
+      <a href="index.html">Home</a>
+      <a href="setup.html">Setup</a>
+      <a href="privacy.html" aria-current="page">Privacy</a>
+      <a href="index.html#download">Download</a>
+      <a href="mailto:labratcomputers@gmail.com">Contact</a>
+    </nav>
+  </header>
+
+  <main class="guide legal">
+    <p class="brand small">Steady</p>
+    <h1>Privacy policy</h1>
+    <p class="lede">
+      Plain language for parents and for people using Steady on their own phone.
+      Steady asks for strong phone permissions — you deserve a clear answer about data.
+    </p>
+    <p class="fine">Last updated: July 12, 2026 · Questions: <a href="mailto:labratcomputers@gmail.com">labratcomputers@gmail.com</a></p>
+
+    <section>
+      <h2>Short version</h2>
+      <ul class="plain">
+        <li><strong>No ads. No analytics SDK. No selling your data.</strong></li>
+        <li>Most settings, PIN/password hashes, app timers, and Steady Face stay <strong>on the phone</strong>.</li>
+        <li>Family features (pairing, rules, Approvals, to-dos) sync only when you set them up — through a private GitHub sync repo, not a Steady-owned “cloud account” product.</li>
+        <li>Optional crash reports can upload error text to that same sync path so bugs can be fixed.</li>
+        <li>DNS filtering (when on) asks Cloudflare for Families to resolve allowed names — not a Steady tracking server.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Who this is for</h2>
+      <p>
+        Steady is an Android anti-addiction app for <strong>self-focus</strong> and for
+        <strong>parent / child</strong> setups. It uses Device Admin, Accessibility,
+        Usage access, and (if you choose Steady Face) the camera — so you can lock profiles,
+        block apps, and keep a day schedule. Those permissions are for enforcement on the device,
+        not for building an advertising profile.
+      </p>
+    </section>
+
+    <section>
+      <h2>What stays on the device</h2>
+      <ul class="plain">
+        <li>Unlock codes (PIN, pattern, passphrase, and similar) — stored as local secrets / hashes, not sent for “login to Steady cloud.”</li>
+        <li><strong>Steady Face</strong> — face landmarks become a local template on the phone. Face photos / templates are <strong>not</strong> uploaded for family sync.</li>
+        <li>Daily usage minutes, per-app use, Accessibility events, and Usage Access readings used to enforce blocks — processed <strong>on-device</strong>.</li>
+        <li>Local chores, categories, appearance settings, and most preferences.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>What can leave the device (only if you use those features)</h2>
+      <h3>Family pairing &amp; rules</h3>
+      <p>
+        When you create a family code and pair phones, Steady syncs family policy so parent and child stay aligned.
+        That can include: budgets / profile minutes, bedtime, school hours, weekend Fun bonus, day schedule,
+        web-filter toggles, age band, cool-downs, homework / to-do gates, install-approval flags,
+        and related family settings. Pairing records include device IDs and a family secret used for that link.
+      </p>
+      <h3>Approvals &amp; to-dos</h3>
+      <p>
+        “Ask for Fun,” remote Approve / Deny, family to-do lists (titles, status, reward minutes),
+        and optional install-approval requests can sync between the paired phones so the parent inbox works
+        when you are not standing next to each other.
+      </p>
+      <h3>Nearby Approve</h3>
+      <p>
+        If you use Nearby (Bluetooth / local wireless) Approve, short approval messages can travel
+        phone-to-phone over Google’s Nearby Connections — not through an ad network.
+      </p>
+      <h3>Optional location features</h3>
+      <p>
+        If geofence / zone features are enabled, zone definitions (which may include coordinates) and
+        enter/exit alerts (zone name / event — not a continuous live map feed to advertisers) can sync
+        as part of family features.
+      </p>
+      <h3>Updates</h3>
+      <p>
+        Steady may check GitHub for a newer APK (release metadata / download). That is an update check,
+        not usage tracking of which apps your child opened today.
+      </p>
+      <h3>Crash reports</h3>
+      <p>
+        If the app crashes, it may store an error report on the phone and later upload it to the sync path
+        (device id, app version, message, stack trace, timestamp) so the developer can fix bugs.
+        This is not a marketing analytics package.
+      </p>
+      <h3>Web filter / DNS</h3>
+      <p>
+        When the family web filter is on, Steady runs a local DNS path and forwards allowed lookups to
+        <strong>Cloudflare for Families</strong> (age-aware adult / malware filtering). Blocked names can be
+        answered locally. This is filtering — not Steady selling browse history.
+      </p>
+    </section>
+
+    <section>
+      <h2>Where synced family data goes</h2>
+      <p>
+        Steady does <strong>not</strong> run a separate “Steady cloud account” product with a developer-owned
+        app server in the usual SaaS sense. Family sync, update checks, and optional crash uploads use
+        <strong>GitHub</strong> repositories operated for Steady (sync + public downloads).
+        Synced payloads are obfuscated on the app side before storage. Access to that private sync material
+        is controlled by the project’s GitHub credentials — not “sold to advertisers.”
+      </p>
+      <p>
+        Self-focus users who never pair a family may never send family policy or Approve traffic at all.
+      </p>
+    </section>
+
+    <section>
+      <h2>What we don’t do</h2>
+      <ul class="plain">
+        <li>No advertising SDK, no AdMob, no selling personal data.</li>
+        <li>No Firebase Analytics / Crashlytics-style product analytics package in the app dependencies.</li>
+        <li>We don’t upload your Steady Face template or raw camera stream for family sync.</li>
+        <li>We don’t upload Accessibility event streams or Usage Stats histories as a feed for third parties.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Children &amp; parents</h2>
+      <p>
+        On a child phone, Steady is meant for a parent (or guardian) to set boundaries.
+        Family sync exists so Approvals and rules can work across two phones.
+        If you are a parent: you choose the family code, who pairs, and which features you turn on.
+        If you stop using family features, you can stop pairing / stop using those sync paths;
+        local enforcement settings remain on the device until you change or uninstall them
+        (uninstall may require turning protection off first — see the setup guide).
+      </p>
+    </section>
+
+    <section>
+      <h2>This website</h2>
+      <p>
+        The public site is hosted for downloads and setup help. The “Leave an idea” box opens
+        your own email app — it does not upload the text to a Steady web form server.
+        The download page may ask GitHub’s public API for the latest release name so the version line stays current.
+      </p>
+    </section>
+
+    <section>
+      <h2>Contact</h2>
+      <p>
+        Privacy questions, deletion / pairing questions, or “what exactly synced on my family code?” —
+        write <a href="mailto:labratcomputers@gmail.com">labratcomputers@gmail.com</a>.
+        Built by an indie developer publishing Steady under the LabRatKali / Lab Rat Computers projects.
+      </p>
+    </section>
+
+    <section>
+      <h2>Changes</h2>
+      <p>
+        If Steady’s data practices change in a meaningful way, this page will be updated and the
+        “Last updated” date will move. Check back when you install a major update.
+      </p>
+    </section>
+  </main>
+
+  <footer>
+    <div>
+      <p class="footer-brand">Steady</p>
+      <p>Less phone. More life. Steady is your home.</p>
+    </div>
+    <div class="footer-links">
+      <a href="index.html">Home</a>
+      <a href="setup.html">Setup</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="index.html#download">Download</a>
+      <a href="mailto:labratcomputers@gmail.com">Contact</a>
+    </div>
+  </footer>
+  <script src="site.js?v=14"></script>
+</body>
+</html>
