@@ -3,29 +3,27 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Setup guide for Steady — self-focus, parenting, schedules, Steady as Home, Pause." />
+  <meta name="description" content="Simple setup guide for Steady — self-focus or parenting." />
   <title>Setup — Steady</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=7" />
+  <link rel="stylesheet" href="styles.css?v=8" />
+  <link rel="icon" href="assets/steady-mark.png" type="image/png" />
 </head>
 <body>
   <div class="atmosphere" aria-hidden="true">
     <span class="orb orb-a"></span>
     <span class="orb orb-b"></span>
-    <span class="orb orb-c"></span>
   </div>
-  <div class="grain" aria-hidden="true"></div>
 
   <header class="top">
     <a class="logo" href="index.html">
-      <span class="mark" aria-hidden="true"></span>
-      Steady
+      <img src="assets/steady-wordmark.png" alt="Steady" width="120" height="120" />
     </a>
     <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
     <nav id="site-nav">
-      <a href="index.html#for-you">For you</a>
+      <a href="index.html#you">For you</a>
       <a href="index.html#download">Download</a>
       <a href="setup.html" aria-current="page">Setup</a>
       <a href="index.html#contact">Contact</a>
@@ -33,59 +31,49 @@
   </header>
 
   <main class="guide">
-    <p class="brand small">Steady</p>
+    <img class="brand-mark" src="assets/steady-wordmark.png" alt="" width="72" height="72" />
     <h1>Setup guide</h1>
-    <p class="lede">For yourself (self-focus) or for parenting — matches Steady as it ships now.</p>
+    <p class="lede">Short steps. Self-focus or parenting.</p>
 
     <section>
       <h2>1. Install</h2>
       <ol>
-        <li>Download the Steady APK.</li>
-        <li>Allow install from your browser / Files if Android asks.</li>
+        <li>Download the APK.</li>
+        <li>Allow install if Android asks.</li>
         <li>Open Steady.</li>
       </ol>
     </section>
 
     <section>
-      <h2>2. Choose who this phone is for</h2>
+      <h2>2. Who is this phone for?</h2>
       <ul class="plain">
-        <li><strong>This phone is for me (focus — get my time back)</strong> — adult self-discipline, schedules, optional accountability friend</li>
-        <li><strong>This phone is for a child</strong> — locks, profiles, asks for Fun</li>
-        <li><strong>This phone is for a parent / accountability friend</strong> — quiet Approve inbox + family code</li>
-        <li><strong>This phone is for both</strong> — kid + Approve on one phone (weaker; keep the PIN secret)</li>
+        <li><strong>For me</strong> — self-focus, schedules, optional friend Approve</li>
+        <li><strong>Child</strong> — locks and Ask for Fun</li>
+        <li><strong>Parent / friend</strong> — Approve inbox + family code</li>
+        <li><strong>Both</strong> — one phone does both (weaker; keep the PIN secret)</li>
       </ul>
     </section>
 
     <section>
-      <h2>3. Self-focus path</h2>
+      <h2>3. Self-focus</h2>
       <ol>
-        <li>Pick <strong>for me</strong>.</li>
-        <li>Set unlock checks (PIN recommended; optional friend Approve).</li>
-        <li>Turn on protection: Device Admin + Accessibility + usage access + web filter. Leave Admin and Accessibility on.</li>
-        <li>In Settings → <strong>Day schedule</strong>, set Work / Focus / Learning / Fun / Sleep hours.</li>
-        <li>Optional: create a family code and give it to a friend on a second phone for overtime Approves.</li>
-        <li>Optional: tap <strong>Make Steady my Home screen</strong> and choose Steady as default Home.</li>
+        <li>Choose <strong>for me</strong>.</li>
+        <li>Set a PIN (optional friend Approve).</li>
+        <li>Turn on protection on the phone (Admin, Accessibility, usage, web filter).</li>
+        <li>Settings → Day schedule — Work / Focus / Learning / Fun / Sleep.</li>
+        <li>Optional: Make Steady my Home screen.</li>
+        <li>Need a break? Unlock → <strong>Day off</strong>. End it when ready.</li>
       </ol>
     </section>
 
     <section>
-      <h2>4. Child phone path</h2>
+      <h2>4. Child phone</h2>
       <ol>
-        <li>Set up 1–3 unlock checks (PIN, pattern lock, Steady Face, and more).</li>
-        <li>Protection wizard (no computer needed):
-          <ul class="plain">
-            <li>Restricted settings (Android 13+ if asked)</li>
-            <li>Device Admin</li>
-            <li>Steady Accessibility</li>
-            <li>Usage access</li>
-            <li>Family web filter</li>
-            <li>Battery unrestricted</li>
-          </ul>
-        </li>
-        <li>Optional advanced: full uninstall lock with a computer (only if you need it).</li>
-        <li>Finish with demo budgets or <strong>You are ready</strong>.</li>
+        <li>Set unlock checks.</li>
+        <li>Follow protection steps on the phone.</li>
+        <li>Pair with a parent phone using a family code.</li>
+        <li>Optional advanced uninstall lock (computer):</li>
       </ol>
-      <p>Optional computer command for that advanced lock:</p>
       <pre><code>adb shell dpm set-device-owner app.steady.android/app.steady.deviceowner.SteadyDeviceAdminReceiver</code></pre>
     </section>
 
@@ -93,43 +81,45 @@
       <h2>5. Parent / friend phone</h2>
       <ol>
         <li>Choose parent / accountability friend.</li>
-        <li>Create a family code; enter it on the child (or self-focus) phone.</li>
-        <li>Send rules when needed; Approve Fun requests from the inbox (or nearby on another phone).</li>
+        <li>Create a family code; enter it on the other phone.</li>
+        <li>Approve Fun from the inbox.</li>
       </ol>
     </section>
 
     <section>
-      <h2>6. Profiles &amp; Pause</h2>
+      <h2>6. Profiles</h2>
       <ul class="plain">
-        <li><strong>Focus · anti-addict</strong> — short daily focus window</li>
-        <li><strong>Essentials only</strong> — calls / texts / maps / camera</li>
-        <li><strong>Work</strong> / <strong>Learning</strong> / <strong>Entertainment</strong></li>
-        <li><strong>Sleep</strong> (from schedules) — full rest lock</li>
+        <li><strong>Focus · anti-addict</strong></li>
+        <li><strong>Essentials</strong></li>
+        <li><strong>Work</strong> · <strong>Learning</strong> · <strong>Entertainment</strong></li>
+        <li><strong>Sleep</strong> from schedules</li>
       </ul>
-      <p><strong>Pause Steady (testing):</strong> Apply Essentials → unlock Settings → <strong>Pause Steady now</strong>. Locks stop so you can test or uninstall.</p>
-      <p>Calls with the screen off and background music do not use up the timer.</p>
+      <p>Long-press apps on Steady Home to rearrange or edit the dock.</p>
     </section>
 
     <section>
       <h2>Need help?</h2>
       <div class="actions">
         <a class="btn primary" href="mailto:labratcomputers@gmail.com?subject=Steady%20-%20Setup%20help">labratcomputers@gmail.com</a>
-        <a class="btn ghost" href="index.html#download">Download Steady</a>
+        <a class="btn ghost" href="index.html#download">Download</a>
       </div>
     </section>
   </main>
 
   <footer>
-    <div>
-      <p class="footer-brand">Steady</p>
-      <p>Less phone. More life. Steady is your home.</p>
+    <div class="footer-brand-row">
+      <img src="assets/steady-wordmark.png" alt="" width="48" height="48" />
+      <div>
+        <p class="footer-brand">Steady</p>
+        <p>Less phone. More life.</p>
+      </div>
     </div>
     <div class="footer-links">
-      <a href="index.html#for-you">For you</a>
-      <a href="index.html#download">Download</a>
+      <a href="index.html">Home</a>
+      <a href="index.html#faq">Questions</a>
       <a href="mailto:labratcomputers@gmail.com">Contact</a>
     </div>
   </footer>
-  <script src="site.js?v=7"></script>
+  <script src="site.js?v=8"></script>
 </body>
 </html>
