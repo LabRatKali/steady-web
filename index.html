@@ -3,14 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Steady — less phone, more life. Anti-addiction for yourself and for parents on Android. Day schedules, Steady as Home, Day off, Focus profiles." />
+  <meta name="description" content="Steady — less phone, more life. Anti-addiction for yourself and for parents on Android. Quick Focus, mindful pause, day schedules, Steady as Home, Ask → Approve." />
+  <meta name="theme-color" content="#0c1b15" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
   <title>Steady — Less phone. More life.</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=15" />
+  <link rel="stylesheet" href="styles.css?v=16" />
 </head>
 <body>
+  <a class="skip-link" href="#download">Skip to download</a>
   <div class="atmosphere" aria-hidden="true">
     <span class="orb orb-a"></span>
     <span class="orb orb-b"></span>
@@ -101,6 +104,44 @@
           <p class="truth-num">Two paths</p>
           <p>Self-focus for you. Parenting for a child’s phone. Same calm engine either way.</p>
         </article>
+      </div>
+    </section>
+
+    <section class="trust-strip reveal" aria-label="Trust">
+      <ul>
+        <li><strong>Free APK</strong> — no Play Store wall</li>
+        <li><strong>No ads</strong> — no analytics SDK</li>
+        <li><strong>On-device first</strong> — locks stay local</li>
+        <li><strong>Plain privacy</strong> — <a href="privacy.html">read it</a></li>
+      </ul>
+    </section>
+
+    <section id="fit" class="block fit-quiz reveal">
+      <p class="eyebrow">60-second fit check</p>
+      <h2>Which Steady path fits you?</h2>
+      <p class="section-lead">Answer two quiet questions. We’ll point you at the right setup.</p>
+      <div class="quiz" id="fit-quiz">
+        <fieldset class="quiz-step is-active" data-step="1">
+          <legend>Whose phone is this mainly for?</legend>
+          <button type="button" class="quiz-choice" data-q="who" data-a="me">Mine — I want less autopilot scrolling</button>
+          <button type="button" class="quiz-choice" data-q="who" data-a="child">A child’s — I need structure and Approvals</button>
+          <button type="button" class="quiz-choice" data-q="who" data-a="both">Both on one phone (possible, weaker)</button>
+        </fieldset>
+        <fieldset class="quiz-step" data-step="2" hidden>
+          <legend>What’s the biggest leak right now?</legend>
+          <button type="button" class="quiz-choice" data-q="leak" data-a="impulse">Opening social apps without thinking</button>
+          <button type="button" class="quiz-choice" data-q="leak" data-a="budget">Fun time that never ends</button>
+          <button type="button" class="quiz-choice" data-q="leak" data-a="school">School hours / bedtime not sticking</button>
+        </fieldset>
+        <div class="quiz-result" id="quiz-result" hidden>
+          <p class="aside-label">Your fit</p>
+          <p class="aside-title" id="quiz-title">Self-focus</p>
+          <p id="quiz-body">Make Steady Home. Use Quick Focus sprints and the mindful pause before Fun.</p>
+          <div class="actions">
+            <a class="btn primary" href="#download">Download Steady</a>
+            <a class="btn ghost" href="setup.html" id="quiz-setup">Open setup guide</a>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -213,12 +254,18 @@
           </p>
           <ul class="check-list">
             <li>Make Steady the default Home screen</li>
+            <li>Today ring · Steady streak · daily intention</li>
+            <li>Quick Focus sprints (15 / 25 / 45) that lock Fun</li>
+            <li>Mindful pause before Ask for Fun — breaks muscle memory</li>
             <li>Star apps into the dock · reorder · reset layout</li>
-            <li>Kids can update without unlocking a maze of Settings</li>
           </ul>
         </div>
         <div class="home-preview" aria-hidden="true">
           <div class="home-clock">9:41</div>
+          <div class="home-pulse">
+            <span class="pulse-ring"></span>
+            <span class="pulse-meta">Streak · Quick Focus</span>
+          </div>
           <div class="home-apps">
             <span></span><span></span><span></span><span></span>
             <span></span><span></span><span></span><span></span>
@@ -234,6 +281,18 @@
       <p class="eyebrow">What you get</p>
       <h2>Built to keep you honest.</h2>
       <div class="feature-rail">
+        <article>
+          <h3>Quick Focus</h3>
+          <p>One-tap 15 / 25 / 45-minute Focus sprints. Fun stays locked until the sprint ends — Deep Focus energy without a subscription.</p>
+        </article>
+        <article>
+          <h3>Mindful pause</h3>
+          <p>A short breath before Ask for Fun. Same idea as one sec: interrupt the autopilot tap, then decide.</p>
+        </article>
+        <article>
+          <h3>Streaks &amp; today ring</h3>
+          <p>Home shows productive vs Fun time and a Steady streak for days you stayed under your Fun budget.</p>
+        </article>
         <article>
           <h3>Day off</h3>
           <p>Need open phone time? Unlock with your codes, take a Day off, end it when you’re ready — warm and clear.</p>
@@ -253,10 +312,6 @@
         <article>
           <h3>Age-aware web filter</h3>
           <p>Helps block adult and gambling sites, and known bypass apps — stronger lists for younger ages.</p>
-        </article>
-        <article>
-          <h3>Languages</h3>
-          <p>English, Hebrew, Yiddish, Spanish, Russian — Home, widgets, and settings follow the language you pick.</p>
         </article>
       </div>
     </section>
@@ -385,7 +440,7 @@
           <a class="btn ghost" href="setup.html">Setup guide</a>
           <a class="btn ghost" href="privacy.html">Privacy</a>
         </div>
-        <p class="fine" id="version-line" data-template="Latest release: %s">Latest release: v1.1.10</p>
+        <p class="fine" id="version-line" data-template="Latest release: %s">Latest release: v1.5.2</p>
         <p class="fine sideload-note">
           Android will show a security warning because this isn’t from the Play Store —
           that’s expected for a direct APK. You’re downloading Steady from this site’s release,
@@ -566,6 +621,14 @@
               <p>Uninstall the old build once, then install the newest APK. Android is picky about signing keys.</p>
             </details>
             <details>
+              <summary>What is Quick Focus?</summary>
+              <p>A timed Focus sprint (15 / 25 / 45 minutes) from Home. Fun stays locked until it ends — the same idea as Deep Focus in apps like Opal.</p>
+            </details>
+            <details>
+              <summary>What is the mindful pause?</summary>
+              <p>Before Ask for Fun, Steady waits a few breaths so you can cancel autopilot taps. Turn it off under Appearance if you want.</p>
+            </details>
+            <details>
               <summary>How do I turn Steady off completely?</summary>
               <p>Take a Day off first (unlock with your codes). Then deactivate protection in system settings if you want to uninstall.</p>
             </details>
@@ -637,6 +700,11 @@
     </div>
   </footer>
 
-  <script src="site.js?v=15"></script>
+  <div class="sticky-cta" role="region" aria-label="Download Steady">
+    <p>Less phone. More life.</p>
+    <a class="btn primary" href="#download">Download APK</a>
+  </div>
+
+  <script src="site.js?v=16"></script>
 </body>
 </html>
