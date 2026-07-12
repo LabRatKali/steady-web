@@ -1,0 +1,241 @@
+:root {
+  --bg: #12241e;
+  --bg-deep: #0b1612;
+  --fg: #f2f6f3;
+  --muted: #a7b9b0;
+  --accent: #3fbf86;
+  --accent-ink: #062416;
+  --sand: #d7c4a3;
+  --line: rgba(242, 246, 243, 0.12);
+  --display: "Fraunces", Georgia, serif;
+  --body: "Source Sans 3", system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--fg);
+  font-family: var(--body);
+  background: var(--bg-deep);
+  line-height: 1.55;
+}
+
+.atmosphere {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(1000px 520px at 12% -8%, #23473a 0%, transparent 55%),
+    radial-gradient(800px 420px at 95% 8%, #2a4034 0%, transparent 50%),
+    linear-gradient(180deg, #152920 0%, var(--bg-deep) 55%);
+  animation: drift 18s ease-in-out infinite alternate;
+}
+
+@keyframes drift {
+  from { filter: saturate(1) brightness(1); transform: scale(1); }
+  to { filter: saturate(1.08) brightness(1.04); transform: scale(1.03); }
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 1.25rem 1.5rem;
+}
+
+.logo {
+  font-family: var(--display);
+  font-size: 1.35rem;
+  color: var(--fg);
+  text-decoration: none;
+  letter-spacing: -0.02em;
+}
+
+nav {
+  display: flex;
+  gap: 1.25rem;
+}
+
+nav a {
+  color: var(--muted);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+nav a:hover,
+nav a[aria-current="page"] {
+  color: var(--fg);
+}
+
+main {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 0 1.5rem 4rem;
+}
+
+.hero {
+  min-height: calc(100vh - 5rem);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 2rem 0 4rem;
+  animation: rise 0.9s ease-out both;
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.brand {
+  margin: 0;
+  font-family: var(--display);
+  font-size: clamp(3.4rem, 12vw, 6.5rem);
+  line-height: 0.95;
+  letter-spacing: -0.045em;
+}
+
+.brand.small {
+  font-size: clamp(2rem, 6vw, 3rem);
+  margin-bottom: 0.35rem;
+}
+
+.hero h1,
+.guide h1 {
+  margin: 0.65rem 0 0;
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: clamp(1.55rem, 4vw, 2.2rem);
+  color: var(--sand);
+}
+
+.lede {
+  max-width: 34rem;
+  margin: 1rem 0 0;
+  color: var(--muted);
+  font-size: 1.15rem;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.75rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.85rem 1.25rem;
+  border-radius: 999px;
+  text-decoration: none;
+  font-weight: 700;
+  transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+
+.btn:hover { transform: translateY(-2px); }
+
+.btn.primary {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.btn.ghost {
+  color: var(--fg);
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.modes,
+.download,
+.guide section {
+  margin-top: 4.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+  animation: rise 1s ease-out 0.15s both;
+}
+
+h2 {
+  margin: 0;
+  font-family: var(--display);
+  font-size: clamp(1.6rem, 3.5vw, 2rem);
+  letter-spacing: -0.02em;
+}
+
+.section-copy {
+  color: var(--muted);
+  max-width: 34rem;
+}
+
+.mode-list {
+  list-style: none;
+  padding: 0;
+  margin: 1.75rem 0 0;
+  display: grid;
+  gap: 1rem;
+}
+
+@media (min-width: 720px) {
+  .mode-list { grid-template-columns: repeat(3, 1fr); }
+}
+
+.mode-list li {
+  padding: 1.1rem 1.15rem;
+  border-top: 2px solid var(--accent);
+}
+
+.mode-list strong {
+  display: block;
+  font-family: var(--display);
+  font-size: 1.35rem;
+  margin-bottom: 0.35rem;
+}
+
+.mode-list span { color: var(--muted); }
+
+.fine {
+  color: var(--muted);
+  font-size: 0.95rem;
+  max-width: 36rem;
+}
+
+.guide ol,
+.guide ul.plain {
+  padding-left: 1.2rem;
+  color: var(--muted);
+}
+
+.guide li { margin: 0.55rem 0; }
+.guide strong { color: var(--fg); }
+
+.guide pre {
+  overflow-x: auto;
+  padding: 0.85rem 1rem;
+  margin: 0.75rem 0;
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--sand);
+  font-size: 0.85rem;
+}
+
+footer {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 3rem;
+  color: var(--muted);
+  border-top: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+footer a { color: var(--fg); }
