@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=11" />
+  <link rel="stylesheet" href="styles.css?v=12" />
 </head>
 <body>
   <div class="atmosphere" aria-hidden="true">
@@ -565,19 +565,19 @@
             <a class="btn ghost" href="mailto:labratcomputers@gmail.com?subject=Steady%20-%20Suggestion&body=Hi%2C%0A%0AI%20have%20a%20suggestion%20for%20Steady%3A%0A%0A">Send a suggestion</a>
           </div>
         </div>
-        <form class="suggest-form" action="mailto:labratcomputers@gmail.com" method="get">
+        <div class="suggest-form" id="suggest-form">
           <h3>Leave an idea</h3>
           <label>
             Your name <span>(optional)</span>
-            <input type="text" name="name" placeholder="Alex" autocomplete="name" />
+            <input type="text" id="suggest-name" placeholder="Alex" autocomplete="off" spellcheck="false" />
           </label>
           <label>
             Your idea
-            <textarea name="body" rows="5" required placeholder="I wish Steady could…"></textarea>
+            <textarea id="suggest-body" rows="5" placeholder="I wish Steady could…" autocomplete="off"></textarea>
           </label>
-          <button class="btn primary" type="submit">Open in email</button>
-          <p class="fine">Opens your mail app addressed to labratcomputers@gmail.com.</p>
-        </form>
+          <button class="btn primary" type="button" id="suggest-send">Open in email</button>
+          <p class="fine">Opens your mail app on this device — nothing is sent through this website.</p>
+        </div>
       </div>
     </section>
   </main>
@@ -597,6 +597,6 @@
     </div>
   </footer>
 
-  <script src="site.js?v=11"></script>
+  <script src="site.js?v=12"></script>
 </body>
 </html>
