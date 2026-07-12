@@ -45,16 +45,59 @@ function wireSuggestionForm() {
       "Thanks!",
     ].filter((line) => line !== null);
 
-    const mailto =
+    window.location.href =
       "mailto:labratcomputers@gmail.com" +
       "?subject=" +
       encodeURIComponent("Steady - Suggestion") +
       "&body=" +
       encodeURIComponent(lines.join("\n"));
+  });
+}
 
-    window.location.href = mailto;
+function wireReveal() {
+  const nodes = document.querySelectorAll(".reveal");
+  if (!nodes.length) return;
+
+  if (!("IntersectionObserver" in window)) {
+    nodes.forEach((node) => node.classList.add("in"));
+    return;
+  }
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("in");
+          observer.unobserve(entry.target);
+        }
+      });
+    },
+    { threshold: 0.14, rootMargin: "0px 0px -8% 0px" }
+  );
+
+  nodes.forEach((node) => observer.observe(node));
+}
+
+function wireNav() {
+  const header = document.querySelector(".top");
+  const toggle = document.querySelector(".nav-toggle");
+  const nav = document.getElementById("site-nav");
+  if (!header || !toggle || !nav) return;
+
+  toggle.addEventListener("click", () => {
+    const open = header.classList.toggle("nav-open");
+    toggle.setAttribute("aria-expanded", open ? "true" : "false");
+  });
+
+  nav.querySelectorAll("a").forEach((link) => {
+    link.addEventListener("click", () => {
+      header.classList.remove("nav-open");
+      toggle.setAttribute("aria-expanded", "false");
+    });
   });
 }
 
 loadLatest();
 wireSuggestionForm();
+wireReveal();
+wireNav();
