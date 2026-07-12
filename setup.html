@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=12" />
+  <link rel="stylesheet" href="styles.css?v=14" />
 </head>
 <body>
   <div class="atmosphere" aria-hidden="true">
@@ -28,12 +28,17 @@
       </svg>
       <span>Steady</span>
     </a>
+    <div class="lang-switch" aria-label="Language">
+      <a href="index.html" lang="en" hreflang="en">EN</a>
+      <a href="he/" lang="he" hreflang="he">עב</a>
+      <a href="yi/" lang="yi" hreflang="yi">יי</a>
+    </div>
     <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
     <nav id="site-nav">
       <a href="index.html#paths">Paths</a>
       <a href="index.html#download">Download</a>
       <a href="setup.html" aria-current="page">Setup</a>
-      <a href="index.html#faq">Questions</a>
+      <a href="privacy.html">Privacy</a>
       <a href="index.html#contact">Contact</a>
     </nav>
   </header>
@@ -50,8 +55,8 @@
       <h2>1. Install</h2>
       <ol>
         <li>Download the APK from the Steady site.</li>
-        <li>Allow install from this browser if Android asks.</li>
-        <li>Open Steady.</li>
+        <li>Android will warn that the file isn’t from Play Store — expected for a direct APK. Allow install from this browser if asked.</li>
+        <li>Open Steady. Read the <a href="privacy.html">privacy policy</a> before installing on a child’s phone.</li>
       </ol>
     </section>
 
@@ -140,9 +145,10 @@
     <div class="footer-links">
       <a href="index.html">Home</a>
       <a href="index.html#faq">Questions</a>
+      <a href="privacy.html">Privacy</a>
       <a href="mailto:labratcomputers@gmail.com">Contact</a>
     </div>
   </footer>
-  <script src="site.js?v=13"></script>
+  <script src="site.js?v=14"></script>
 </body>
 </html>
