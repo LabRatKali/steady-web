@@ -23,4 +23,38 @@ async function loadLatest() {
   }
 }
 
+function wireSuggestionForm() {
+  const form = document.querySelector(".suggest-form");
+  if (!form) return;
+
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const name = (form.querySelector('[name="name"]')?.value || "").trim();
+    const idea = (form.querySelector('[name="body"]')?.value || "").trim();
+    if (!idea) return;
+
+    const lines = [
+      "Hi LabRat,",
+      "",
+      name ? `From: ${name}` : "",
+      name ? "" : null,
+      "I have a suggestion for Steady:",
+      "",
+      idea,
+      "",
+      "Thanks!",
+    ].filter((line) => line !== null);
+
+    const mailto =
+      "mailto:labratcomputers@gmail.com" +
+      "?subject=" +
+      encodeURIComponent("Steady - Suggestion") +
+      "&body=" +
+      encodeURIComponent(lines.join("\n"));
+
+    window.location.href = mailto;
+  });
+}
+
 loadLatest();
+wireSuggestionForm();
