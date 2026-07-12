@@ -19,7 +19,7 @@ async function loadLatest() {
     versionLine.textContent = `Latest release: ${ver}`;
   } catch (_) {
     versionLine.textContent =
-      "Latest release: see GitHub Releases if the button above is unavailable.";
+      "Latest release: use the Download button above. If it fails, try again in a moment.";
   }
 }
 
@@ -34,7 +34,7 @@ function wireSuggestionForm() {
     if (!idea) return;
 
     const lines = [
-      "Hi LabRat,",
+      "Hi,",
       "",
       name ? `From: ${name}` : "",
       name ? "" : null,
