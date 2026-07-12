@@ -124,6 +124,84 @@ body {
   flex-shrink: 0;
 }
 
+.lang-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-inline-start: 0.35rem;
+  margin-inline-end: auto;
+  padding: 0.2rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.lang-switch a {
+  color: var(--muted);
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.78rem;
+  padding: 0.35rem 0.55rem;
+  border-radius: 999px;
+  letter-spacing: 0.02em;
+}
+
+.lang-switch a:hover,
+.lang-switch a[aria-current="page"] {
+  color: var(--accent-ink);
+  background: linear-gradient(135deg, var(--accent-2), var(--accent));
+}
+
+.sideload-note {
+  max-width: 36rem;
+  margin-left: auto;
+  margin-right: auto;
+  color: var(--sand) !important;
+  font-weight: 600;
+  line-height: 1.55;
+}
+
+.about .section-lead a,
+.legal a,
+.download-panel a {
+  color: var(--accent-2);
+}
+
+.legal h3 {
+  margin-top: 1.25rem;
+}
+
+.legal .fine a { color: var(--accent-2); }
+
+html[dir="rtl"] .lang-switch {
+  margin-inline-start: 0.35rem;
+  margin-inline-end: auto;
+}
+
+html[dir="rtl"] .journey {
+  border-left: none;
+  border-right: 1px solid var(--line);
+}
+
+html[dir="rtl"] .journey li {
+  padding: 1rem 1.45rem 1rem 0;
+}
+
+html[dir="rtl"] .journey li::before {
+  left: auto;
+  right: -5px;
+}
+
+html[dir="rtl"] .check-list li {
+  padding-left: 0;
+  padding-right: 1.35rem;
+}
+
+html[dir="rtl"] .check-list li::before {
+  left: auto;
+  right: 0;
+}
+
 .nav-toggle {
   display: none;
   border: 1px solid var(--line);
