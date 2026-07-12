@@ -7,225 +7,265 @@
   <title>Steady — Less phone. More life.</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="atmosphere" aria-hidden="true"></div>
+  <div class="atmosphere" aria-hidden="true">
+    <span class="orb orb-a"></span>
+    <span class="orb orb-b"></span>
+    <span class="orb orb-c"></span>
+  </div>
   <div class="grain" aria-hidden="true"></div>
 
   <header class="top">
-    <a class="logo" href="index.html">Steady</a>
-    <nav>
-      <a href="#features">Features</a>
+    <a class="logo" href="index.html">
+      <span class="mark" aria-hidden="true"></span>
+      Steady
+    </a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
+    <nav id="site-nav">
+      <a href="#promise">Why Steady</a>
+      <a href="#modes">Modes</a>
       <a href="#how">How it works</a>
       <a href="#download">Download</a>
-      <a href="#faq">FAQ</a>
       <a href="#contact">Contact</a>
     </nav>
   </header>
 
   <main>
     <section class="hero">
-      <p class="brand">Steady</p>
-      <h1>Less phone. More life.</h1>
-      <p class="lede">
-        Android parental control that puts work and learning first —
-        and makes entertainment something a parent can approve.
-      </p>
-      <div class="actions">
-        <a class="btn primary" href="#download">Download for Android</a>
-        <a class="btn ghost" href="setup.html">Parent setup guide</a>
-      </div>
-      <p class="hero-note">Built for real families. Free to try. No store account required.</p>
-    </section>
-
-    <section id="features" class="block" aria-labelledby="features-title">
-      <h2 id="features-title">Built for balance, not babysitting.</h2>
-      <p class="section-copy">
-        The best parental-control sites lead with clear tools and calm trust.
-        Steady keeps that spirit — focused on habits, not fear.
-      </p>
-      <div class="feature-grid">
-        <article>
-          <h3>Mode-based days</h3>
-          <p>Switch the phone into Work, Learning, or Entertainment so the whole day has a shape.</p>
-        </article>
-        <article>
-          <h3>Parent approval</h3>
-          <p>Entertainment time isn’t automatic. Kids request it. Parents approve from their phone.</p>
-        </article>
-        <article>
-          <h3>Timers that respect life</h3>
-          <p>Calls with the screen off and background music don’t burn entertainment minutes.</p>
-        </article>
-        <article>
-          <h3>Local-first control</h3>
-          <p>PIN protection on the child phone, with optional remote parent pairing when you want it.</p>
-        </article>
-        <article>
-          <h3>DNS filter</h3>
-          <p>A local VPN-style DNS filter helps keep bad lists and distracting sites out of the way.</p>
-        </article>
-        <article>
-          <h3>In-app updates</h3>
-          <p>Steady can check for new builds so you stay current without hunting through files.</p>
-        </article>
-      </div>
-    </section>
-
-    <section id="modes" class="block" aria-labelledby="modes-title">
-      <h2 id="modes-title">Three modes. One clear day.</h2>
-      <p class="section-copy">Steady shapes the phone around what matters right now.</p>
-      <ul class="mode-list">
-        <li>
-          <span class="mode-num">01</span>
-          <strong>Work</strong>
-          <span>Only work apps. Focus without the scroll.</span>
-        </li>
-        <li>
-          <span class="mode-num">02</span>
-          <strong>Learning</strong>
-          <span>Only study apps. School time stays school time.</span>
-        </li>
-        <li>
-          <span class="mode-num">03</span>
-          <strong>Entertainment</strong>
-          <span>Needs parent approval first. Fun with a gate.</span>
-        </li>
-      </ul>
-    </section>
-
-    <section id="how" class="block" aria-labelledby="how-title">
-      <h2 id="how-title">How it works</h2>
-      <p class="section-copy">Most family-safety apps use the same simple path. Steady does too.</p>
-      <ol class="steps">
-        <li>
-          <strong>Install on both phones</strong>
-          <span>Same APK on the child phone and the parent phone.</span>
-        </li>
-        <li>
-          <strong>Set up the child device</strong>
-          <span>Choose child mode, create a parent PIN, and finish Device Owner setup.</span>
-        </li>
-        <li>
-          <strong>Pair the parent</strong>
-          <span>Create a pair code and connect. Approve entertainment requests when they arrive.</span>
-        </li>
-        <li>
-          <strong>Live the day in modes</strong>
-          <span>Work → Learning → Entertainment with approval. Habits stick because the phone cooperates.</span>
-        </li>
-      </ol>
-      <div class="actions">
-        <a class="btn ghost" href="setup.html">Read the full setup guide</a>
-      </div>
-    </section>
-
-    <section class="block showcase" aria-labelledby="feel-title">
-      <div class="showcase-copy">
-        <h2 id="feel-title">Calm on purpose.</h2>
-        <p class="section-copy">
-          Forest green. Soft mist. Warm sand accents.
-          Steady is designed to feel like a deep breath — not an alarm system.
+      <div class="hero-copy">
+        <p class="brand">Steady</p>
+        <h1>Less phone.<br />More life.</h1>
+        <p class="lede">
+          Parental control for Android that shapes the day —
+          work and learning first, entertainment only with your approval.
         </p>
-        <ul class="plain-checks">
-          <li>Android-first</li>
-          <li>English, Hebrew, Yiddish, Spanish, Russian</li>
-          <li>RTL ready for Hebrew &amp; Yiddish</li>
-          <li>Sideload install — no Play Store required</li>
-        </ul>
+        <div class="actions">
+          <a class="btn primary" href="#download">Download for Android</a>
+          <a class="btn ghost" href="setup.html">Setup guide</a>
+        </div>
       </div>
-      <div class="phone" aria-hidden="true">
-        <div class="phone-bezel">
-          <div class="phone-screen">
-            <p class="phone-brand">Steady</p>
-            <p class="phone-tag">Less phone. More life.</p>
-            <div class="phone-timer">
-              <span>Entertainment</span>
-              <strong>12:40</strong>
-              <em>left today</em>
+      <div class="hero-stage" aria-hidden="true">
+        <div class="hero-glow"></div>
+        <div class="device">
+          <div class="device-notch"></div>
+          <p class="device-brand">Steady</p>
+          <p class="device-mode">Learning</p>
+          <div class="device-ring">
+            <svg viewBox="0 0 120 120" class="ring-svg">
+              <circle cx="60" cy="60" r="52" class="ring-track" />
+              <circle cx="60" cy="60" r="52" class="ring-value" />
+            </svg>
+            <div class="ring-label">
+              <strong>4:12</strong>
+              <span>focus left</span>
             </div>
-            <div class="phone-pills">
-              <span>Work</span>
-              <span class="on">Learning</span>
-              <span>Fun</span>
-            </div>
+          </div>
+          <div class="device-row">
+            <span>Work</span>
+            <span class="live">Learning</span>
+            <span>Fun</span>
           </div>
         </div>
       </div>
     </section>
 
-    <section id="download" class="block download" aria-labelledby="download-title">
-      <h2 id="download-title">Download Steady</h2>
-      <p class="section-copy">Latest Android build. Install, then follow the parent setup guide.</p>
-      <div class="actions">
-        <a class="btn primary" id="apk-link" href="https://github.com/LabRatKali/steady-web/releases/latest/download/steady-latest.apk">Download APK</a>
-        <a class="btn ghost" href="setup.html">Setup guide</a>
-      </div>
-      <p class="fine" id="version-line">Version loading…</p>
-      <p class="fine">Android may ask to allow installs from this browser. That is normal for sideloaded apps.</p>
-      <p class="fine">If an older Steady build used a different signing key, uninstall once, then install the latest.</p>
+    <section class="trust-strip reveal" aria-label="Highlights">
+      <p>Android-first</p>
+      <p>Parent approval</p>
+      <p>Device Owner ready</p>
+      <p>5 languages · RTL</p>
+      <p>Free to download</p>
     </section>
 
-    <section id="faq" class="block" aria-labelledby="faq-title">
-      <h2 id="faq-title">Questions parents usually ask</h2>
+    <section id="promise" class="block promise reveal">
+      <p class="eyebrow">Why families choose tools like this</p>
+      <h2>Not surveillance.<br />Structure.</h2>
+      <p class="section-lead">
+        Great parental-control products don’t shout. They give the day a shape,
+        keep distractions out of the way, and leave room for trust.
+        Steady is that idea — made concrete on the child’s phone.
+      </p>
+      <div class="promise-grid">
+        <article>
+          <span class="kicker">01</span>
+          <h3>A day with edges</h3>
+          <p>Work. Learning. Entertainment. The phone stops feeling like one endless feed and starts feeling like a schedule you chose.</p>
+        </article>
+        <article>
+          <span class="kicker">02</span>
+          <h3>Fun with a gate</h3>
+          <p>Kids can ask for entertainment time. You approve from the parent phone. No silent doomscroll past bedtime.</p>
+        </article>
+        <article>
+          <span class="kicker">03</span>
+          <h3>Strong when it matters</h3>
+          <p>PIN on-device, optional parent pairing, DNS filtering, and Device Owner setup for the serious protection path.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="modes" class="block modes reveal">
+      <div class="modes-head">
+        <p class="eyebrow">The core idea</p>
+        <h2>Three modes.<br />One clear day.</h2>
+      </div>
+      <div class="dayline" role="list">
+        <article class="day-card" role="listitem" data-tone="work">
+          <span class="time">Morning</span>
+          <h3>Work</h3>
+          <p>Only work apps. Deep focus without the scroll tugging at the edge of every task.</p>
+        </article>
+        <article class="day-card" role="listitem" data-tone="learn">
+          <span class="time">Day</span>
+          <h3>Learning</h3>
+          <p>Only study apps. School hours stay school hours — on purpose, not by hope.</p>
+        </article>
+        <article class="day-card" role="listitem" data-tone="fun">
+          <span class="time">Earned</span>
+          <h3>Entertainment</h3>
+          <p>Needs parent approval first. Fun becomes a decision, not a default.</p>
+        </article>
+      </div>
+      <p class="whisper">Calls with the screen off and background music don’t burn entertainment minutes.</p>
+    </section>
+
+    <section id="features" class="block features reveal">
+      <p class="eyebrow">Under the hood</p>
+      <h2>Everything that makes Steady feel solid.</h2>
+      <div class="feature-rail">
+        <article>
+          <h3>Parent approval queue</h3>
+          <p>Entertainment isn’t automatic. Requests land on the parent phone for a clear yes or no.</p>
+        </article>
+        <article>
+          <h3>Timers that respect life</h3>
+          <p>Real-world moments — screen-off calls, background music — don’t get punished by the clock.</p>
+        </article>
+        <article>
+          <h3>Local DNS filter</h3>
+          <p>A VPN-style DNS filter helps keep noisy, nasty, and needless destinations out of the way.</p>
+        </article>
+        <article>
+          <h3>Local-first PIN</h3>
+          <p>Protection starts on the child device. Pair a parent phone when you want remote approval.</p>
+        </article>
+        <article>
+          <h3>In-app updates</h3>
+          <p>Steady can check for new builds so families stay current without hunting zip files.</p>
+        </article>
+        <article>
+          <h3>Languages that fit home</h3>
+          <p>English, Hebrew, Yiddish, Spanish, Russian — with RTL for Hebrew and Yiddish.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="how" class="block how reveal">
+      <p class="eyebrow">Getting started</p>
+      <h2>From download to “you are ready.”</h2>
+      <ol class="journey">
+        <li>
+          <strong>Install on both phones</strong>
+          <span>Same APK for child and parent. No Play Store required.</span>
+        </li>
+        <li>
+          <strong>Set up the child device</strong>
+          <span>Child mode, parent PIN, protection level, then Device Owner via one adb command.</span>
+        </li>
+        <li>
+          <strong>Pair the parent</strong>
+          <span>Create a pair code, connect, and start approving entertainment when asked.</span>
+        </li>
+        <li>
+          <strong>Live in modes</strong>
+          <span>Work → Learning → Entertainment with approval. Habits stick because the phone cooperates.</span>
+        </li>
+      </ol>
+      <div class="actions">
+        <a class="btn ghost" href="setup.html">Open the full setup guide</a>
+      </div>
+    </section>
+
+    <section id="download" class="block download reveal">
+      <div class="download-panel">
+        <p class="eyebrow">Get Steady</p>
+        <h2>Download the Android APK.</h2>
+        <p class="section-lead">
+          Install, follow the setup guide, and give the day a shape.
+          Free to try. Built for real families.
+        </p>
+        <div class="actions">
+          <a class="btn primary" id="apk-link" href="https://github.com/LabRatKali/steady-web/releases/latest/download/steady-latest.apk">Download APK</a>
+          <a class="btn ghost" href="setup.html">Setup guide</a>
+        </div>
+        <p class="fine" id="version-line">Version loading…</p>
+        <p class="fine">Android may ask to allow installs from this browser — normal for sideloaded apps.</p>
+        <p class="fine">If an older Steady build used a different signing key, uninstall once, then install the latest.</p>
+      </div>
+    </section>
+
+    <section id="faq" class="block faq-block reveal">
+      <p class="eyebrow">FAQ</p>
+      <h2>Straight answers.</h2>
       <div class="faq">
         <details open>
           <summary>Is Steady free?</summary>
-          <p>Yes. Download the APK from this site and get started. No subscription wall on the current builds.</p>
+          <p>Yes. Download the APK from this site. There’s no subscription wall on the current builds.</p>
         </details>
         <details>
           <summary>Do I need Google Play?</summary>
-          <p>No. Steady is sideloaded. You’ll allow install from your browser once, then open the APK.</p>
+          <p>No. Steady is sideloaded. Allow install from your browser once, then open the APK.</p>
         </details>
         <details>
-          <summary>Why does setup mention USB and a computer?</summary>
-          <p>Full Device Owner protection needs one adb command from a computer. The app shows the exact command. After that, day-to-day use is on the phones.</p>
+          <summary>Why USB and a computer?</summary>
+          <p>Full Device Owner protection needs one adb command. The app shows the exact line. Day-to-day use is on the phones after that.</p>
         </details>
         <details>
           <summary>Can kids bypass it?</summary>
-          <p>Device Owner mode is the strong path. Pair that with a parent PIN and usage access. No tool is perfect alone — Steady is meant to support your rules, not replace them.</p>
+          <p>Device Owner + parent PIN + usage access is the strong path. No tool replaces parenting — Steady supports your rules.</p>
         </details>
         <details>
           <summary>What about privacy?</summary>
-          <p>Steady is built around local control and parent pairing. Updates and optional parent queue use your Steady sync setup. We don’t run ads on the app.</p>
+          <p>Steady centers on local control and parent pairing. Optional sync supports updates and parent approvals. No ads in the app.</p>
         </details>
         <details>
-          <summary>Which languages are supported?</summary>
-          <p>English, Hebrew, Yiddish, Spanish, and Russian — with RTL for Hebrew and Yiddish.</p>
+          <summary>Which languages?</summary>
+          <p>English, Hebrew, Yiddish, Spanish, and Russian — RTL for Hebrew and Yiddish.</p>
         </details>
       </div>
     </section>
 
-    <section id="contact" class="block contact" aria-labelledby="contact-title">
-      <h2 id="contact-title">Contact the developer</h2>
-      <p class="section-copy">
-        Questions, bugs, ideas, or “can Steady do this?” — write directly.
-      </p>
-      <div class="contact-panel">
-        <a class="btn primary" href="mailto:labratcomputers@gmail.com?subject=Steady%20-%20Hello">Email labratcomputers@gmail.com</a>
-        <a class="btn ghost" href="mailto:labratcomputers@gmail.com?subject=Steady%20-%20Suggestion&body=Hi%20LabRat%2C%0A%0AI%20have%20a%20suggestion%20for%20Steady%3A%0A%0A">Send a suggestion</a>
+    <section id="contact" class="block contact reveal">
+      <div class="contact-grid">
+        <div>
+          <p class="eyebrow">Human on the other end</p>
+          <h2>Contact the developer.</h2>
+          <p class="section-lead">
+            Bugs, questions, “can Steady do this?” —
+            write straight to LabRat Computers.
+          </p>
+          <div class="actions">
+            <a class="btn primary" href="mailto:labratcomputers@gmail.com?subject=Steady%20-%20Hello">labratcomputers@gmail.com</a>
+            <a class="btn ghost" href="mailto:labratcomputers@gmail.com?subject=Steady%20-%20Suggestion&body=Hi%20LabRat%2C%0A%0AI%20have%20a%20suggestion%20for%20Steady%3A%0A%0A">Send a suggestion</a>
+          </div>
+        </div>
+        <form class="suggest-form" action="mailto:labratcomputers@gmail.com" method="get">
+          <h3>Leave an idea</h3>
+          <label>
+            Your name <span>(optional)</span>
+            <input type="text" name="name" placeholder="Alex" autocomplete="name" />
+          </label>
+          <label>
+            Your idea
+            <textarea name="body" rows="5" required placeholder="I wish Steady could…"></textarea>
+          </label>
+          <button class="btn primary" type="submit">Open in email</button>
+          <p class="fine">Opens your mail app addressed to labratcomputers@gmail.com.</p>
+        </form>
       </div>
-      <p class="fine">Prefer GitHub? Open an issue on the public site repo or reply from your own mail app to the same address.</p>
-    </section>
-
-    <section id="suggest" class="block" aria-labelledby="suggest-title">
-      <h2 id="suggest-title">Got a suggestion?</h2>
-      <p class="section-copy">Tell us what would make Steady feel even more useful for your family.</p>
-      <form class="suggest-form" action="mailto:labratcomputers@gmail.com" method="get" enctype="text/plain">
-        <input type="hidden" name="subject" value="Steady - Suggestion" />
-        <label>
-          Your name <span>(optional)</span>
-          <input type="text" name="name" placeholder="Alex" autocomplete="name" />
-        </label>
-        <label>
-          Your idea
-          <textarea name="body" rows="5" required placeholder="I wish Steady could…"></textarea>
-        </label>
-        <button class="btn primary" type="submit">Open in email</button>
-        <p class="fine">This opens your email app with your note ready to send to labratcomputers@gmail.com.</p>
-      </form>
     </section>
   </main>
 
