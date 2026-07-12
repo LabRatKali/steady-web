@@ -23,48 +23,101 @@ async function loadLatest() {
   }
 }
 
+function buildSuggestionMailto(name, idea) {
+  const lines = [
+    "Hi,",
+    "",
+    name ? `From: ${name}` : "",
+    name ? "" : null,
+    "I have a suggestion for Steady:",
+    "",
+    idea,
+    "",
+    "Thanks!",
+  ].filter((line) => line !== null);
+
+  return (
+    "mailto:labratcomputers@gmail.com" +
+    "?subject=" +
+    encodeURIComponent("Steady - Suggestion") +
+    "&body=" +
+    encodeURIComponent(lines.join("\n"))
+  );
+}
+
 function wireSuggestionForm() {
-  const box = document.getElementById("suggest-form");
   const send = document.getElementById("suggest-send");
   const nameInput = document.getElementById("suggest-name");
   const bodyInput = document.getElementById("suggest-body");
-  if (!box || !send || !bodyInput) return;
+  const status = document.getElementById("suggest-status");
+  if (!send || !bodyInput) return;
 
-  const openMail = () => {
+  const refreshHref = () => {
     const name = (nameInput?.value || "").trim();
     const idea = (bodyInput.value || "").trim();
     if (!idea) {
+      send.setAttribute(
+        "href",
+        "mailto:labratcomputers@gmail.com?subject=" +
+          encodeURIComponent("Steady - Suggestion")
+      );
+      return false;
+    }
+    send.setAttribute("href", buildSuggestionMailto(name, idea));
+    return true;
+  };
+
+  const markReady = () => {
+    refreshHref();
+    if (status && !status.dataset.fallback) {
+      status.textContent =
+        "Opens your mail app on this device — nothing is sent through this website.";
+    }
+  };
+
+  nameInput?.addEventListener("input", markReady);
+  bodyInput.addEventListener("input", markReady);
+
+  send.addEventListener("click", (event) => {
+    const idea = (bodyInput.value || "").trim();
+    if (!idea) {
+      event.preventDefault();
       bodyInput.focus();
+      if (status) {
+        status.textContent = "Write your idea first, then tap Open in email.";
+        status.dataset.fallback = "1";
+      }
       return;
     }
 
-    const lines = [
-      "Hi,",
-      "",
-      name ? `From: ${name}` : "",
-      name ? "" : null,
-      "I have a suggestion for Steady:",
-      "",
-      idea,
-      "",
-      "Thanks!",
-    ].filter((line) => line !== null);
+    refreshHref();
 
-    window.location.href =
-      "mailto:labratcomputers@gmail.com" +
-      "?subject=" +
-      encodeURIComponent("Steady - Suggestion") +
-      "&body=" +
-      encodeURIComponent(lines.join("\n"));
-  };
-
-  send.addEventListener("click", openMail);
-  bodyInput.addEventListener("keydown", (event) => {
-    if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
-      event.preventDefault();
-      openMail();
-    }
+    // Fallback if the mail app never opens (common on some browsers / locked-down PCs).
+    window.setTimeout(async () => {
+      if (!status) return;
+      status.dataset.fallback = "1";
+      status.innerHTML =
+        'If nothing opened, email <a href="mailto:labratcomputers@gmail.com">labratcomputers@gmail.com</a> — your idea was also copied if the browser allows it.';
+      try {
+        const name = (nameInput?.value || "").trim();
+        const text = [
+          "To: labratcomputers@gmail.com",
+          "Subject: Steady - Suggestion",
+          "",
+          name ? `From: ${name}` : null,
+          name ? "" : null,
+          idea,
+        ]
+          .filter((line) => line !== null)
+          .join("\n");
+        await navigator.clipboard.writeText(text);
+      } catch (_) {
+        /* clipboard may be denied */
+      }
+    }, 900);
   });
+
+  markReady();
 }
 
 function wireReveal() {
