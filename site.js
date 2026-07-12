@@ -72,7 +72,7 @@ function wireReveal() {
         }
       });
     },
-    { threshold: 0.14, rootMargin: "0px 0px -8% 0px" }
+    { threshold: 0.12, rootMargin: "0px 0px -6% 0px" }
   );
 
   nodes.forEach((node) => observer.observe(node));
@@ -97,7 +97,32 @@ function wireNav() {
   });
 }
 
+function wirePathTabs() {
+  const tabs = Array.from(document.querySelectorAll(".path-tab"));
+  const panels = Array.from(document.querySelectorAll(".path-panel"));
+  if (!tabs.length || !panels.length) return;
+
+  const activate = (path) => {
+    tabs.forEach((tab) => {
+      const on = tab.dataset.path === path;
+      tab.classList.toggle("is-active", on);
+      tab.setAttribute("aria-selected", on ? "true" : "false");
+    });
+    panels.forEach((panel) => {
+      const on = panel.dataset.panel === path;
+      panel.classList.toggle("is-active", on);
+      if (on) panel.removeAttribute("hidden");
+      else panel.setAttribute("hidden", "");
+    });
+  };
+
+  tabs.forEach((tab) => {
+    tab.addEventListener("click", () => activate(tab.dataset.path));
+  });
+}
+
 loadLatest();
 wireSuggestionForm();
 wireReveal();
 wireNav();
+wirePathTabs();
