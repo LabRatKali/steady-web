@@ -8,27 +8,32 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=9" />
+  <link rel="stylesheet" href="styles.css?v=10" />
 </head>
 <body>
   <div class="atmosphere" aria-hidden="true">
     <span class="orb orb-a"></span>
     <span class="orb orb-b"></span>
     <span class="orb orb-c"></span>
+    <span class="veil"></span>
   </div>
   <div class="grain" aria-hidden="true"></div>
 
   <header class="top">
-    <a class="logo" href="index.html">
-      <span class="mark" aria-hidden="true"></span>
-      Steady
+    <a class="logo" href="index.html" aria-label="Steady home">
+      <svg class="logo-mark" viewBox="0 0 32 32" aria-hidden="true">
+        <path d="M8 14.5V24a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V14.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M6 15.5 16 7l10 8.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M13 26v-6.5a1.5 1.5 0 0 1 1.5-1.5h3a1.5 1.5 0 0 1 1.5 1.5V26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <span>Steady</span>
     </a>
     <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
     <nav id="site-nav">
-      <a href="index.html#for-you">For you</a>
+      <a href="index.html#paths">Paths</a>
       <a href="index.html#download">Download</a>
       <a href="setup.html" aria-current="page">Setup</a>
-      <a href="index.html#faq">How do I…?</a>
+      <a href="index.html#faq">Questions</a>
       <a href="index.html#contact">Contact</a>
     </nav>
   </header>
@@ -131,10 +136,10 @@
     </div>
     <div class="footer-links">
       <a href="index.html">Home</a>
-      <a href="index.html#faq">How do I…?</a>
+      <a href="index.html#faq">Questions</a>
       <a href="mailto:labratcomputers@gmail.com">Contact</a>
     </div>
   </footer>
-  <script src="site.js?v=9"></script>
+  <script src="site.js?v=10"></script>
 </body>
 </html>
