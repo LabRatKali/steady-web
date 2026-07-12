@@ -206,6 +206,20 @@ main {
   font-size: 1.12rem;
 }
 
+.lede strong,
+.section-lead strong,
+.whisper strong {
+  color: var(--fg);
+  font-weight: 700;
+}
+
+.hero-note {
+  margin-top: 1.25rem;
+  color: var(--sand);
+  font-size: 0.98rem;
+  opacity: 0.92;
+}
+
 .actions {
   display: flex;
   flex-wrap: wrap;
