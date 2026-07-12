@@ -24,14 +24,19 @@ async function loadLatest() {
 }
 
 function wireSuggestionForm() {
-  const form = document.querySelector(".suggest-form");
-  if (!form) return;
+  const box = document.getElementById("suggest-form");
+  const send = document.getElementById("suggest-send");
+  const nameInput = document.getElementById("suggest-name");
+  const bodyInput = document.getElementById("suggest-body");
+  if (!box || !send || !bodyInput) return;
 
-  form.addEventListener("submit", (event) => {
-    event.preventDefault();
-    const name = (form.querySelector('[name="name"]')?.value || "").trim();
-    const idea = (form.querySelector('[name="body"]')?.value || "").trim();
-    if (!idea) return;
+  const openMail = () => {
+    const name = (nameInput?.value || "").trim();
+    const idea = (bodyInput.value || "").trim();
+    if (!idea) {
+      bodyInput.focus();
+      return;
+    }
 
     const lines = [
       "Hi,",
@@ -51,6 +56,14 @@ function wireSuggestionForm() {
       encodeURIComponent("Steady - Suggestion") +
       "&body=" +
       encodeURIComponent(lines.join("\n"));
+  };
+
+  send.addEventListener("click", openMail);
+  bodyInput.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
+      event.preventDefault();
+      openMail();
+    }
   });
 }
 
