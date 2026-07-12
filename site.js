@@ -3,7 +3,7 @@ async function loadLatest() {
   const apkLink = document.getElementById("apk-link");
   if (!versionLine || !apkLink) return;
 
-  const FALLBACK_VERSION = "v1.1.10";
+  const FALLBACK_VERSION = "v1.5.2";
   const template =
     versionLine.dataset.template || "Latest release: %s";
   const formatVersion = (ver) => template.replace("%s", ver);
@@ -209,3 +209,88 @@ wireSuggestionForm();
 wireReveal();
 wireNav();
 wirePathTabs();
+wireFitQuiz();
+wireStickyCta();
+
+function wireFitQuiz() {
+  const root = document.getElementById("fit-quiz");
+  if (!root) return;
+  const answers = { who: null, leak: null };
+  const step1 = root.querySelector('[data-step="1"]');
+  const step2 = root.querySelector('[data-step="2"]');
+  const result = document.getElementById("quiz-result");
+  const title = document.getElementById("quiz-title");
+  const body = document.getElementById("quiz-body");
+
+  const finish = () => {
+    if (!answers.who || !answers.leak) return;
+    step1?.setAttribute("hidden", "");
+    step2?.setAttribute("hidden", "");
+    step1?.classList.remove("is-active");
+    step2?.classList.remove("is-active");
+    if (result) result.removeAttribute("hidden");
+
+    let headline = "Self-focus";
+    let copy =
+      "Make Steady your Home. Use Quick Focus sprints and the mindful pause before Fun — so autopilot taps lose.";
+    if (answers.who === "child") {
+      headline = "Parenting path";
+      copy =
+        "Child phone + parent Approve. Turn on school hours and bedtime. Use family to-dos so Fun is earned.";
+    } else if (answers.who === "both") {
+      headline = "Both on one phone";
+      copy =
+        "It works, but keep the PIN secret. Prefer two phones when you can. Start with Focus + Ask → Approve.";
+    }
+    if (answers.leak === "impulse" && answers.who === "me") {
+      copy =
+        "Start with mindful pause + Quick Focus. Steady as Home removes the feed from your front door.";
+    } else if (answers.leak === "budget") {
+      copy =
+        (answers.who === "child" ? "Cap Fun with Approve and to-dos. " : "") +
+        "Budgets + Quick Focus keep Entertainment from becoming the whole evening.";
+    } else if (answers.leak === "school") {
+      headline = answers.who === "me" ? "Self-focus with a schedule" : "Family structure";
+      copy =
+        "Turn on school hours and a day schedule (Work → Focus → Sleep). Steady holds the clock when willpower won’t.";
+    }
+    if (title) title.textContent = headline;
+    if (body) body.textContent = copy;
+  };
+
+  root.querySelectorAll(".quiz-choice").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const q = btn.dataset.q;
+      const a = btn.dataset.a;
+      if (!q || !a) return;
+      answers[q] = a;
+      root.querySelectorAll(`.quiz-choice[data-q="${q}"]`).forEach((el) => {
+        el.classList.toggle("is-picked", el === btn);
+      });
+      if (q === "who") {
+        step1?.setAttribute("hidden", "");
+        step1?.classList.remove("is-active");
+        if (step2) {
+          step2.removeAttribute("hidden");
+          step2.classList.add("is-active");
+        }
+      } else {
+        finish();
+      }
+    });
+  });
+}
+
+function wireStickyCta() {
+  const bar = document.querySelector(".sticky-cta");
+  const download = document.getElementById("download");
+  if (!bar || !download || !("IntersectionObserver" in window)) return;
+  const observer = new IntersectionObserver(
+    (entries) => {
+      const visible = entries.some((e) => e.isIntersecting);
+      bar.classList.toggle("is-hidden", visible);
+    },
+    { threshold: 0.2 }
+  );
+  observer.observe(download);
+}
