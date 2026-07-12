@@ -3,33 +3,38 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Steady — anti-addiction for yourself and for parents. Day schedules, Steady as Home, Day off, Focus profiles. Less phone. More life." />
+  <meta name="description" content="Steady — less phone, more life. Anti-addiction for yourself and for parents on Android. Day schedules, Steady as Home, Day off, Focus profiles." />
   <title>Steady — Less phone. More life.</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=9" />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css?v=10" />
 </head>
 <body>
   <div class="atmosphere" aria-hidden="true">
     <span class="orb orb-a"></span>
     <span class="orb orb-b"></span>
     <span class="orb orb-c"></span>
+    <span class="veil"></span>
   </div>
   <div class="grain" aria-hidden="true"></div>
 
   <header class="top">
-    <a class="logo" href="index.html">
-      <span class="mark" aria-hidden="true"></span>
-      Steady
+    <a class="logo" href="index.html" aria-label="Steady home">
+      <svg class="logo-mark" viewBox="0 0 32 32" aria-hidden="true">
+        <path d="M8 14.5V24a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V14.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M6 15.5 16 7l10 8.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M13 26v-6.5a1.5 1.5 0 0 1 1.5-1.5h3a1.5 1.5 0 0 1 1.5 1.5V26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <span>Steady</span>
     </a>
     <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
     <nav id="site-nav">
-      <a href="#for-you">For you</a>
-      <a href="#for-parents">For parents</a>
-      <a href="#modes">Profiles</a>
-      <a href="#how">How it works</a>
-      <a href="#faq">How do I…?</a>
+      <a href="#paths">Paths</a>
+      <a href="#day">Your day</a>
+      <a href="#home">Home</a>
+      <a href="#stories">Stories</a>
+      <a href="#faq">Questions</a>
       <a href="#download">Download</a>
       <a href="#contact">Contact</a>
     </nav>
@@ -41,8 +46,9 @@
         <p class="brand">Steady</p>
         <h1>Less phone.<br />More life.</h1>
         <p class="lede">
-          Anti-addiction for <strong>yourself</strong> and for <strong>families</strong>.
-          Lock into Work, Focus, Learning, Fun, and Sleep — or parent a child’s phone with approvals, bedtime, and real structure.
+          Anti-addiction for <strong>yourself</strong> and for <strong>families</strong> —
+          on Android. Lock the day into Work, Focus, Learning, Fun, and Sleep.
+          Or parent a child’s phone with Ask → Approve, bedtime, and real structure.
         </p>
         <div class="actions">
           <a class="btn primary" href="#download">Download for Android</a>
@@ -55,7 +61,7 @@
         <div class="device">
           <div class="device-notch"></div>
           <p class="device-brand">Steady</p>
-          <p class="device-mode">Self-focus · Focus</p>
+          <p class="device-mode">Focus · anti-addict</p>
           <div class="device-ring">
             <svg viewBox="0 0 120 120" class="ring-svg">
               <circle cx="60" cy="60" r="52" class="ring-track" />
@@ -75,104 +81,96 @@
       </div>
     </section>
 
-    <section class="trust-strip reveal" aria-label="Highlights">
-      <p>Self-focus</p>
-      <p>Parenting</p>
-      <p>Day schedules</p>
-      <p>Steady as Home</p>
-      <p>Day off</p>
-      <p>5 profiles</p>
-      <p>No PC required</p>
-      <p>Free download</p>
-    </section>
-
-    <section id="for-you" class="block promise reveal">
-      <p class="eyebrow">For yourself</p>
-      <h2>Get your time back.</h2>
-      <p class="section-lead">
-        Steady isn’t only a kid-phone tool. Choose
-        <strong>This phone is for me (focus — get my time back)</strong>
-        and lock yourself into a day that respects work, focus, learning, fun, and sleep.
-      </p>
-      <div class="promise-grid">
+    <section class="truth reveal" aria-label="The problem">
+      <div class="truth-grid">
         <article>
-          <span class="kicker">01</span>
-          <h3>Self-focus mode</h3>
-          <p>Install for you. Unlock checks keep you honest. Optional: give a code to a friend who Approves overtime.</p>
+          <p class="truth-num">5–6 hrs</p>
+          <p>Average phone time many adults lose every day — often without noticing.</p>
         </article>
         <article>
-          <span class="kicker">02</span>
-          <h3>Day schedules</h3>
-          <p>Set when you Work, Focus, Learn, have Fun, and Sleep. Steady switches profiles from the clock — including full Sleep lock.</p>
+          <p class="truth-num">Willpower</p>
+          <p>Usually loses to the feed. Steady doesn’t wait for a better mood — it holds the plan.</p>
         </article>
         <article>
-          <span class="kicker">03</span>
-          <h3>Steady as Home</h3>
-          <p>Make Steady your Home screen — big clock, allowed apps, a floating dock for Phone, Messages, Camera, Gallery. Long-press to rearrange.</p>
-        </article>
-        <article>
-          <span class="kicker">04</span>
-          <h3>Day off</h3>
-          <p>Need open phone time? Unlock with your codes and take a Day off. End it when you’re ready — warm and clear, not a “testing” maze.</p>
-        </article>
-        <article>
-          <span class="kicker">05</span>
-          <h3>Friend Approve</h3>
-          <p>Optional accountability. A friend on another phone can Approve Fun when you want overtime.</p>
-        </article>
-        <article>
-          <span class="kicker">06</span>
-          <h3>Fair timer</h3>
-          <p>Minutes burn for screen-on apps. Screen-off calls and background music don’t nibble your day away.</p>
+          <p class="truth-num">Two paths</p>
+          <p>Self-focus for you. Parenting for a child’s phone. Same calm engine either way.</p>
         </article>
       </div>
     </section>
 
-    <section id="for-parents" class="block features reveal">
-      <p class="eyebrow">For parents</p>
-      <h2>Structure for a child’s phone.</h2>
+    <section id="paths" class="block paths reveal">
+      <p class="eyebrow">Choose a path</p>
+      <h2>Who is this phone for?</h2>
       <p class="section-lead">
-        Same anti-addiction engine — with child / parent / both roles, family codes,
-        and Entertainment that needs a real Approve.
+        Tap a path. Steady was built for both — most screen-time apps pick only one.
       </p>
-      <div class="feature-rail">
-        <article>
-          <h3>Child · Parent · Both</h3>
-          <p>Two phones is strongest. Parent can be an accountability friend. Both-on-one-phone works, but keep the PIN secret.</p>
-        </article>
-        <article>
-          <h3>Ask → Approve</h3>
-          <p>Fun isn’t automatic. They ask. You Approve or Deny from the parent phone — nearby or over the network.</p>
-        </article>
-        <article>
-          <h3>Bedtime, breaks, chores</h3>
-          <p>Bedtime locks. Forced breaks after continuous use. Chores can earn minutes. Optional homework confirm before Fun.</p>
-        </article>
-        <article>
-          <h3>Update from Home</h3>
-          <p>When a new Steady is ready, an update icon can appear on Home — kids can update without digging through locked Settings.</p>
-        </article>
-        <article>
-          <h3>Family web filter</h3>
-          <p>Helps block adult and gambling sites, and known bypass apps.</p>
-        </article>
-        <article>
-          <h3>Harder to slip out</h3>
-          <p>If protection is turned off, Steady locks and asks for it back. Optional full uninstall lock for serious setups.</p>
-        </article>
+
+      <div class="path-tabs" role="tablist" aria-label="Steady paths">
+        <button type="button" class="path-tab is-active" role="tab" aria-selected="true" data-path="you">For you</button>
+        <button type="button" class="path-tab" role="tab" aria-selected="false" data-path="parents">For parents</button>
+      </div>
+
+      <div class="path-panels">
+        <div class="path-panel is-active" id="path-you" role="tabpanel" data-panel="you">
+          <div class="path-copy">
+            <h3>Get your time back.</h3>
+            <p>
+              Choose <strong>This phone is for me</strong>. Set a day schedule.
+              Make Steady your Home. Take a Day off when you need open phone time —
+              then come back.
+            </p>
+            <ul class="check-list">
+              <li>Self-focus mode with unlock checks that keep you honest</li>
+              <li>Day schedules for Work, Focus, Learning, Fun, and Sleep</li>
+              <li>Optional friend Approve when you want overtime</li>
+              <li>Fair timer — screen-off calls don’t burn your minutes</li>
+            </ul>
+            <a class="text-link" href="#day">See how a day feels →</a>
+          </div>
+          <aside class="path-aside">
+            <p class="aside-label">Try this first</p>
+            <p class="aside-title">Focus · anti-addict</p>
+            <p>A short daily clock. Work + learning apps. Built to shrink mindless use tonight — not someday.</p>
+          </aside>
+        </div>
+
+        <div class="path-panel" id="path-parents" role="tabpanel" data-panel="parents" hidden>
+          <div class="path-copy">
+            <h3>Structure for a child’s phone.</h3>
+            <p>
+              Child · Parent · Both. Entertainment isn’t free by default —
+              they Ask, you Approve. Bedtime, breaks, chores, and a family web filter.
+            </p>
+            <ul class="check-list">
+              <li>Ask → Approve for Fun (nearby or over the network)</li>
+              <li>Bedtime locks, forced breaks, chore minutes</li>
+              <li>Update icon on Home so kids can update without digging Settings</li>
+              <li>Harder escape if protection is turned off</li>
+            </ul>
+            <a class="text-link" href="setup.html">Open the parenting setup →</a>
+          </div>
+          <aside class="path-aside">
+            <p class="aside-label">Strongest setup</p>
+            <p class="aside-title">Two phones</p>
+            <p>Child phone + parent phone with a family code. One-phone “both” works — keep the PIN secret.</p>
+          </aside>
+        </div>
       </div>
     </section>
 
-    <section id="modes" class="block modes reveal">
+    <section id="day" class="block modes reveal">
       <div class="modes-head">
-        <p class="eyebrow">Profiles</p>
-        <h2>Five ways the day can feel.</h2>
+        <p class="eyebrow">Your day</p>
+        <h2>Five ways the phone can feel.</h2>
+        <p class="section-lead">
+          Profiles you schedule — so the day has a shape, not a scroll hole.
+        </p>
       </div>
       <div class="dayline dayline-5" role="list">
         <article class="day-card" role="listitem" data-tone="learn">
           <span class="time">Anti-addict</span>
           <h3>Focus</h3>
-          <p>Work + learning with a short daily clock. Built to shrink mindless phone use — for kids and for you.</p>
+          <p>Short clock. Work + learning. Shrinks mindless phone use for kids and for you.</p>
         </article>
         <article class="day-card" role="listitem" data-tone="work">
           <span class="time">Bare minimum</span>
@@ -198,9 +196,134 @@
       <p class="whisper">Schedules can also switch into <strong>Sleep</strong> — full rest lock overnight. Widgets show time left.</p>
     </section>
 
+    <section id="home" class="block home-block reveal">
+      <div class="home-split">
+        <div>
+          <p class="eyebrow">Steady as Home</p>
+          <h2>Your phone’s front door, remade.</h2>
+          <p class="section-lead">
+            Big clock. Allowed apps. A floating dock for Phone, Messages, Camera, Gallery.
+            Long-press to rearrange. Optional update icon when a new Steady is ready.
+          </p>
+          <ul class="check-list">
+            <li>Make Steady the default Home screen</li>
+            <li>Star apps into the dock · reorder · reset layout</li>
+            <li>Kids can update without unlocking a maze of Settings</li>
+          </ul>
+        </div>
+        <div class="home-preview" aria-hidden="true">
+          <div class="home-clock">9:41</div>
+          <div class="home-apps">
+            <span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span>
+          </div>
+          <div class="home-dock">
+            <i></i><i></i><i></i><i></i>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="block features reveal">
+      <p class="eyebrow">What you get</p>
+      <h2>Built to keep you honest.</h2>
+      <div class="feature-rail">
+        <article>
+          <h3>Day off</h3>
+          <p>Need open phone time? Unlock with your codes, take a Day off, end it when you’re ready — warm and clear.</p>
+        </article>
+        <article>
+          <h3>Unlock checks</h3>
+          <p>PIN, draw-a-pattern lock, passphrase, security question, Steady Face, parent stamp, remote Approve, or a friend’s unlock.</p>
+        </article>
+        <article>
+          <h3>Friend Approve</h3>
+          <p>Optional accountability. A friend on another phone can Approve Fun when you want overtime.</p>
+        </article>
+        <article>
+          <h3>Fair timer</h3>
+          <p>Minutes burn for screen-on apps. Screen-off calls and background music don’t nibble your day away.</p>
+        </article>
+        <article>
+          <h3>Family web filter</h3>
+          <p>Helps block adult and gambling sites, and known bypass apps.</p>
+        </article>
+        <article>
+          <h3>Languages</h3>
+          <p>English, Hebrew, Yiddish, Spanish, Russian — with RTL for Hebrew and Yiddish.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="stories" class="block stories reveal">
+      <p class="eyebrow">Stories</p>
+      <h2>How a Steady day can feel.</h2>
+      <p class="section-lead">
+        Not reviews — day sketches. The kind of mornings and evenings Steady is built for.
+      </p>
+      <div class="story-grid">
+        <article class="story">
+          <p class="story-tag">Self-focus · Monday</p>
+          <h3>“Work until lunch. Then Focus.”</h3>
+          <p>
+            You set the schedule Sunday night. Monday morning the phone is already in Work —
+            Slack and docs, not the feed. At noon it flips to Focus. Fun waits for a real unlock.
+            By evening you’ve still got minutes left… or you don’t. Either way, the day had edges.
+          </p>
+        </article>
+        <article class="story">
+          <p class="story-tag">Parent · After school</p>
+          <h3>“Ask first. Then maybe Fun.”</h3>
+          <p>
+            Homework’s done. They tap Ask. Your phone buzzes. You Approve twenty minutes —
+            or you don’t. Bedtime still locks at nine. No silent bargaining with Settings.
+          </p>
+        </article>
+        <article class="story">
+          <p class="story-tag">Self-focus · Weekend</p>
+          <h3>“I needed a Day off.”</h3>
+          <p>
+            Travel day. Maps, tickets, group chats. You unlock, take a Day off, live freely,
+            then end it when you’re home. The plan comes back — without a guilt spiral.
+          </p>
+        </article>
+        <article class="story">
+          <p class="story-tag">Family · Night</p>
+          <h3>“Sleep means Sleep.”</h3>
+          <p>
+            Schedule hits Sleep. The phone becomes quiet infrastructure — not a second bedroom light.
+            Morning opens Essentials or Learning. The night stayed the night.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section class="block why reveal">
+      <p class="eyebrow">Why Steady</p>
+      <h2>What most “screen time” tools miss.</h2>
+      <div class="why-grid">
+        <article>
+          <h3>Not just a gentle nudge</h3>
+          <p>Timers you can dismiss don’t change the habit. Steady holds profiles, approvals, and Home — so the easy path is the planned path.</p>
+        </article>
+        <article>
+          <h3>Self and family in one app</h3>
+          <p>Opal-style focus apps and Qustodio-style parent tools usually live in different worlds. Steady does both on Android.</p>
+        </article>
+        <article>
+          <h3>Home, not a settings maze</h3>
+          <p>Steady as Home puts allowed life up front. Updates can appear as an icon kids can tap.</p>
+        </article>
+        <article>
+          <h3>Free to download</h3>
+          <p>Get the APK here. No store account required. Setup stays on the phone for everyday use.</p>
+        </article>
+      </div>
+    </section>
+
     <section id="how" class="block how reveal">
       <p class="eyebrow">Getting started</p>
-      <h2>Pick who this phone is for.</h2>
+      <h2>Four steps. No computer needed.</h2>
       <ol class="journey">
         <li>
           <strong>Install the APK</strong>
@@ -208,50 +331,19 @@
         </li>
         <li>
           <strong>Choose a role</strong>
-          <span><em>For me (self-focus)</em> · Child · Parent / accountability friend · Both (weaker).</span>
+          <span>For me · Child · Parent / friend · Both (weaker — keep the PIN secret).</span>
         </li>
         <li>
-          <strong>Protect on the phone</strong>
-          <span>Device Admin → Accessibility → Usage access → web filter → battery. No computer needed for normal use.</span>
+          <strong>Turn protection on</strong>
+          <span>Device Admin → Accessibility → Usage access → web filter → battery.</span>
         </li>
         <li>
           <strong>Live the day</strong>
-          <span>Set schedules or apply profiles. Make Steady Home if you want. Take a Day off when you need one.</span>
+          <span>Set schedules or apply profiles. Make Steady Home. Take a Day off when you need one.</span>
         </li>
       </ol>
       <div class="actions">
         <a class="btn ghost" href="setup.html">Open the full setup guide</a>
-      </div>
-    </section>
-
-    <section class="block features reveal">
-      <p class="eyebrow">Under the hood</p>
-      <h2>Built to keep you honest.</h2>
-      <div class="feature-rail">
-        <article>
-          <h3>Unlock checks (1–3)</h3>
-          <p>PIN, draw-a-pattern lock, passphrase, security question, Steady Face, parent stamp, remote Approve, or a friend’s phone unlock.</p>
-        </article>
-        <article>
-          <h3>Enforcement that sticks</h3>
-          <p>Blocked apps close. Steady itself stays reachable so you can Ask, unlock, and open Settings.</p>
-        </article>
-        <article>
-          <h3>Home you can edit</h3>
-          <p>Long-press to rearrange apps, star into the dock, reorder, or reset the layout.</p>
-        </article>
-        <article>
-          <h3>Languages</h3>
-          <p>English, Hebrew, Yiddish, Spanish, Russian — RTL for Hebrew and Yiddish.</p>
-        </article>
-        <article>
-          <h3>In-app updates</h3>
-          <p>Check for updates in Settings, or use the Home update icon when it’s ready. Files can land in Downloads → Steady.</p>
-        </article>
-        <article>
-          <h3>Call opens Phone</h3>
-          <p>Call opens the normal Phone app — not a random second dialer.</p>
-        </article>
       </div>
     </section>
 
@@ -276,10 +368,7 @@
     <section id="faq" class="block faq-block reveal">
       <p class="eyebrow">How do I…?</p>
       <h2>Questions people actually ask.</h2>
-      <p class="section-lead">
-        Tap a question. The answer is right underneath —
-        for self-focus, parenting, and those little “wait, how?” moments.
-      </p>
+      <p class="section-lead">Tap a question. The answer is right underneath.</p>
 
       <div class="faq-groups">
         <div class="faq-group">
@@ -287,15 +376,15 @@
           <div class="faq">
             <details open>
               <summary>How do I install Steady?</summary>
-              <p>Download the APK on this site → open the file → allow install from this browser if Android asks → open Steady. No store account needed.</p>
+              <p>Download the APK on this site → open the file → allow install from this browser if Android asks → open Steady.</p>
             </details>
             <details>
               <summary>How do I pick self-focus vs parenting?</summary>
-              <p>On first setup, Steady asks who this phone is for. Choose <strong>for me</strong> if it’s your phone. Choose <strong>child</strong> / <strong>parent</strong> for family. You can switch roles later in Settings.</p>
+              <p>On first setup, choose <strong>for me</strong> if it’s your phone, or <strong>child</strong> / <strong>parent</strong> for family. You can switch roles later in Settings.</p>
             </details>
             <details>
               <summary>Do I need a computer?</summary>
-              <p>Nope for everyday use. Turn on Device Admin, Accessibility, usage access, and the web filter right on the phone. A computer is only for the optional uninstall-lock path.</p>
+              <p>No for everyday use. Protection turns on right on the phone. A computer is only for the optional uninstall-lock path.</p>
             </details>
             <details>
               <summary>Is Steady free?</summary>
@@ -307,7 +396,7 @@
             </details>
             <details>
               <summary>Where do I start if I’m in a hurry?</summary>
-              <p>Download → install → pick a role → finish protection → apply Focus or set a short schedule. You can refine later.</p>
+              <p>Download → install → pick a role → finish protection → apply Focus or set a short schedule. Refine later.</p>
             </details>
           </div>
         </div>
@@ -317,19 +406,19 @@
           <div class="faq">
             <details>
               <summary>How do I use Steady just for me?</summary>
-              <p>Setup → <strong>This phone is for me</strong>. Set a PIN (and optional friend Approve). Turn protection on. Then build a day schedule so Work, Focus, Fun, and Sleep happen when you meant them to.</p>
+              <p>Setup → <strong>This phone is for me</strong>. Set a PIN (and optional friend Approve). Turn protection on. Build a day schedule for Work, Focus, Fun, and Sleep.</p>
             </details>
             <details>
               <summary>How do I set a day schedule?</summary>
-              <p>Open Settings (unlock with your codes) → <strong>Day schedule</strong>. Set hours for Work, Focus, Learning, Fun, and Sleep. Steady flips profiles from the clock.</p>
+              <p>Settings (unlock first) → <strong>Day schedule</strong>. Set hours for Work, Focus, Learning, Fun, and Sleep.</p>
             </details>
             <details>
               <summary>How do I make Steady my Home screen?</summary>
-              <p>On Steady Home, choose Make Steady my Home screen and pick Steady as default Home. The Home button returns here; allowed apps show as a grid with a dock.</p>
+              <p>On Steady Home, choose Make Steady my Home screen and pick Steady as default Home.</p>
             </details>
             <details>
               <summary>How do I rearrange apps or the dock?</summary>
-              <p>Long-press an app to enter edit mode — rearrange, star into the dock, reorder or remove dock icons, or reset the layout.</p>
+              <p>Long-press an app — rearrange, star into the dock, reorder or remove dock icons, or reset the layout.</p>
             </details>
             <details>
               <summary>What is Day off?</summary>
@@ -341,7 +430,7 @@
             </details>
             <details>
               <summary>What if I just want less scrolling tonight?</summary>
-              <p>Apply <strong>Focus · anti-addict</strong> or start Sleep early on your schedule. Short clock. Clear stop.</p>
+              <p>Apply <strong>Focus · anti-addict</strong> or start Sleep early on your schedule.</p>
             </details>
             <details>
               <summary>Can Steady block itself by accident?</summary>
@@ -355,15 +444,15 @@
           <div class="faq">
             <details>
               <summary>How do I set up a child phone?</summary>
-              <p>Install Steady → choose <strong>child</strong> → set unlock checks → run the protection wizard on the phone → pair with a parent phone using a family code. Full walkthrough: <a href="setup.html">setup guide</a>.</p>
+              <p>Install Steady → choose <strong>child</strong> → set unlock checks → run the protection wizard → pair with a parent phone using a family code. Full walkthrough: <a href="setup.html">setup guide</a>.</p>
             </details>
             <details>
               <summary>How does Entertainment approval work?</summary>
-              <p>Fun isn’t free by default. The child taps Ask. You see it on the parent phone inbox — Approve or Deny.</p>
+              <p>Fun isn’t free by default. The child taps Ask. You Approve or Deny from the parent phone inbox.</p>
             </details>
             <details>
               <summary>How do I set daily minutes / bedtime?</summary>
-              <p>On the parent phone, open Settings after unlocking. Set allowances per profile, bedtime hours, and forced breaks. Send rules to the kid phone when you change them.</p>
+              <p>On the parent phone, unlock Settings. Set allowances, bedtime, and forced breaks. Send rules to the kid phone when you change them.</p>
             </details>
             <details>
               <summary>How do chores and homework fit in?</summary>
@@ -371,11 +460,11 @@
             </details>
             <details>
               <summary>How do kids update Steady?</summary>
-              <p>When an update is ready, Home can show an update icon — so they can update without digging through locked Settings.</p>
+              <p>When an update is ready, Home can show an update icon — so they can update without digging locked Settings.</p>
             </details>
             <details>
               <summary>Can we use one phone for kid + parent?</summary>
-              <p>Yes — <strong>both</strong> mode. It works, but two phones is stronger. Keep the PIN secret.</p>
+              <p>Yes — <strong>both</strong> mode. Two phones is stronger. Keep the PIN secret.</p>
             </details>
             <details>
               <summary>What if my kid turns off Accessibility?</summary>
@@ -401,11 +490,11 @@
             </details>
             <details>
               <summary>How do I change language?</summary>
-              <p>Settings → language. English, Hebrew, Yiddish, Spanish, Russian — with RTL for Hebrew and Yiddish.</p>
+              <p>Settings → language. English, Hebrew, Yiddish, Spanish, Russian — RTL for Hebrew and Yiddish.</p>
             </details>
             <details>
               <summary>How do I update Steady?</summary>
-              <p>Settings → check for updates, or use the Home update icon when it appears. Updates can save under Downloads → Steady.</p>
+              <p>Settings → check for updates, or use the Home update icon. Files can save under Downloads → Steady.</p>
             </details>
             <details>
               <summary>What unlock codes can I use?</summary>
@@ -460,7 +549,7 @@
           <p class="eyebrow">Human on the other end</p>
           <h2>Contact the developer.</h2>
           <p class="section-lead">
-            Self-focus ideas, parenting questions, bugs — write anytime.
+            Self-focus ideas, parenting questions, bugs, or a story from your week — write anytime.
           </p>
           <div class="actions">
             <a class="btn primary" href="mailto:labratcomputers@gmail.com?subject=Steady%20-%20Hello">labratcomputers@gmail.com</a>
@@ -490,15 +579,15 @@
       <p>Less phone. More life. Steady is your home.</p>
     </div>
     <div class="footer-links">
-      <a href="#for-you">For you</a>
-      <a href="#for-parents">For parents</a>
-      <a href="#faq">How do I…?</a>
+      <a href="#paths">Paths</a>
+      <a href="#stories">Stories</a>
+      <a href="#faq">Questions</a>
       <a href="#download">Download</a>
       <a href="setup.html">Setup</a>
       <a href="mailto:labratcomputers@gmail.com">Contact</a>
     </div>
   </footer>
 
-  <script src="site.js?v=9"></script>
+  <script src="site.js?v=10"></script>
 </body>
 </html>
