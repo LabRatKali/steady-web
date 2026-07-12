@@ -558,8 +558,22 @@ h3 {
 }
 
 .faq {
-  margin-top: 1.6rem;
+  margin-top: 0.85rem;
   max-width: 46rem;
+}
+
+.faq-groups {
+  margin-top: 2rem;
+  display: grid;
+  gap: 2.4rem;
+}
+
+.faq-group-title {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 1.35rem;
+  letter-spacing: -0.02em;
+  color: var(--sand);
 }
 
 .faq details {
@@ -582,11 +596,19 @@ h3 {
   content: "+";
   color: var(--accent);
   font-size: 1.3rem;
+  flex-shrink: 0;
 }
 .faq details[open] summary::after { content: "–"; }
 .faq p {
   margin: 0.7rem 0 0.15rem;
   color: var(--muted);
+  line-height: 1.6;
+  max-width: 40rem;
+}
+.faq a {
+  color: var(--accent-2);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
 }
 
 .contact-grid {
