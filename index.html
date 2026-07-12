@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=12" />
+  <link rel="stylesheet" href="styles.css?v=14" />
 </head>
 <body>
   <div class="atmosphere" aria-hidden="true">
@@ -28,12 +28,18 @@
       </svg>
       <span>Steady</span>
     </a>
+    <div class="lang-switch" aria-label="Language">
+      <a href="index.html" lang="en" hreflang="en" aria-current="page">EN</a>
+      <a href="he/" lang="he" hreflang="he">עב</a>
+      <a href="yi/" lang="yi" hreflang="yi">יי</a>
+    </div>
     <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
     <nav id="site-nav">
       <a href="#paths">Paths</a>
       <a href="#day">Your day</a>
       <a href="#home">Home</a>
       <a href="#stories">Stories</a>
+      <a href="#about">About</a>
       <a href="#faq">Questions</a>
       <a href="#download">Download</a>
       <a href="#contact">Contact</a>
@@ -348,6 +354,24 @@
       </div>
     </section>
 
+    <section id="about" class="block about reveal">
+      <p class="eyebrow">Who built this</p>
+      <h2>An indie tool for less phone — not a surveillance brand.</h2>
+      <p class="section-lead">
+        Steady is built by a small indie developer (Lab Rat Computers /
+        <a href="mailto:labratcomputers@gmail.com">labratcomputers@gmail.com</a>).
+        It exists because soft screen-time nudges are easy to dismiss, and families
+        (and people locking their own phone) need something that actually holds a day plan —
+        Work, Focus, Learning, Fun, Sleep — with Approvals when Fun should wait.
+      </p>
+      <p class="section-lead">
+        That means Device Admin, Accessibility, and Usage access. Those are strong permissions.
+        They are used to enforce the plan on the phone — not to sell ads or build a marketing profile.
+        Read the <a href="privacy.html">privacy policy</a> before you install on a child’s phone.
+        Questions are welcome at the same email.
+      </p>
+    </section>
+
     <section id="download" class="block download reveal">
       <div class="download-panel">
         <p class="eyebrow">Get Steady</p>
@@ -359,10 +383,16 @@
         <div class="actions">
           <a class="btn primary" id="apk-link" href="https://github.com/LabRatKali/steady-web/releases/latest/download/steady-latest.apk">Download APK</a>
           <a class="btn ghost" href="setup.html">Setup guide</a>
+          <a class="btn ghost" href="privacy.html">Privacy</a>
         </div>
-        <p class="fine" id="version-line">Version loading…</p>
-        <p class="fine">Android may ask to allow installs from this browser — normal when installing from a website.</p>
-        <p class="fine">If an older Steady won’t update over itself, uninstall once, then install the latest.</p>
+        <p class="fine" id="version-line" data-template="Latest release: %s">Latest release: v1.1.10</p>
+        <p class="fine sideload-note">
+          Android will show a security warning because this isn’t from the Play Store —
+          that’s expected for a direct APK. You’re downloading Steady from this site’s release,
+          not a random link. Allow install from this browser when asked, then open the file.
+        </p>
+        <p class="fine">Read the <a href="privacy.html">privacy policy</a> before installing on a child’s phone.</p>
+        <p class="fine">If an older Steady won’t update over itself, uninstall once (turn protection off first if needed), then install the latest.</p>
       </div>
     </section>
 
@@ -392,8 +422,12 @@
               <p>Yes. Download here. Current builds don’t put a subscription wall in front of the door.</p>
             </details>
             <details>
+              <summary>What data does Steady collect?</summary>
+              <p>No ads and no analytics SDK. Most locks and timers stay on the phone. Family pairing, Approvals, and to-dos can sync when you use those features. Full plain-language detail: <a href="privacy.html">privacy policy</a>.</p>
+            </details>
+            <details>
               <summary>Android says unknown / blocked — what now?</summary>
-              <p>That’s normal when you install from a website. Allow installs from your browser or Files, then open the APK again.</p>
+              <p>That’s normal when you install from a website (not Play Store). Allow installs from your browser or Files, then open the APK again. The warning is expected — see the note under Download.</p>
             </details>
             <details>
               <summary>Where do I start if I’m in a hurry?</summary>
@@ -594,13 +628,15 @@
     <div class="footer-links">
       <a href="#paths">Paths</a>
       <a href="#stories">Stories</a>
+      <a href="#about">About</a>
       <a href="#faq">Questions</a>
       <a href="#download">Download</a>
       <a href="setup.html">Setup</a>
+      <a href="privacy.html">Privacy</a>
       <a href="mailto:labratcomputers@gmail.com">Contact</a>
     </div>
   </footer>
 
-  <script src="site.js?v=13"></script>
+  <script src="site.js?v=14"></script>
 </body>
 </html>
