@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Parent setup guide for Steady — child phone, parent phone, and Device Owner." />
+  <title>Setup — Steady</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="atmosphere" aria-hidden="true"></div>
+
+  <header class="top">
+    <a class="logo" href="index.html">Steady</a>
+    <nav>
+      <a href="index.html#download">Download</a>
+      <a href="setup.html" aria-current="page">Setup</a>
+    </nav>
+  </header>
+
+  <main class="guide">
+    <p class="brand small">Steady</p>
+    <h1>Parent setup guide</h1>
+    <p class="lede">Simple steps for the child phone and the parent phone.</p>
+
+    <section>
+      <h2>Child phone</h2>
+      <ol>
+        <li>Install Steady on the child phone.</li>
+        <li>Open Steady and choose <strong>This phone is for a child</strong>.</li>
+        <li>Pick a parent PIN (4+ digits) and a security question.</li>
+        <li>Choose 1-step, 2-step, or 3-step protection.</li>
+        <li>Connect the phone to a computer with USB debugging.</li>
+        <li>Copy the command from the app and run it in a terminal:
+          <pre><code>adb shell dpm set-device-owner app.steady.android/app.steady.deviceowner.SteadyDeviceAdminReceiver</code></pre>
+        </li>
+        <li>On the phone, allow <strong>Usage access</strong> for Steady.</li>
+        <li>Tap <strong>You are ready</strong>.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>Parent phone</h2>
+      <ol>
+        <li>Install the same Steady APK.</li>
+        <li>Choose <strong>This phone is for a parent</strong>.</li>
+        <li>In Settings, create a pair code and enter it on the child phone.</li>
+        <li>Approve Entertainment requests from the parent home screen.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>Modes</h2>
+      <ul class="plain">
+        <li><strong>Work</strong> — work apps only</li>
+        <li><strong>Learning</strong> — study apps only</li>
+        <li><strong>Entertainment</strong> — needs parent approval first</li>
+      </ul>
+      <p>Calls with the screen off and background music do not use up the timer.</p>
+    </section>
+
+    <p class="actions">
+      <a class="btn primary" href="index.html#download">Download Steady</a>
+    </p>
+  </main>
+
+  <footer>
+    <p>Steady · Stay on track.</p>
+  </footer>
+</body>
+</html>
