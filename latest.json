@@ -1,0 +1,9 @@
+{
+  "version": "1.5.5",
+  "versionCode": 71,
+  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/latest/download/steady-latest.apk",
+  "sha256": "e993b89484b10bb5a79ca24063087b3908e3eb7773ab5e9596c9adebd0b6d531",
+  "sizeBytes": 63651483,
+  "notes": "## 1.5.5\n\n- **Full app control on this phone** \u2014 every app is editable (including ones that look resting/gray). Soft tint no longer means \u201ccan\u2019t tap.\u201d\n- **Always / Work / Learn / Fun / Never / Auto** \u2014 Always = all Steady profiles on this phone; Work/Learn/Fun = only that profile; Never = blocked with Ask from Home; Auto until you choose.\n- Instant apply: Always unsuspends / Never suspends right away; picks stick after Refresh.\n- Categories + Settings both use clear outlined chips (unselected never looks disabled).\n",
+  "assetId": 0
+}
