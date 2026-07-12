@@ -3,9 +3,23 @@ async function loadLatest() {
   const apkLink = document.getElementById("apk-link");
   if (!versionLine || !apkLink) return;
 
+  const FALLBACK_VERSION = "v1.1.10";
+  const template =
+    versionLine.dataset.template || "Latest release: %s";
+  const formatVersion = (ver) => template.replace("%s", ver);
+
+  // Show a real version immediately — never leave "loading" stuck on the download button.
+  if (/loading/i.test(versionLine.textContent || "")) {
+    versionLine.textContent = formatVersion(FALLBACK_VERSION);
+  }
+
+  const controller = new AbortController();
+  const timer = window.setTimeout(() => controller.abort(), 4500);
+
   try {
     const res = await fetch(
-      "https://api.github.com/repos/LabRatKali/steady-web/releases/latest"
+      "https://api.github.com/repos/LabRatKali/steady-web/releases/latest",
+      { signal: controller.signal }
     );
     if (!res.ok) throw new Error("release fetch failed");
     const data = await res.json();
@@ -15,11 +29,14 @@ async function loadLatest() {
     if (asset?.browser_download_url) {
       apkLink.href = asset.browser_download_url;
     }
-    const ver = data.tag_name || data.name || "latest";
-    versionLine.textContent = `Latest release: ${ver}`;
+    const ver = data.tag_name || data.name || FALLBACK_VERSION;
+    versionLine.textContent = formatVersion(ver);
   } catch (_) {
-    versionLine.textContent =
-      "Latest release: use the Download button above. If it fails, try again in a moment.";
+    if (!versionLine.textContent || /loading/i.test(versionLine.textContent)) {
+      versionLine.textContent = formatVersion(FALLBACK_VERSION);
+    }
+  } finally {
+    window.clearTimeout(timer);
   }
 }
 
