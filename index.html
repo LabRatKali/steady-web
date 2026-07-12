@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Steady — Android parental control for healthier screen habits. Work and learning first. Entertainment with parent approval. Less phone. More life." />
+  <meta name="description" content="Steady 1.0 — Android anti-addiction parental control. Five profiles, parent-approved entertainment, bedtime, DNS filter, family pairing. Less phone. More life." />
   <title>Steady — Less phone. More life.</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=4" />
 </head>
 <body>
   <div class="atmosphere" aria-hidden="true">
@@ -26,7 +26,7 @@
     <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
     <nav id="site-nav">
       <a href="#promise">Why Steady</a>
-      <a href="#modes">Modes</a>
+      <a href="#modes">Profiles</a>
       <a href="#how">How it works</a>
       <a href="#download">Download</a>
       <a href="#contact">Contact</a>
@@ -39,8 +39,9 @@
         <p class="brand">Steady</p>
         <h1>Less phone.<br />More life.</h1>
         <p class="lede">
-          Parental control for Android that shapes the day —
-          work and learning first, entertainment only with your approval.
+          Android anti-addiction control for families.
+          Five day profiles, entertainment only with parent approval,
+          fair screen-time, and setup that works without a computer.
         </p>
         <div class="actions">
           <a class="btn primary" href="#download">Download for Android</a>
@@ -52,19 +53,19 @@
         <div class="device">
           <div class="device-notch"></div>
           <p class="device-brand">Steady</p>
-          <p class="device-mode">Learning</p>
+          <p class="device-mode">Focus · anti-addict</p>
           <div class="device-ring">
             <svg viewBox="0 0 120 120" class="ring-svg">
               <circle cx="60" cy="60" r="52" class="ring-track" />
               <circle cx="60" cy="60" r="52" class="ring-value" />
             </svg>
             <div class="ring-label">
-              <strong>4:12</strong>
-              <span>focus left</span>
+              <strong>12:40</strong>
+              <span>left today</span>
             </div>
           </div>
           <div class="device-row">
-            <span>Work</span>
+            <span>Focus</span>
             <span class="live">Learning</span>
             <span>Fun</span>
           </div>
@@ -73,115 +74,139 @@
     </section>
 
     <section class="trust-strip reveal" aria-label="Highlights">
-      <p>Android-first</p>
+      <p>5 profiles</p>
       <p>Parent approval</p>
-      <p>Device Owner ready</p>
+      <p>No PC required</p>
+      <p>Bedtime &amp; breaks</p>
+      <p>DNS web filter</p>
       <p>5 languages · RTL</p>
-      <p>Free to download</p>
     </section>
 
     <section id="promise" class="block promise reveal">
-      <p class="eyebrow">Why families choose tools like this</p>
-      <h2>Not surveillance.<br />Structure.</h2>
+      <p class="eyebrow">What Steady is now</p>
+      <h2>Not three modes.<br />A full day system.</h2>
       <p class="section-lead">
-        Great parental-control products don’t shout. They give the day a shape,
-        keep distractions out of the way, and leave room for trust.
-        Steady is that idea — made concrete on the child’s phone.
+        Steady has grown past a simple Work / Learning / Fun switch.
+        Today it’s child, parent, or both-on-one-phone roles; scarce daily minutes;
+        parent-gated entertainment; bedtime locks; chores that earn time;
+        and approvals over Nearby Bluetooth or the cloud.
       </p>
       <div class="promise-grid">
         <article>
           <span class="kicker">01</span>
-          <h3>A day with edges</h3>
-          <p>Work. Learning. Entertainment. The phone stops feeling like one endless feed and starts feeling like a schedule you chose.</p>
+          <h3>Scarce phone time</h3>
+          <p>Daily allowances per profile. The timer only burns for screen-on, visible apps — screen-off calls and background music don’t eat minutes.</p>
         </article>
         <article>
           <span class="kicker">02</span>
-          <h3>Fun with a gate</h3>
-          <p>Kids can ask for entertainment time. You approve from the parent phone. No silent doomscroll past bedtime.</p>
+          <h3>Entertainment with a gate</h3>
+          <p>Kids ask. Parents approve or deny — from the parent phone inbox, with optional homework confirm and multi-step parent checks.</p>
         </article>
         <article>
           <span class="kicker">03</span>
-          <h3>Strong when it matters</h3>
-          <p>PIN on-device, optional parent pairing, DNS filtering, and Device Owner setup for the serious protection path.</p>
+          <h3>Strong on the kid phone</h3>
+          <p>Device Admin + Accessibility + usage access work without a PC. Full Device Owner (uninstall lock) is optional advanced.</p>
         </article>
       </div>
     </section>
 
     <section id="modes" class="block modes reveal">
       <div class="modes-head">
-        <p class="eyebrow">The core idea</p>
-        <h2>Three modes.<br />One clear day.</h2>
+        <p class="eyebrow">Profiles</p>
+        <h2>Five ways the day can feel.</h2>
       </div>
-      <div class="dayline" role="list">
+      <div class="dayline dayline-5" role="list">
+        <article class="day-card" role="listitem" data-tone="learn">
+          <span class="time">Anti-addict</span>
+          <h3>Focus</h3>
+          <p>Work + learning apps with a short daily clock. Built to shrink mindless phone use.</p>
+        </article>
         <article class="day-card" role="listitem" data-tone="work">
-          <span class="time">Morning</span>
+          <span class="time">Bare minimum</span>
+          <h3>Essentials</h3>
+          <p>Calls, texts, maps, camera. Life tools without burning a fun budget.</p>
+        </article>
+        <article class="day-card" role="listitem" data-tone="work">
+          <span class="time">Tasks</span>
           <h3>Work</h3>
-          <p>Only work apps. Deep focus without the scroll tugging at the edge of every task.</p>
+          <p>Only work apps. Deep focus without the feed tugging at every pause.</p>
         </article>
         <article class="day-card" role="listitem" data-tone="learn">
-          <span class="time">Day</span>
+          <span class="time">School</span>
           <h3>Learning</h3>
-          <p>Only study apps. School hours stay school hours — on purpose, not by hope.</p>
+          <p>Only study apps. School hours stay school hours — on purpose.</p>
         </article>
         <article class="day-card" role="listitem" data-tone="fun">
           <span class="time">Earned</span>
           <h3>Entertainment</h3>
-          <p>Needs parent approval first. Fun becomes a decision, not a default.</p>
+          <p>Needs parent unlock first. Fun becomes a decision, not a default.</p>
         </article>
       </div>
-      <p class="whisper">Calls with the screen off and background music don’t burn entertainment minutes.</p>
+      <p class="whisper">Home-screen widgets can show time left and switch profiles. Lock screen covers time-up, bedtime, cooldown, and blocked apps.</p>
     </section>
 
     <section id="features" class="block features reveal">
       <p class="eyebrow">Under the hood</p>
-      <h2>Everything that makes Steady feel solid.</h2>
+      <h2>What parents actually get today.</h2>
       <div class="feature-rail">
         <article>
-          <h3>Parent approval queue</h3>
-          <p>Entertainment isn’t automatic. Requests land on the parent phone for a clear yes or no.</p>
+          <h3>Child · Parent · Both</h3>
+          <p>Two phones is strongest. Same-phone “both” mode exists for Approve + locks on one device — with a clear “keep the PIN secret” warning.</p>
         </article>
         <article>
-          <h3>Timers that respect life</h3>
-          <p>Real-world moments — screen-off calls, background music — don’t get punished by the clock.</p>
+          <h3>Family code pairing</h3>
+          <p>Parent creates a 6-digit family code. Child enters it. Parent can send rules; child can refresh. Approvals also via Nearby Bluetooth (no Wi‑Fi needed).</p>
         </article>
         <article>
-          <h3>Local DNS filter</h3>
-          <p>A VPN-style DNS filter helps keep noisy, nasty, and needless destinations out of the way.</p>
+          <h3>Parent checks (1–3 steps)</h3>
+          <p>PIN, Samsung-style pattern, passphrase, security question, Steady Face (in-app camera), parent stamp, remote approve, or parent-phone biometrics for remote asks.</p>
         </article>
         <article>
-          <h3>Local-first PIN</h3>
-          <p>Protection starts on the child device. Pair a parent phone when you want remote approval.</p>
+          <h3>Bedtime &amp; forced breaks</h3>
+          <p>Bedtime window locks the phone. Continuous-use cooldowns force a rest. Parents set hours and lengths in Settings.</p>
         </article>
         <article>
-          <h3>In-app updates</h3>
-          <p>Steady can check for new builds so families stay current without hunting zip files.</p>
+          <h3>Chores &amp; homework gate</h3>
+          <p>Chores can earn entertainment minutes. Optional “did they finish homework?” confirm before unlock.</p>
+        </article>
+        <article>
+          <h3>Family web filter</h3>
+          <p>Local DNS VPN blocks listed adult and gambling domains, and known bypass VPN apps — not a full content proxy, but a real shield.</p>
+        </article>
+        <article>
+          <h3>Enforcement that sticks</h3>
+          <p>Foreground service + Accessibility close blocked apps. With Device Owner: gray-out icons, block uninstall, restrict sideload/VPN config.</p>
         </article>
         <article>
           <h3>Languages that fit home</h3>
-          <p>English, Hebrew, Yiddish, Spanish, Russian — with RTL for Hebrew and Yiddish.</p>
+          <p>English, Hebrew, Yiddish, Spanish, Russian — RTL for Hebrew and Yiddish. Text size and per-app language in Settings.</p>
+        </article>
+        <article>
+          <h3>In-app updates</h3>
+          <p>Check for updates and install from Settings. Crash reports can sync privately for fixes.</p>
         </article>
       </div>
     </section>
 
     <section id="how" class="block how reveal">
       <p class="eyebrow">Getting started</p>
-      <h2>From download to “you are ready.”</h2>
+      <h2>From download to “You are ready.”</h2>
       <ol class="journey">
         <li>
-          <strong>Install on both phones</strong>
-          <span>Same APK for child and parent. No Play Store required.</span>
+          <strong>Install the APK</strong>
+          <span>Sideload on child and parent phones. No Play Store required.</span>
         </li>
         <li>
-          <strong>Set up the child device</strong>
-          <span>Child mode, parent PIN, protection level, then Device Owner via one adb command.</span>
+          <strong>Pick the phone’s role</strong>
+          <span>Child, Parent, or Both. Child phones run the protection wizard on-device.</span>
         </li>
         <li>
-          <strong>Pair the parent</strong>
-          <span>Create a pair code, connect, and start approving entertainment when asked.</span>
+          <strong>Protect without a PC</strong>
+          <span>Device Admin → Accessibility → Usage access → Family web filter → battery unrestricted. Device Owner via ADB is optional.</span>
         </li>
         <li>
-          <strong>Live in modes</strong>
-          <span>Work → Learning → Entertainment with approval. Habits stick because the phone cooperates.</span>
+          <strong>Pair &amp; live in profiles</strong>
+          <span>Create a family code, connect, set daily minutes / bedtime, then run Focus, Essentials, Work, Learning, or Entertainment with approval.</span>
         </li>
       </ol>
       <div class="actions">
@@ -194,8 +219,8 @@
         <p class="eyebrow">Get Steady</p>
         <h2>Download the Android APK.</h2>
         <p class="section-lead">
-          Install, follow the setup guide, and give the day a shape.
-          Free to try. Built for real families.
+          Current shipping line: Steady 1.0 with Focus, Essentials, parent approval,
+          bedtime, DNS filter, and family pairing.
         </p>
         <div class="actions">
           <a class="btn primary" id="apk-link" href="https://github.com/LabRatKali/steady-web/releases/latest/download/steady-latest.apk">Download APK</a>
@@ -203,7 +228,7 @@
         </div>
         <p class="fine" id="version-line">Version loading…</p>
         <p class="fine">Android may ask to allow installs from this browser — normal for sideloaded apps.</p>
-        <p class="fine">If an older Steady build used a different signing key, uninstall once, then install the latest.</p>
+        <p class="fine">If an older Steady used a different signing key, uninstall once, then install the latest.</p>
       </div>
     </section>
 
@@ -213,27 +238,27 @@
       <div class="faq">
         <details open>
           <summary>Is Steady free?</summary>
-          <p>Yes. Download the APK from this site. There’s no subscription wall on the current builds.</p>
+          <p>Yes. Download the APK here. No subscription wall on current builds.</p>
         </details>
         <details>
-          <summary>Do I need Google Play?</summary>
-          <p>No. Steady is sideloaded. Allow install from your browser once, then open the APK.</p>
+          <summary>Do I need a computer?</summary>
+          <p>No for normal use. Device Admin + Accessibility + usage access are on-phone. A computer is only for optional Device Owner (uninstall lock) via ADB.</p>
         </details>
         <details>
-          <summary>Why USB and a computer?</summary>
-          <p>Full Device Owner protection needs one adb command. The app shows the exact line. Day-to-day use is on the phones after that.</p>
+          <summary>What’s new vs the old “three modes” site?</summary>
+          <p>Steady now ships Focus and Essentials profiles, child/parent/both roles, bedtime and breaks, chores, homework gate, family codes, Nearby approvals, Steady Face / pattern checks, and a local DNS web filter.</p>
         </details>
         <details>
           <summary>Can kids bypass it?</summary>
-          <p>Device Owner + parent PIN + usage access is the strong path. No tool replaces parenting — Steady supports your rules.</p>
+          <p>Strong path: Device Admin + Accessibility + PIN/parent checks. Device Owner adds uninstall lock. No tool replaces parenting — Steady supports your rules.</p>
         </details>
         <details>
-          <summary>What about privacy?</summary>
-          <p>Steady centers on local control and parent pairing. Optional sync supports updates and parent approvals. No ads in the app.</p>
+          <summary>Two phones or one?</summary>
+          <p>Two phones is best (quiet parent + locked child). Both-on-one-phone works for Approve + locks together, but keep the PIN secret — it’s weaker.</p>
         </details>
         <details>
           <summary>Which languages?</summary>
-          <p>English, Hebrew, Yiddish, Spanish, and Russian — RTL for Hebrew and Yiddish.</p>
+          <p>English, Hebrew, Yiddish, Spanish, Russian — RTL for Hebrew and Yiddish.</p>
         </details>
       </div>
     </section>
@@ -283,6 +308,6 @@
     </div>
   </footer>
 
-  <script src="site.js"></script>
+  <script src="site.js?v=4"></script>
 </body>
 </html>
