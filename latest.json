@@ -1,9 +1,9 @@
 {
-  "version": "1.7.2",
-  "versionCode": 79,
-  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v1.7.2/steady-1.7.2.apk",
-  "sha256": "74f324d1dc52baf0be86bd22ed5cf3324e7ebece728d2df4d9aedd668ee487c6",
+  "version": "1.7.3",
+  "versionCode": 80,
+  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v1.7.3/steady-1.7.3.apk",
+  "sha256": "769f0e8619d0d8025798a6a9452ce6e08eeb2cf177faf5ca0700615954ccc8bb",
   "sizeBytes": 63786211,
-  "notes": "## 1.7.2\n\n## What's new\n\n- **Fixed download / install SHA-256 mismatch** \u2014 updates install from the exact public versioned APK (no more mixed private asset + stale CDN hash).\n- **Parent remote cleanup** \u2014 removed the dead \u201cBack to kid home\u201d button on quiet parent phones (that only belongs on Combined).\n- Hid local usage digest / usage dashboard and kid protection wizard on pure parent remotes \u2014 this phone is a remote, not a kid phone.\n- Update notes keep shipping with every release.\n\n## Update tip\n\nInstall on **both** phones. If Check for updates failed before with SHA-256, try again on 1.7.2.",
+  "notes": "## 1.7.3\n\n## What's new\n\n- **To-dos: deletes stick** \u2014 removing an item no longer comes back from GitHub merge.\n- **Fixed HTTP 409 \u201cCould not send to-dos\u201d** \u2014 family file writes retry with a fresh SHA on conflict.\n- **Per-family GitHub folders** \u2014 each household lives under `families/{code}/` (todos, policy, apps, phone profiles), with legacy paths still readable.\n- Faster parent refresh loop for asks and to-dos.\n\n## Update tip\n\nInstall on **both** phones, open Parent settings \u2192 Family to-dos, delete once, tap Send/Refresh \u2014 the list should stay clean.",
   "assetId": 0
 }
