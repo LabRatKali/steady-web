@@ -1,9 +1,9 @@
 {
-  "version": "1.5.7",
-  "versionCode": 73,
+  "version": "1.5.8",
+  "versionCode": 74,
   "apkUrl": "https://github.com/LabRatKali/steady-web/releases/latest/download/steady-latest.apk",
-  "sha256": "a876869011f2b76ff664a776c82a19024fe639bb7d143d4a8b8dee1a34ef1d19",
-  "sizeBytes": 63667867,
-  "notes": "## 1.5.7\n\n- **Dual Messenger / clone apps** \u2014 Home and Categories list every launcher profile (e.g. two WhatsApps). Customize and open each separately.\n- **Guardian gate** \u2014 impatient double-taps can no longer skip the second code.\n- **WhatsApp Updates** \u2014 detects the selected Updates/Status tab and bounces out again.\n- **DNS ground rules** \u2014 Steady site + GitHub always allowed; allow/block site changes apply immediately to the live filter.\n",
+  "sha256": "854f0d0eb7020bcbfb191fabd03dfc528922b1f1e98ab52d377bde78c3b22281",
+  "sizeBytes": 63693643,
+  "notes": "Steady 1.5.8",
   "assetId": 0
 }
