@@ -1,9 +1,9 @@
 {
-  "version": "1.7.1",
-  "versionCode": 78,
-  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/latest/download/steady-latest.apk",
-  "sha256": "a67baa07e482b7e2a3d31180dc0e4964020c693bb89d944550ae930e46438de7",
-  "sizeBytes": 64021427,
-  "notes": "## 1.7.1\n\n## What's new\n\n- **No more \u201cTimed out waiting for parent\u201d** \u2014 kid asks stay open on the family link for hours. Phones stay synced; tap Refresh anytime.\n- **Richer parent replies** \u2014 for each ask: **15 / 30 / 60 / 2h**, **Always allow this app** (or Fun for the day / always allow site), Approve, or Deny.\n- **Parent remote** \u2014 Settings shows the **kid\u2019s apps**, not apps on the parent phone. Always / Never / timed opens sync over GitHub.\n- **What\u2019s in this update** ships again by default with every release.\n\n## Update tip\n\nInstall on **both** phones, then on the kid phone open Steady and tap **Refresh** once so the parent remote catalog catches up.",
+  "version": "1.7.2",
+  "versionCode": 79,
+  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v1.7.2/steady-1.7.2.apk",
+  "sha256": "74f324d1dc52baf0be86bd22ed5cf3324e7ebece728d2df4d9aedd668ee487c6",
+  "sizeBytes": 63786211,
+  "notes": "## 1.7.2\n\n## What's new\n\n- **Fixed download / install SHA-256 mismatch** \u2014 updates install from the exact public versioned APK (no more mixed private asset + stale CDN hash).\n- **Parent remote cleanup** \u2014 removed the dead \u201cBack to kid home\u201d button on quiet parent phones (that only belongs on Combined).\n- Hid local usage digest / usage dashboard and kid protection wizard on pure parent remotes \u2014 this phone is a remote, not a kid phone.\n- Update notes keep shipping with every release.\n\n## Update tip\n\nInstall on **both** phones. If Check for updates failed before with SHA-256, try again on 1.7.2.",
   "assetId": 0
 }
