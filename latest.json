@@ -2,8 +2,8 @@
   "version": "1.7.1",
   "versionCode": 78,
   "apkUrl": "https://github.com/LabRatKali/steady-web/releases/latest/download/steady-latest.apk",
-  "sha256": "9af2fe2d8e341d94c085fb2af84dec796165b0bd322e1ec78cf5a2c8f0880078",
-  "sizeBytes": 63785703,
+  "sha256": "a67baa07e482b7e2a3d31180dc0e4964020c693bb89d944550ae930e46438de7",
+  "sizeBytes": 64021427,
   "notes": "## 1.7.1\n\n## What's new\n\n- **No more \u201cTimed out waiting for parent\u201d** \u2014 kid asks stay open on the family link for hours. Phones stay synced; tap Refresh anytime.\n- **Richer parent replies** \u2014 for each ask: **15 / 30 / 60 / 2h**, **Always allow this app** (or Fun for the day / always allow site), Approve, or Deny.\n- **Parent remote** \u2014 Settings shows the **kid\u2019s apps**, not apps on the parent phone. Always / Never / timed opens sync over GitHub.\n- **What\u2019s in this update** ships again by default with every release.\n\n## Update tip\n\nInstall on **both** phones, then on the kid phone open Steady and tap **Refresh** once so the parent remote catalog catches up.",
   "assetId": 0
 }
