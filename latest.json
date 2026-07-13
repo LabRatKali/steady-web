@@ -1,9 +1,9 @@
 {
-  "version": "1.6.1",
-  "versionCode": 76,
+  "version": "1.7.0",
+  "versionCode": 77,
   "apkUrl": "https://github.com/LabRatKali/steady-web/releases/latest/download/steady-latest.apk",
   "sha256": "ae33a5defd8a23557c78a25c88eb052cf384294dbc3a413dbdac1daf2560665f",
   "sizeBytes": 63767583,
-  "notes": "Steady 1.6.1",
+  "notes": "Steady 1.7.0",
   "assetId": 0
 }
