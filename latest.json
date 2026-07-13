@@ -1,9 +1,9 @@
 {
-  "version": "1.7.4",
-  "versionCode": 81,
-  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v1.7.4/steady-1.7.4.apk",
-  "sha256": "0cc8545f30fc265badfcedbfdf4ae19985ec87e72aafb5a3a4197079e0b2e240",
-  "sizeBytes": 63804759,
-  "notes": "## 1.7.4\n\n## What's new\n\n- **Family pause actually opens the kid phone** \u2014 Steady Home unlocks apps when parent taps Pause all kids (was stuck looking locked).\n- **Parent remote on the home screen** \u2014 Pause 30 / 60 min + End pause right on Parent home; Send rules reports real success/fail.\n- **Refresh feels real** \u2014 spinner + \u201cRefreshing\u2026\u201d while sync runs on parent and kid.\n- **Kid to-do button** \u2014 checklist icon next to Refresh; kid taps \u201cI did it\u201d, parent Approves on their phone.\n- **Tighter security** \u2014 Privacy \u2192 Accessibility / \u201cSteady has full access\u201d bounced even mid-navigation; Device Owner keeps shade/settings locks during family pause.\n- Live location keeps updating during family pause.\n\n## Update tip\n\nInstall on **both** phones. On parent: Pause all kids \u00b7 30 min \u2014 kid home should show Family pause / open apps within a few seconds. Try Refresh and watch the spinner.\n",
+  "version": "1.7.5",
+  "versionCode": 82,
+  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v1.7.5/steady-1.7.5.apk",
+  "sha256": "07c477c89bb61d23da3669564e881ed47ad7ba48aa44fbf4c98205bdda68a602",
+  "sizeBytes": 63821143,
+  "notes": "## 1.7.5\n\n## What's new\n\n- **Block profile / user switch** \u2014 notification shade user switcher and Settings \u2192 Users bounce back to Steady.\n- **Device Owner hard-lock** \u2014 no add/remove/switch user, logout tile disabled when Steady is Device Owner.\n- Catches OEM wording (Guest, Secure Folder, Second Space, Dual Apps) without false-bouncing normal shade text.\n\n## Update tip\n\nInstall on the **kid** phone. Pull down notifications and try the user/profile chip \u2014 Steady should bounce you. Settings \u2192 Users should also bounce.",
   "assetId": 0
 }
