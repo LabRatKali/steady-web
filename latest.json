@@ -1,9 +1,9 @@
 {
-  "version": "1.7.3",
-  "versionCode": 80,
-  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v1.7.3/steady-1.7.3.apk",
-  "sha256": "769f0e8619d0d8025798a6a9452ce6e08eeb2cf177faf5ca0700615954ccc8bb",
-  "sizeBytes": 63786211,
-  "notes": "## 1.7.3\n\n## What's new\n\n- **To-dos: deletes stick** \u2014 removing an item no longer comes back from GitHub merge.\n- **Fixed HTTP 409 \u201cCould not send to-dos\u201d** \u2014 family file writes retry with a fresh SHA on conflict.\n- **Per-family GitHub folders** \u2014 each household lives under `families/{code}/` (todos, policy, apps, phone profiles), with legacy paths still readable.\n- Faster parent refresh loop for asks and to-dos.\n\n## Update tip\n\nInstall on **both** phones, open Parent settings \u2192 Family to-dos, delete once, tap Send/Refresh \u2014 the list should stay clean.",
+  "version": "1.7.4",
+  "versionCode": 81,
+  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v1.7.4/steady-1.7.4.apk",
+  "sha256": "0cc8545f30fc265badfcedbfdf4ae19985ec87e72aafb5a3a4197079e0b2e240",
+  "sizeBytes": 63804759,
+  "notes": "## 1.7.4\n\n## What's new\n\n- **Family pause actually opens the kid phone** \u2014 Steady Home unlocks apps when parent taps Pause all kids (was stuck looking locked).\n- **Parent remote on the home screen** \u2014 Pause 30 / 60 min + End pause right on Parent home; Send rules reports real success/fail.\n- **Refresh feels real** \u2014 spinner + \u201cRefreshing\u2026\u201d while sync runs on parent and kid.\n- **Kid to-do button** \u2014 checklist icon next to Refresh; kid taps \u201cI did it\u201d, parent Approves on their phone.\n- **Tighter security** \u2014 Privacy \u2192 Accessibility / \u201cSteady has full access\u201d bounced even mid-navigation; Device Owner keeps shade/settings locks during family pause.\n- Live location keeps updating during family pause.\n\n## Update tip\n\nInstall on **both** phones. On parent: Pause all kids \u00b7 30 min \u2014 kid home should show Family pause / open apps within a few seconds. Try Refresh and watch the spinner.",
   "assetId": 0
 }
