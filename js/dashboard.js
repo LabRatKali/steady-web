@@ -129,6 +129,7 @@
     setToggle("tog-dating", p.blockCatDating !== false);
     setToggle("tog-gaming", !!p.blockCatGaming);
     setToggle("tog-bedtime", !!p.bedtimeEnabled);
+    setToggle("tog-hide-notifs", !!p.hideServiceNotifications);
     const until = p.familyPauseUntil || 0;
     const pauseEl = $("pause-state");
     if (pauseEl) {
@@ -647,7 +648,7 @@
   });
   $("btn-end-pause").addEventListener("click", () => setPause(0));
 
-  document.querySelectorAll("#mode-toggles input[data-policy]").forEach((tog) => {
+  document.querySelectorAll("input[data-policy]").forEach((tog) => {
     tog.addEventListener("change", async () => {
       const key = tog.dataset.policy;
       try {
@@ -679,6 +680,37 @@
       }
     });
   }
+  if ($("btn-unlock-10")) {
+    $("btn-unlock-10").addEventListener("click", async () => {
+      try {
+        await patchPolicy((p) => {
+          p.settingsUnlockUntil = Date.now() + 10 * 60 * 1000;
+        });
+        status("Settings unlock for 10 min");
+        await refresh();
+      } catch (e) {
+        status(String(e.message || e));
+      }
+    });
+  }
+  async function softBreak(minutes) {
+    try {
+      status(minutes > 0 ? `Break Steady ${minutes} min…` : "Ending break…");
+      await patchPolicy((p) => {
+        p.softDisableUntil = minutes > 0 ? Date.now() + minutes * 60 * 1000 : 0;
+        if (minutes > 0) {
+          p.familyPauseUntil = Math.max(p.familyPauseUntil || 0, p.softDisableUntil);
+        }
+      });
+      status(minutes > 0 ? `Steady break ${minutes} min` : "Break ended");
+      await refresh();
+    } catch (e) {
+      status(String(e.message || e));
+    }
+  }
+  if ($("btn-soft-5")) $("btn-soft-5").addEventListener("click", () => softBreak(5));
+  if ($("btn-soft-15")) $("btn-soft-15").addEventListener("click", () => softBreak(15));
+  if ($("btn-soft-end")) $("btn-soft-end").addEventListener("click", () => softBreak(0));
 
   $("policy-form").addEventListener("submit", async (ev) => {
     ev.preventDefault();
