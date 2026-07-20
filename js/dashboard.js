@@ -340,19 +340,20 @@
     const email = $("otp-email").value.trim();
     try {
       const code = SteadyAuth.randomOtp();
-      await SteadyAuth.putOtpChallenge(email, code);
-      const sent = await SteadyAuth.sendOtpEmail(email, code);
+      const magic = SteadyAuth.randomMagicToken();
+      await SteadyAuth.putOtpChallenge(email, code, magic);
+      const sent = await SteadyAuth.sendOtpEmail(email, code, magic);
       $("otp-verify").hidden = false;
       const disp = $("otp-display");
+      disp.hidden = false;
       if (sent.emailed) {
-        disp.hidden = false;
-        disp.textContent = "Code sent to your email (check spam). Valid 10 minutes.";
-      } else {
-        disp.hidden = false;
         disp.textContent =
-          "Email sender not configured (free EmailJS optional). Your code: " +
+          "Check your email for a magic link or 6-digit code (10 min). Spam folder too.";
+      } else {
+        disp.textContent =
+          "Mailer not configured yet. Your code: " +
           code +
-          " — enter it below. Add keys/emailjs.json to email codes automatically.";
+          " — add keys/mailer.json (Resend recommended) and republish to email codes.";
       }
     } catch (e) {
       loginError(String(e.message || e));
@@ -482,4 +483,31 @@
   if (existing && existing.familyCode) {
     enterWithSession(existing).catch((e) => loginError(String(e.message || e)));
   }
+
+  // Magic link: dashboard.html?email=…&magic=…
+  (async function consumeMagicLink() {
+    const params = new URLSearchParams(location.search);
+    const email = (params.get("email") || "").trim();
+    const magic = (params.get("magic") || "").trim();
+    if (!email || !magic) return;
+    try {
+      loginError("");
+      await SteadyAuth.verifyMagicChallenge(email, magic);
+      const session = {
+        provider: "magic",
+        email,
+        googleSub: "",
+        verifiedAt: Date.now(),
+        roleHint: "PARENT",
+      };
+      const account = await SteadyAuth.ensureAccountRecord(session);
+      session.familyCode = account.familyCode;
+      session.familySecret = account.familySecret;
+      SteadyAuth.saveSession(session);
+      history.replaceState({}, "", location.pathname);
+      await enterWithSession(session);
+    } catch (e) {
+      loginError(String(e.message || e));
+    }
+  })();
 })();
