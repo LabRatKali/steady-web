@@ -31,8 +31,22 @@
   };
 
   function showApp(on) {
-    $("gate").hidden = on;
-    $("app").hidden = !on;
+    const gate = $("gate");
+    const app = $("app");
+    if (gate) {
+      gate.hidden = on;
+      gate.setAttribute("aria-hidden", on ? "true" : "false");
+    }
+    if (app) {
+      app.hidden = !on;
+      app.setAttribute("aria-hidden", on ? "false" : "true");
+    }
+    document.body.classList.toggle("signed-in", !!on);
+    // Nav: swap Sign in for account controls when logged in
+    const navAuth = $("nav-auth");
+    if (navAuth) navAuth.hidden = !on;
+    const navSign = $("nav-signin-link");
+    if (navSign) navSign.hidden = !!on;
   }
 
   function escapeHtml(s) {
@@ -59,20 +73,32 @@
 
   async function enterWithSession(sess) {
     session = sess;
-    const child = ($("child-live") && $("child-live").value.trim()) || localStorage.getItem("steady.web.child") || "";
-    client = buildClient({
-      pair: sess.familyCode,
-      secret: sess.familySecret,
-      child,
-      parent: "",
-    });
-    if ($("child-live")) $("child-live").value = child;
+    // Hide login shell immediately — never leave Welcome back over the remote.
     showApp(true);
-    $("session-meta").textContent = `${sess.email || sess.googleSub || "signed in"} · family ${sess.familyCode}`;
-    await loadKidPhones();
-    await refresh();
-    if (window.__steadyPoll) clearInterval(window.__steadyPoll);
-    window.__steadyPoll = setInterval(refresh, 15000);
+    $("session-meta").textContent = `${sess.email || sess.name || sess.googleSub || "Signed in"} · family ${sess.familyCode}`;
+    if ($("nav-user")) {
+      $("nav-user").textContent = sess.email || sess.name || "Account";
+    }
+    try {
+      const child =
+        ($("child-live") && $("child-live").value.trim()) ||
+        localStorage.getItem("steady.web.child") ||
+        "";
+      client = buildClient({
+        pair: sess.familyCode,
+        secret: sess.familySecret,
+        child,
+        parent: "",
+      });
+      if ($("child-live")) $("child-live").value = child;
+      await loadKidPhones();
+      await refresh();
+      if (window.__steadyPoll) clearInterval(window.__steadyPoll);
+      window.__steadyPoll = setInterval(refresh, 12000);
+    } catch (e) {
+      showApp(false);
+      throw e;
+    }
   }
 
   function setToggle(id, on) {
@@ -100,6 +126,12 @@
         until > Date.now()
           ? `Paused — about ${Math.ceil((until - Date.now()) / 60000)} min left`
           : "Not paused";
+    }
+    const forceEl = $("force-mode-state");
+    if (forceEl) {
+      forceEl.textContent = p.forceMode
+        ? `Forced: ${p.forceMode}`
+        : "No forced mode";
     }
   }
 
@@ -205,12 +237,63 @@
     });
   }
 
+  function renderInstalls(list) {
+    const box = $("installs-list");
+    if (!box) return;
+    box.innerHTML = "";
+    if (!list || !list.length) {
+      box.innerHTML = '<p class="muted">No pending install asks.</p>';
+      return;
+    }
+    list.forEach((req) => {
+      const div = document.createElement("div");
+      div.className = "dash-item";
+      div.innerHTML = `<strong>${escapeHtml(req.label || req.packageName)}</strong>
+        <span class="muted">${escapeHtml(req.packageName || "")}</span>`;
+      const row = document.createElement("div");
+      row.className = "approve-btns";
+      const yes = document.createElement("button");
+      yes.type = "button";
+      yes.className = "btn primary";
+      yes.textContent = "Approve install";
+      yes.addEventListener("click", async () => {
+        try {
+          status("Approving install…");
+          await client.decideInstall(req, true);
+          status("Install approved");
+          await refresh();
+        } catch (e) {
+          status(String(e.message || e));
+        }
+      });
+      const no = document.createElement("button");
+      no.type = "button";
+      no.className = "btn ghost";
+      no.textContent = "Deny";
+      no.addEventListener("click", async () => {
+        try {
+          status("Denying install…");
+          await client.decideInstall(req, false);
+          status("Install denied");
+          await refresh();
+        } catch (e) {
+          status(String(e.message || e));
+        }
+      });
+      row.appendChild(yes);
+      row.appendChild(no);
+      div.appendChild(row);
+      box.appendChild(div);
+    });
+  }
+
   function renderApps(payload, overrides) {
     const box = $("apps-list");
     if (!box) return;
     const apps = (payload && payload.apps) || [];
+    const q = (($("apps-filter") && $("apps-filter").value) || "").trim().toLowerCase();
     if (!apps.length) {
-      box.innerHTML = '<p class="muted">No inventory yet — open Steady on the kid phone.</p>';
+      box.innerHTML = '<p class="muted">No inventory yet — open Steady on the kid phone (Home / categories) so apps sync here.</p>';
       return;
     }
     let arr = [];
@@ -221,22 +304,38 @@
     (arr || []).forEach((o) => {
       if (o && o.packageName) map[o.packageName] = o.category;
     });
+    const filtered = apps.filter((app) => {
+      if (!q) return true;
+      const hay = `${app.label || ""} ${app.packageName || ""} ${map[app.packageName] || app.category || ""}`.toLowerCase();
+      return hay.includes(q);
+    });
+    const countEl = $("apps-count");
+    if (countEl) {
+      countEl.textContent = `${filtered.length} of ${apps.length} apps`;
+    }
     box.innerHTML = "";
-    apps.slice(0, 80).forEach((app) => {
+    filtered.forEach((app) => {
       const pkg = app.packageName || "";
       const div = document.createElement("div");
       div.className = "dash-item";
+      const cat = map[pkg] || app.category || "";
       div.innerHTML = `<strong>${escapeHtml(app.label || pkg)}</strong>
-        <span class="muted">${escapeHtml(pkg)} · ${escapeHtml(map[pkg] || app.category || "")}</span>`;
+        <span class="muted">${escapeHtml(pkg)} · ${escapeHtml(cat)}</span>`;
       const row = document.createElement("div");
       row.className = "approve-btns";
-      ["ALWAYS_ALLOWED", "BLOCKED", "ENTERTAINMENT"].forEach((cat) => {
+      [
+        { cat: "ALWAYS_ALLOWED", label: "Always" },
+        { cat: "FOCUS", label: "Focus" },
+        { cat: "WORK", label: "Work" },
+        { cat: "LEARNING", label: "Learn" },
+        { cat: "ENTERTAINMENT", label: "Fun" },
+        { cat: "BLOCKED", label: "Never" },
+      ].forEach((opt) => {
         const b = document.createElement("button");
         b.type = "button";
-        b.className = "btn ghost";
-        b.textContent =
-          cat === "ALWAYS_ALLOWED" ? "Always" : cat === "BLOCKED" ? "Never" : "Fun";
-        b.addEventListener("click", () => setAppOverride(pkg, cat));
+        b.className = "btn ghost" + (cat === opt.cat ? " primary" : "");
+        b.textContent = opt.label;
+        b.addEventListener("click", () => setAppOverride(pkg, opt.cat));
         row.appendChild(b);
       });
       div.appendChild(row);
@@ -319,6 +418,9 @@
     status("Refreshing…");
     try {
       renderApprovals(await client.listPendingApprovals(child));
+      if (client.listPendingInstalls) {
+        renderInstalls(await client.listPendingInstalls(child));
+      }
       const pol = await client.fetchPolicy(child);
       policy = pol.data || {
         childDeviceId: child,
@@ -347,7 +449,8 @@
       if (!Array.isArray(todosPayload.items)) todosPayload.items = [];
       renderTodos(todosPayload);
       const apps = await client.fetchApps(child);
-      renderApps(apps.data, policy.appOverridesJson);
+      window.__steadyAppsPayload = apps.data || { apps: [] };
+      renderApps(window.__steadyAppsPayload, policy.appOverridesJson);
       const loc = await client.fetchLiveLocation(child);
       const locBox = $("location-box");
       if (locBox) {
@@ -362,18 +465,72 @@
   }
 
   // —— Auth wiring ——
+  // Restore session ASAP so Welcome-back never sits over the remote.
+  const existingEarly = SteadyAuth.loadSession();
+  if (existingEarly && existingEarly.familyCode) {
+    showApp(true);
+    if ($("nav-user")) {
+      $("nav-user").textContent =
+        existingEarly.email || existingEarly.name || "Account";
+    }
+  }
+
   const redirected = SteadyAuth.consumeRedirectSession && SteadyAuth.consumeRedirectSession();
   if (redirected && redirected.familyCode) {
     enterWithSession(redirected).catch((e) => loginError(String(e.message || e)));
   }
 
+  const stayEl = $("stay-signed-in");
+  if (stayEl) {
+    stayEl.checked = SteadyAuth.staySignedIn();
+    stayEl.addEventListener("change", () => {
+      SteadyAuth.setStaySignedIn(!!stayEl.checked);
+      if (session) SteadyAuth.saveSession(session);
+    });
+  }
+
+  document.querySelectorAll(".auth-tab").forEach((tab) => {
+    tab.addEventListener("click", () => {
+      document.querySelectorAll(".auth-tab").forEach((t) => {
+        t.classList.toggle("is-active", t === tab);
+        t.setAttribute("aria-selected", t === tab ? "true" : "false");
+      });
+      const signup = tab.dataset.tab === "signup";
+      if ($("auth-heading")) {
+        $("auth-heading").textContent = signup ? "Create your Steady account" : "Welcome back";
+      }
+      if ($("auth-lede")) {
+        $("auth-lede").textContent = signup
+          ? "Sign up with Google or email. Use the same account on the website and the phones — that becomes your family link."
+          : "Sign in to run the kid phone from here — approve asks, pause, budgets, and apps. Same Google or email on the website and the phones.";
+      }
+      if ($("otp-send-btn")) {
+        $("otp-send-btn").textContent = signup ? "Send sign-up code" : "Send sign-in code";
+      }
+    });
+  });
+
   const googleOk = SteadyAuth.initGoogleButton($("google-btn"), (sess) => {
     loginError("");
+    if (stayEl) SteadyAuth.setStaySignedIn(!!stayEl.checked);
     enterWithSession(sess).catch((e) => loginError(String(e.message || e)));
   });
   if (!googleOk && $("google-hint")) {
     $("google-hint").hidden = false;
+    $("google-hint").textContent =
+      "Google Sign-In isn’t ready yet. Use email below.";
   }
+
+  function doLogout() {
+    SteadyAuth.clearSession();
+    if (window.__steadyPoll) clearInterval(window.__steadyPoll);
+    client = null;
+    session = null;
+    showApp(false);
+    if ($("nav-user")) $("nav-user").textContent = "";
+  }
+
+  if ($("nav-logout")) $("nav-logout").addEventListener("click", doLogout);
 
   $("otp-request").addEventListener("submit", async (ev) => {
     ev.preventDefault();
@@ -438,17 +595,18 @@
     }
   });
 
-  $("btn-logout").addEventListener("click", () => {
-    SteadyAuth.clearSession();
-    if (window.__steadyPoll) clearInterval(window.__steadyPoll);
-    client = null;
-    session = null;
-    showApp(false);
-  });
-  $("btn-refresh").addEventListener("click", async () => {
-    await loadKidPhones();
-    await refresh();
-  });
+  $("btn-logout").addEventListener("click", doLogout);
+  if ($("btn-refresh")) {
+    $("btn-refresh").addEventListener("click", async () => {
+      await loadKidPhones();
+      await refresh();
+    });
+  }
+  if ($("apps-filter")) {
+    $("apps-filter").addEventListener("input", () => {
+      if (policy) renderApps(window.__steadyAppsPayload || { apps: [] }, policy.appOverridesJson);
+    });
+  }
   if ($("child-live")) {
     $("child-live").addEventListener("change", () => refresh());
   }
@@ -461,6 +619,21 @@
   }
   document.querySelectorAll("[data-pause]").forEach((btn) => {
     btn.addEventListener("click", () => setPause(Number(btn.dataset.pause)));
+  });
+  document.querySelectorAll("[data-force-mode]").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const mode = btn.dataset.forceMode || "";
+      try {
+        status(mode ? `Forcing ${mode}…` : "Clearing forced mode…");
+        await patchPolicy((p) => {
+          p.forceMode = mode;
+        });
+        status(mode ? `Kid mode → ${mode}` : "Forced mode cleared");
+        await refresh();
+      } catch (e) {
+        status(String(e.message || e));
+      }
+    });
   });
   $("btn-end-pause").addEventListener("click", () => setPause(0));
 
