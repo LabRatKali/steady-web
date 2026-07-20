@@ -4,6 +4,6 @@
   "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.1.2/steady-2.1.2.apk",
   "sha256": "cffd4dfe3315f50129c5c1f869b38e67a9ca8df3cf630a53bbee3a0b4e7fba19",
   "sizeBytes": 64290033,
-  "notes": "## 2.1.2\n\n## What's new\n\n- **Google Sign-In live** \u2014 Web OAuth client baked into app + site (project `steady-503020`).\n- **Resend email live** \u2014 magic link + 6-digit codes for dashboard and Android.\n- **Parent remote dashboard** \u2014 instant mode toggles (school / filter / installs / location), clearer Approves, kid phone picker, Settings unlock, pause presets.\n\n## Note\n\nPhone Google Sign-In still needs an **Android** OAuth client in Google Cloud (package `app.steady.android` + debug SHA-1). The second JSON from Testing was a Desktop/installed client, not Android.",
+  "notes": "## 2.1.2\n\n## What's new\n\n- **Google Sign-In live** \u2014 Web OAuth client baked into app + site (project `steady-503020`).\n- **Resend email live** \u2014 magic link + 6-digit codes for dashboard and Android.\n- **Parent remote dashboard** \u2014 instant mode toggles (school / filter / installs / location), clearer Approves, kid phone picker, Settings unlock, pause presets.\n\n## Note\n\nPhone Google Sign-In still needs an **Android** OAuth client in Google Cloud (package `app.steady.android` + debug SHA-1). The second JSON from Testing was a Desktop/installed client, not Android.\n",
   "assetId": 0
 }
