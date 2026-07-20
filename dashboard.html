@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css?v=25" />
-  <link rel="stylesheet" href="dashboard.css?v=9" />
+  <link rel="stylesheet" href="dashboard.css?v=11" />
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body class="dash-body">
@@ -102,10 +102,16 @@
             <option value="">Choose a linked phone…</option>
           </select>
         </label>
-        <label class="child-pick">Or paste device ID
-          <input id="child-live" type="text" placeholder="From kid phone → Parent home / Settings" autocomplete="off" />
+        <div class="kid-rename-row">
+          <label class="child-pick kid-rename-grow">Name for this phone
+            <input id="child-label" type="text" placeholder="e.g. Maya’s phone" maxlength="40" autocomplete="off" />
+          </label>
+          <button class="btn ghost" type="button" id="btn-rename-kid" title="Save name to GitHub">✎ Save name</button>
+        </div>
+        <p class="muted kid-hint">Pick a phone under your Steady account — you don’t need to memorize the device ID. Names save to GitHub. Device ID shows after the name for support.</p>
+        <label class="child-pick">Device ID (auto-filled)
+          <input id="child-live" type="text" placeholder="Filled when you pick a phone" autocomplete="off" readonly />
         </label>
-        <p class="muted kid-hint">Changes sync to the kid phone over Steady’s private channel — same as the parent phone app.</p>
       </div>
       <p id="status" class="dash-status" role="status"></p>
 
@@ -123,12 +129,12 @@
           <div class="dash-grid dash-grid-remote">
             <article class="dash-card span-2" id="panel-approvals">
               <h2>Pending asks</h2>
-              <p class="panel-lede">Approve Fun, apps, websites, unlocks — sends right away. Kid taps Refresh to apply.</p>
+              <p class="panel-lede">Your child asked for Fun time, an app, or a website. Tap a time (5 minutes, 1 hour…) to allow it, Deny to say no, or Dismiss to clear the ask forever so it does not come back. Then ask the child to tap Refresh on Steady Home.</p>
               <div id="approvals-list" class="dash-list"></div>
             </article>
             <article class="dash-card span-2" id="panel-installs">
               <h2>Install asks</h2>
-              <p class="panel-lede">New apps the kid tried to install — Approve or Deny.</p>
+              <p class="panel-lede">New apps the kid tried to install — Approve lets the app run, Deny keeps it blocked. Needs Install approval turned on under Controls.</p>
               <div id="installs-list" class="dash-list"></div>
             </article>
           </div>
@@ -138,7 +144,7 @@
           <div class="dash-grid dash-grid-remote">
             <article class="dash-card" id="panel-modes">
               <h2>Modes &amp; guards</h2>
-              <p class="panel-lede">Flip switches, then <strong>Save &amp; push</strong> at the bottom.</p>
+              <p class="panel-lede">Each switch is one rule for the kid phone. Example: School hours locks Fun during school. Install approval means new apps need your OK. Flip what you want, then tap Save &amp; push at the bottom.</p>
               <div class="toggle-stack" id="mode-toggles">
                 <label class="toggle-row">
                   <span><strong>School hours</strong><small>Lock Fun during school window</small></span>
@@ -193,7 +199,7 @@
 
             <article class="dash-card" id="panel-mode">
               <h2>Force mode / profiles</h2>
-              <p class="panel-lede">Push Focus / Work / Learn / Fun onto the kid phone.</p>
+              <p class="panel-lede">Push a mode onto the kid phone right away. Focus = calm tools only (no daily clock). Work / Learn / Fun use the minutes you set under Budgets. Clear stops forcing a mode.</p>
               <div class="row-btns" id="force-mode-btns">
                 <button class="btn ghost" type="button" data-force-mode="FOCUS">Focus</button>
                 <button class="btn ghost" type="button" data-force-mode="WORK">Work</button>
@@ -206,7 +212,7 @@
 
             <article class="dash-card span-2" id="panel-pause">
               <h2>Pause &amp; unlocks</h2>
-              <p class="panel-lede">Day off, short breaks, Settings unlock — then Save &amp; push.</p>
+              <p class="panel-lede">Day off turns Steady soft for a while so the kid can use the phone freely. Settings unlock lets them open Android Settings for a few minutes (dangerous pages still go Back). Break Steady pauses locks briefly. Always tap Save &amp; push after.</p>
               <div class="row-btns">
                 <button class="btn primary" type="button" data-pause="15">15 min</button>
                 <button class="btn primary" type="button" data-pause="30">30 min</button>
@@ -238,7 +244,7 @@
           <div class="dash-grid dash-grid-remote">
             <article class="dash-card span-2" id="panel-policy">
               <h2>Daily budgets &amp; bedtime</h2>
-              <p class="panel-lede">Edit minutes, then Save &amp; push at the bottom.</p>
+              <p class="panel-lede">How many minutes of Work, Learn, and Fun each day. Focus has no daily clock. Bedtime locks Fun overnight. School hours use the start/end times. Edit, then Save &amp; push.</p>
               <form id="policy-form" class="dash-form compact">
                 <label>Focus (min) <input name="focusMinutes" type="number" min="0" max="480" /></label>
                 <label>Work (min) <input name="workMinutes" type="number" min="0" max="480" /></label>
@@ -261,7 +267,7 @@
           <div class="dash-grid dash-grid-remote">
             <article class="dash-card span-2" id="panel-apps">
               <h2>Kid apps</h2>
-              <p class="panel-lede">Always / Focus / Work / Learn / Fun / Never. App taps send right away.</p>
+              <p class="panel-lede">Always = never blocked. Focus / Work / Learn / Fun = only in that mode. Never = blocked. Tapping a bucket saves that app right away (no Save &amp; push needed).</p>
               <div class="apps-toolbar">
                 <input id="apps-filter" type="search" placeholder="Search apps…" autocomplete="off" />
                 <span id="apps-count" class="muted"></span>
@@ -275,7 +281,7 @@
           <div class="dash-grid dash-grid-remote">
             <article class="dash-card span-2" id="panel-todos">
               <h2>Family to-dos</h2>
-              <p class="panel-lede">Mark done sends Approve to the kid phone right away.</p>
+              <p class="panel-lede">Add chores the kid should finish. Mark done sends Approve to the kid phone right away so Fun can unlock when you require to-dos.</p>
               <form id="todo-form" class="dash-form compact row-form">
                 <input id="todo-title" type="text" placeholder="New to-do" required maxlength="80" />
                 <button class="btn primary" type="submit">Add</button>
@@ -289,7 +295,7 @@
           <div class="dash-grid dash-grid-remote">
             <article class="dash-card" id="panel-sites">
               <h2>Website approvals</h2>
-              <p class="panel-lede">Always-allowed sites (DNS allow list).</p>
+              <p class="panel-lede">Websites the kid may open even when Fun is locked (DNS allow list). Add a site, then the kid taps Refresh.</p>
               <form id="site-form" class="dash-form compact row-form">
                 <input id="site-host" type="text" placeholder="example.com" maxlength="120" autocomplete="off" />
                 <button class="btn primary" type="submit">Allow site</button>
@@ -298,6 +304,7 @@
             </article>
             <article class="dash-card" id="panel-location">
               <h2>Location</h2>
+              <p class="panel-lede">Where the kid phone last checked in. Turn on live location under Controls if you want ongoing pins.</p>
               <div id="location-box" class="muted">Refresh to load.</div>
             </article>
           </div>
@@ -328,8 +335,8 @@
 
   <script src="js/runtime-config.js?v=4"></script>
   <script src="js/crypto-lite.js?v=2"></script>
-  <script src="js/github-sync.js?v=3"></script>
+  <script src="js/github-sync.js?v=5"></script>
   <script src="js/auth.js?v=6"></script>
-  <script src="js/dashboard.js?v=11"></script>
+  <script src="js/dashboard.js?v=13"></script>
 </body>
 </html>
