@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Steady parent dashboard — Approves, schedules, pause, and to-dos via your GitHub sync repo." />
+  <meta name="theme-color" content="#0c1b15" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+  <title>Steady — Family dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css?v=20" />
+  <link rel="stylesheet" href="dashboard.css?v=1" />
+</head>
+<body class="dash-body">
+  <div class="atmosphere" aria-hidden="true">
+    <span class="orb orb-a"></span>
+    <span class="orb orb-b"></span>
+    <span class="veil"></span>
+  </div>
+
+  <header class="top">
+    <a class="logo" href="index.html" aria-label="Steady home">
+      <span>Steady</span>
+    </a>
+    <nav id="site-nav">
+      <a href="index.html">Site</a>
+      <a href="setup.html">Setup</a>
+      <a href="dashboard.html" aria-current="page">Dashboard</a>
+      <a href="index.html#download">Download</a>
+    </nav>
+  </header>
+
+  <main class="dash-main">
+    <section id="gate" class="dash-card">
+      <h1>Family dashboard</h1>
+      <p class="lede">
+        Same private GitHub sync the phones use — no Cloudflare or extra cloud.
+        Use a <strong>fine-grained PAT</strong> scoped to <code>steady-sync</code> only.
+        Token stays in this browser (<code>localStorage</code>).
+      </p>
+      <form id="login-form" class="dash-form">
+        <label>GitHub PAT
+          <input id="pat" type="password" autocomplete="off" required placeholder="github_pat_…" />
+        </label>
+        <label>Sync repo
+          <input id="repo" type="text" value="LabRatKali/steady-sync" required />
+        </label>
+        <label>Family code
+          <input id="pair" type="text" required placeholder="From parent phone pairing" />
+        </label>
+        <label>Family secret <span class="hint">(Settings → family secret / Nearby — for signed Approves)</span>
+          <input id="secret" type="password" autocomplete="off" placeholder="Optional if same as code" />
+        </label>
+        <label>Child device ID
+          <input id="child" type="text" required placeholder="Kid deviceId from Parent home" />
+        </label>
+        <label>Your parent device ID <span class="hint">(optional)</span>
+          <input id="parent" type="text" placeholder="Parent deviceId" />
+        </label>
+        <label class="check">
+          <input id="remember" type="checkbox" checked /> Remember on this device
+        </label>
+        <button class="btn primary" type="submit">Open dashboard</button>
+        <p id="login-error" class="dash-error" hidden></p>
+      </form>
+      <details class="dash-help">
+        <summary>How to get a PAT</summary>
+        <ol>
+          <li>GitHub → Settings → Developer settings → Fine-grained tokens</li>
+          <li>Only repository: <code>LabRatKali/steady-sync</code> (or your fork)</li>
+          <li>Permissions: Contents Read and Write</li>
+          <li>Paste here — never commit the token; revoke if shared</li>
+        </ol>
+      </details>
+    </section>
+
+    <section id="app" class="dash-app" hidden>
+      <div class="dash-toolbar">
+        <div>
+          <h1>Family remote</h1>
+          <p id="session-meta" class="muted"></p>
+        </div>
+        <div class="dash-actions">
+          <button class="btn ghost" type="button" id="btn-refresh">Refresh</button>
+          <button class="btn ghost" type="button" id="btn-logout">Sign out</button>
+        </div>
+      </div>
+      <p id="status" class="dash-status" role="status"></p>
+
+      <div class="dash-grid">
+        <article class="dash-card" id="panel-approvals">
+          <h2>Approves</h2>
+          <div id="approvals-list" class="dash-list"></div>
+        </article>
+
+        <article class="dash-card" id="panel-pause">
+          <h2>Family pause</h2>
+          <p class="muted">Opens apps for dinner — Accessibility / uninstall stay locked with Device Owner.</p>
+          <div class="row-btns">
+            <button class="btn primary" type="button" data-pause="30">Pause 30 min</button>
+            <button class="btn primary" type="button" data-pause="60">Pause 60 min</button>
+            <button class="btn ghost" type="button" id="btn-end-pause">End pause</button>
+          </div>
+          <p id="pause-state" class="muted"></p>
+        </article>
+
+        <article class="dash-card" id="panel-policy">
+          <h2>Budgets &amp; rules</h2>
+          <form id="policy-form" class="dash-form compact">
+            <label>Focus (min) <input name="focusMinutes" type="number" min="0" max="480" /></label>
+            <label>Work (min) <input name="workMinutes" type="number" min="0" max="480" /></label>
+            <label>Learning (min) <input name="learningMinutes" type="number" min="0" max="480" /></label>
+            <label>Fun (min) <input name="entertainmentMinutes" type="number" min="0" max="480" /></label>
+            <label class="check"><input name="schoolModeEnabled" type="checkbox" /> School hours</label>
+            <label>School start <input name="schoolStartHour" type="number" min="0" max="23" /></label>
+            <label>School end <input name="schoolEndHour" type="number" min="0" max="23" /></label>
+            <label class="check"><input name="filterEnabled" type="checkbox" /> Web filter</label>
+            <label class="check"><input name="installApprovalEnabled" type="checkbox" /> Install approval</label>
+            <label class="check"><input name="liveLocationEnabled" type="checkbox" /> Live location</label>
+            <label>Settings unlock (min from now)
+              <input name="settingsUnlockMins" type="number" min="0" max="240" value="0" />
+            </label>
+            <button class="btn primary" type="submit">Send rules to kid</button>
+          </form>
+        </article>
+
+        <article class="dash-card" id="panel-todos">
+          <h2>Family to-dos</h2>
+          <form id="todo-form" class="dash-form compact row-form">
+            <input id="todo-title" type="text" placeholder="New to-do" required maxlength="80" />
+            <button class="btn primary" type="submit">Add</button>
+          </form>
+          <div id="todos-list" class="dash-list"></div>
+        </article>
+
+        <article class="dash-card" id="panel-apps">
+          <h2>Kid apps</h2>
+          <p class="muted">Inventory from the kid phone. Set Always / Never (writes policy overrides).</p>
+          <div id="apps-list" class="dash-list tall"></div>
+        </article>
+
+        <article class="dash-card" id="panel-location">
+          <h2>Location</h2>
+          <div id="location-box" class="muted">Refresh to load.</div>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div>
+      <p class="footer-brand">Steady</p>
+      <p>Less phone. More life. Dashboard uses GitHub only.</p>
+    </div>
+    <div class="footer-links">
+      <a href="index.html">Home</a>
+      <a href="setup.html">Setup</a>
+      <a href="privacy.html">Privacy</a>
+    </div>
+  </footer>
+
+  <script src="js/crypto-lite.js?v=1"></script>
+  <script src="js/github-sync.js?v=1"></script>
+  <script src="js/dashboard.js?v=1"></script>
+</body>
+</html>
