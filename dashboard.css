@@ -282,3 +282,143 @@
   border-color: rgba(124, 184, 154, 0.45);
 }
 
+/* —— Sign-in shell —— */
+.top-dash {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+}
+
+.dash-nav {
+  align-items: center;
+}
+
+.login-shell {
+  min-height: min(72vh, 720px);
+  display: grid;
+  place-items: center;
+  padding: 1rem 0 2rem;
+}
+
+.login-card {
+  width: min(100%, 440px);
+  background: linear-gradient(165deg, rgba(18, 42, 34, 0.92), rgba(8, 22, 17, 0.94));
+  border: 1px solid rgba(124, 184, 154, 0.22);
+  border-radius: 28px;
+  padding: 2rem 1.65rem 1.85rem;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
+  animation: rise 0.7s ease-out both;
+}
+
+.login-brand {
+  font-family: var(--display);
+  font-size: 1.65rem;
+  font-weight: 650;
+  margin: 0 0 0.35rem;
+  letter-spacing: -0.02em;
+  color: var(--accent-2, #9fd4b5);
+}
+
+.login-card h1 {
+  font-family: var(--display);
+  font-size: clamp(1.85rem, 4vw, 2.35rem);
+  margin: 0 0 0.65rem;
+  letter-spacing: -0.03em;
+}
+
+.login-lede {
+  color: var(--muted);
+  margin: 0 0 1.5rem;
+  line-height: 1.55;
+  font-size: 0.98rem;
+}
+
+.login-google {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.5rem;
+  min-height: 44px;
+}
+
+.login-google .google-btn-wrap {
+  display: flex;
+  justify-content: center;
+}
+
+.login-hint {
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.login-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin: 1.35rem 0 1.15rem;
+  color: var(--muted);
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.login-divider::before,
+.login-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+
+.login-form {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.login-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.login-label input {
+  background: rgba(0, 0, 0, 0.32);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  color: var(--fg);
+  padding: 0.85rem 1rem;
+  font: inherit;
+  font-size: 1.05rem;
+}
+
+.login-label input:focus {
+  outline: 2px solid rgba(124, 184, 154, 0.45);
+  outline-offset: 1px;
+}
+
+.login-submit {
+  width: 100%;
+  justify-content: center;
+  padding: 0.9rem 1.1rem;
+  font-size: 1.02rem;
+  border-radius: 999px;
+}
+
+.login-code {
+  margin: 1rem 0 0;
+  padding: 0.85rem 1rem;
+  border-radius: 14px;
+  background: rgba(61, 207, 138, 0.1);
+  border: 1px solid rgba(61, 207, 138, 0.28);
+  color: var(--fg);
+  line-height: 1.45;
+}
+
+.google-redirect-btn {
+  display: block;
+  width: 100%;
+}
+
