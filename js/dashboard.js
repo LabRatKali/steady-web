@@ -119,6 +119,13 @@
     setToggle("tog-filter", p.filterEnabled !== false);
     setToggle("tog-install", p.installApprovalEnabled !== false);
     setToggle("tog-location", !!p.liveLocationEnabled);
+    setToggle("tog-wa", p.blockWhatsappUpdates !== false);
+    setToggle("tog-inapp", p.blockInAppBrowsers !== false);
+    setToggle("tog-adult", p.blockCatAdult !== false);
+    setToggle("tog-social", p.blockCatSocial !== false);
+    setToggle("tog-gambling", p.blockCatGambling !== false);
+    setToggle("tog-dating", p.blockCatDating !== false);
+    setToggle("tog-gaming", !!p.blockCatGaming);
     const until = p.familyPauseUntil || 0;
     const pauseEl = $("pause-state");
     if (pauseEl) {
@@ -685,6 +692,13 @@
         p.filterEnabled = !!($("tog-filter") && $("tog-filter").checked);
         p.installApprovalEnabled = !!($("tog-install") && $("tog-install").checked);
         p.liveLocationEnabled = !!($("tog-location") && $("tog-location").checked);
+        p.blockWhatsappUpdates = !!($("tog-wa") && $("tog-wa").checked);
+        p.blockInAppBrowsers = !!($("tog-inapp") && $("tog-inapp").checked);
+        p.blockCatAdult = !!($("tog-adult") && $("tog-adult").checked);
+        p.blockCatSocial = !!($("tog-social") && $("tog-social").checked);
+        p.blockCatGambling = !!($("tog-gambling") && $("tog-gambling").checked);
+        p.blockCatDating = !!($("tog-dating") && $("tog-dating").checked);
+        p.blockCatGaming = !!($("tog-gaming") && $("tog-gaming").checked);
       });
       status("Budgets sent to kid");
       await refresh();
