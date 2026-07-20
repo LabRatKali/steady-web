@@ -1,9 +1,9 @@
 {
-  "version": "2.2.1",
-  "versionCode": 111,
-  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.2.1/steady-2.2.1.apk",
-  "sha256": "c82b0346ad36f7d1d51fd19b699801d6c902a8ef72ac2187ab3f9e484230e992",
-  "sizeBytes": 64328289,
-  "notes": "## 2.2.1\n\n## What's new\n\n- **Keyboard** \u2014 passphrase / security-question fields also open the soft keyboard (same helper as email/OTP).",
+  "version": "2.3.0",
+  "versionCode": 112,
+  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.3.0/steady-2.3.0.apk",
+  "sha256": "bccde8c03c3c1e6e9d3faabecb9daefea02b82240715f5740dd1a0f47bef1297",
+  "sizeBytes": 64330561,
+  "notes": "## 2.3.0\n\n## What's new\n\n- Sync and parent remote improvements.\n- Update **both** the parent phone and the kid phone together.\n- Tap Refresh on Home after installing so family link catches up.\n\n_Tip: add `release_notes/2.3.0.md` before the next ship for a full changelog in the app._\n",
   "assetId": 0
 }
