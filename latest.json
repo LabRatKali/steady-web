@@ -1,9 +1,9 @@
 {
-  "version": "2.1.1",
-  "versionCode": 102,
-  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.1.1/steady-2.1.1.apk",
-  "sha256": "496a00d365797b1992b8fa902719361c893aa7d4fc30538063b2428ede92eb41",
+  "version": "2.1.2",
+  "versionCode": 103,
+  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.1.2/steady-2.1.2.apk",
+  "sha256": "cffd4dfe3315f50129c5c1f869b38e67a9ca8df3cf630a53bbee3a0b4e7fba19",
   "sizeBytes": 64290033,
-  "notes": "## 2.1.1\n\n## What's new\n\n- **Resend / MailerSend email** \u2014 magic link + 6-digit code for web dashboard and Android (Resend free ~3k/mo recommended). Rate limits + hashed challenges.\n- Google Sign-In wiring ready \u2014 add your Web client ID in `keys/google-oauth.json` (see `keys/README.txt`).\n\n## Setup tip\n\n1. `keys/mailer.json` from `mailer.example.json` with a Resend API key.\n2. Finish Google Cloud OAuth steps in `keys/README.txt`.\n3. Rebuild & republish once.\n",
+  "notes": "## 2.1.2\n\n## What's new\n\n- **Google Sign-In live** \u2014 Web OAuth client baked into app + site (project `steady-503020`).\n- **Resend email live** \u2014 magic link + 6-digit codes for dashboard and Android.\n- **Parent remote dashboard** \u2014 instant mode toggles (school / filter / installs / location), clearer Approves, kid phone picker, Settings unlock, pause presets.\n\n## Note\n\nPhone Google Sign-In still needs an **Android** OAuth client in Google Cloud (package `app.steady.android` + debug SHA-1). The second JSON from Testing was a Desktop/installed client, not Android.",
   "assetId": 0
 }
