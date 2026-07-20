@@ -1,0 +1,158 @@
+/* Family dashboard — extends Steady site tokens */
+.dash-body .dash-main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 4rem;
+}
+
+.dash-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 1.35rem 1.4rem 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.dash-card h1,
+.dash-card h2 {
+  font-family: var(--display);
+  margin: 0 0 0.5rem;
+}
+
+.dash-card .lede {
+  color: var(--muted);
+  margin: 0 0 1.25rem;
+}
+
+.dash-form {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.dash-form.compact {
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  align-items: end;
+}
+
+.dash-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.dash-form label.check {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.dash-form input[type="text"],
+.dash-form input[type="password"],
+.dash-form input[type="number"] {
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--fg);
+  padding: 0.65rem 0.75rem;
+  font: inherit;
+}
+
+.dash-form .hint {
+  font-size: 0.75rem;
+  opacity: 0.75;
+}
+
+.dash-error {
+  color: #f0a0a0;
+  margin: 0.5rem 0 0;
+}
+
+.dash-help {
+  margin-top: 1rem;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.dash-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.dash-toolbar h1 {
+  font-family: var(--display);
+  margin: 0;
+}
+
+.dash-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.dash-status {
+  min-height: 1.4em;
+  color: var(--accent-2);
+  margin: 0 0 1rem;
+}
+
+.dash-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.dash-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.dash-list.tall {
+  max-height: 320px;
+  overflow: auto;
+}
+
+.dash-item {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 0.75rem 0.85rem;
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.dash-item strong {
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.row-btns,
+.row-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0.75rem 0;
+}
+
+.approve-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.55rem;
+}
+
+.approve-btns button {
+  font-size: 0.8rem;
+  padding: 0.35rem 0.55rem;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+code {
+  font-size: 0.88em;
+  color: var(--accent-2);
+}
