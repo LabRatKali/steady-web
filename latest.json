@@ -1,9 +1,9 @@
 {
-  "version": "2.1.5",
-  "versionCode": 106,
-  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.1.5/steady-2.1.5.apk",
-  "sha256": "7e21eb8b76c04df0aa1368b6569478d1092d3be8b65081d0c5b9cc2710897467",
-  "sizeBytes": 64290233,
-  "notes": "## 2.1.5\n\n## What's new\n\n- Website login redesign \u2014 calm sign-in card; developer PAT paste removed.\n- Google on workers.dev \u2014 Sign in redirects through the authorized GitHub Pages origin (fixes origin_mismatch), then returns you signed in.\n- Email codes \u2014 browser cannot call Resend directly; codes always appear on screen so you can finish sign-in. Optional /api/mail worker for inbox delivery.\n- Magic links use https://steady.less-phone.workers.dev/dashboard.html.\n- Self-update installer unblock included.\n\n## Optional (Google)\n\nYou can still add https://steady.less-phone.workers.dev as an Authorized JavaScript origin so Google works on that host without a redirect.\n",
+  "version": "2.1.6",
+  "versionCode": 107,
+  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.1.6/steady-2.1.6.apk",
+  "sha256": "5e8b13767bd6f69054b7ee5f9baaf1486e4d51d075b8a19615e2cc569630ddf1",
+  "sizeBytes": 64290685,
+  "notes": "## 2.1.6\n\n## What's new\n\n- **Dashboard** \u2014 login shell fully hides after sign-in; Sign in / Sign up tabs; Stay signed in; Sign out in nav; full kid app list with search.\n- **Setup** \u2014 Google / email (or family code) required before continuing; SELF also goes through account link.\n- **Settings lockdown** \u2014 blocks About phone, Apps lists, System, Security, search-in-Settings, and more; faster Accessibility scans.\n- **Workers** \u2014 Cloudflare worker proxies latest GitHub Pages + `/api/mail` for Resend.",
   "assetId": 0
 }
