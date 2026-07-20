@@ -98,10 +98,19 @@
       <ol>
         <li>Choose parent / accountability friend.</li>
         <li>Create a family code; enter it on the kid phone.</li>
-        <li>From Parent home: Refresh (watch the spinner), Approve asks, Approve to-dos.</li>
+        <li>From Parent home <em>or</em> the <a href="dashboard.html">web dashboard</a>: Refresh, Approve asks, pause, send rules.</li>
         <li>Family pause — open kid apps for dinner, then End pause.</li>
         <li>Parent settings — budgets, bedtime, location, kid apps Always/Never — then Send rules (or they sync when you change them).</li>
         <li>Enable live location on the parent side; the kid phone follows — no need to flip it on the kid.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>5b. Web dashboard (GitHub only)</h2>
+      <ol>
+        <li>Create a fine-grained GitHub PAT with Contents Read/Write on <code>steady-sync</code> only.</li>
+        <li>Open <a href="dashboard.html">dashboard.html</a> — enter PAT, family code, family secret (for signed Approves), and kid device ID (from Parent home).</li>
+        <li>Approve asks, pause, edit budgets, manage to-dos — the kid phone polls the same files.</li>
       </ol>
     </section>
 
