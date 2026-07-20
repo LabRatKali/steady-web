@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Sign in to Steady — parent remote for family phones. Google or email code." />
+  <meta name="description" content="Steady parent remote — approve asks, pause, budgets, kid apps." />
   <meta name="theme-color" content="#0c1b15" />
   <meta name="referrer" content="strict-origin-when-cross-origin" />
-  <title>Sign in · Steady</title>
+  <title>Steady · Parent remote</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=23" />
-  <link rel="stylesheet" href="dashboard.css?v=4" />
+  <link rel="stylesheet" href="styles.css?v=24" />
+  <link rel="stylesheet" href="dashboard.css?v=6" />
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body class="dash-body">
@@ -34,6 +34,11 @@
       <a href="index.html">Home</a>
       <a href="setup.html">Setup</a>
       <a class="nav-cta" href="index.html#download">Download</a>
+      <a id="nav-signin-link" class="nav-signin" href="dashboard.html">Sign in</a>
+      <span id="nav-auth" class="nav-auth" hidden>
+        <span id="nav-user" class="nav-user muted"></span>
+        <button class="btn ghost" type="button" id="nav-logout" style="padding:0.35rem 0.75rem">Sign out</button>
+      </span>
     </nav>
   </header>
 
@@ -41,17 +46,19 @@
     <section id="gate" class="login-shell">
       <div class="login-card">
         <p class="login-brand">Steady</p>
-        <h1>Welcome back</h1>
-        <p class="login-lede">
-          Sign in to run the kid phone from here — approve asks, pause, budgets, and modes.
-          Use the same Google or email on the website and the phones.
+        <div class="auth-tabs" role="tablist">
+          <button type="button" class="auth-tab is-active" data-tab="signin" role="tab" aria-selected="true">Sign in</button>
+          <button type="button" class="auth-tab" data-tab="signup" role="tab" aria-selected="false">Sign up</button>
+        </div>
+        <h1 id="auth-heading">Welcome back</h1>
+        <p class="login-lede" id="auth-lede">
+          Sign in to run the kid phone from here — approve asks, pause, budgets, and apps.
+          Same Google or email on the website and the phones.
         </p>
 
         <div class="login-google">
           <div id="google-btn" class="google-btn-wrap"></div>
-          <p id="google-hint" class="muted login-hint" hidden>
-            Google Sign-In isn’t ready on this site yet. Use email below, or add this site’s address in Google Cloud → OAuth → Authorized JavaScript origins.
-          </p>
+          <p id="google-hint" class="muted login-hint" hidden></p>
         </div>
 
         <div class="login-divider" aria-hidden="true"><span>or</span></div>
@@ -60,15 +67,19 @@
           <label class="login-label">Email
             <input id="otp-email" type="email" required placeholder="you@family.com" autocomplete="email" />
           </label>
-          <button class="btn primary login-submit" type="submit">Send sign-in code</button>
+          <button class="btn primary login-submit" type="submit" id="otp-send-btn">Send sign-in code</button>
         </form>
         <form id="otp-verify" class="login-form" hidden>
           <label class="login-label">6-digit code
             <input id="otp-code" type="text" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required autocomplete="one-time-code" />
           </label>
-          <button class="btn primary login-submit" type="submit">Verify &amp; open</button>
+          <button class="btn primary login-submit" type="submit">Verify &amp; open remote</button>
         </form>
         <p id="otp-display" class="login-code" hidden></p>
+        <label class="stay-check">
+          <input type="checkbox" id="stay-signed-in" checked />
+          Stay signed in on this device
+        </label>
         <p id="login-error" class="dash-error" hidden></p>
       </div>
     </section>
@@ -94,50 +105,51 @@
         <label class="child-pick">Or paste device ID
           <input id="child-live" type="text" placeholder="From kid phone → Parent home / Settings" autocomplete="off" />
         </label>
-        <p class="muted kid-hint">Approves, pause, and toggles sync to this phone.</p>
+        <p class="muted kid-hint">Changes sync to the kid phone over Steady’s private channel — same as the parent phone app.</p>
       </div>
       <p id="status" class="dash-status" role="status"></p>
 
       <div class="dash-grid dash-grid-remote">
         <article class="dash-card span-2" id="panel-approvals">
           <h2>Pending asks</h2>
-          <p class="panel-lede">Approve Fun time, unlocks, and installs — changes hit the kid phone on the next sync.</p>
+          <p class="panel-lede">Approve Fun time, unlocks, and installs — the kid phone picks this up on the next sync.</p>
           <div id="approvals-list" class="dash-list"></div>
         </article>
 
         <article class="dash-card" id="panel-modes">
           <h2>Modes &amp; guards</h2>
-          <p class="panel-lede">Flip a switch — Steady sends it to the kid phone right away.</p>
+          <p class="panel-lede">Flip a switch — Steady pushes policy to the kid phone right away.</p>
           <div class="toggle-stack" id="mode-toggles">
             <label class="toggle-row">
-              <span>
-                <strong>School hours</strong>
-                <small>Lock Fun during school window</small>
-              </span>
+              <span><strong>School hours</strong><small>Lock Fun during school window</small></span>
               <input type="checkbox" id="tog-school" data-policy="schoolModeEnabled" />
             </label>
             <label class="toggle-row">
-              <span>
-                <strong>Web filter</strong>
-                <small>Block risky browsing</small>
-              </span>
+              <span><strong>Web filter</strong><small>Block risky browsing</small></span>
               <input type="checkbox" id="tog-filter" data-policy="filterEnabled" />
             </label>
             <label class="toggle-row">
-              <span>
-                <strong>Install approval</strong>
-                <small>New apps need your OK</small>
-              </span>
+              <span><strong>Install approval</strong><small>New apps need your OK</small></span>
               <input type="checkbox" id="tog-install" data-policy="installApprovalEnabled" />
             </label>
             <label class="toggle-row">
-              <span>
-                <strong>Live location</strong>
-                <small>Show last known place</small>
-              </span>
+              <span><strong>Live location</strong><small>Show last known place</small></span>
               <input type="checkbox" id="tog-location" data-policy="liveLocationEnabled" />
             </label>
           </div>
+        </article>
+
+        <article class="dash-card" id="panel-mode">
+          <h2>Force mode</h2>
+          <p class="panel-lede">Push Focus / Work / Learn / Fun onto the kid phone until they change it with parent auth.</p>
+          <div class="row-btns" id="force-mode-btns">
+            <button class="btn ghost" type="button" data-force-mode="FOCUS">Focus</button>
+            <button class="btn ghost" type="button" data-force-mode="WORK">Work</button>
+            <button class="btn ghost" type="button" data-force-mode="LEARNING">Learn</button>
+            <button class="btn ghost" type="button" data-force-mode="ENTERTAINMENT">Fun</button>
+            <button class="btn ghost" type="button" data-force-mode="">Clear</button>
+          </div>
+          <p id="force-mode-state" class="muted"></p>
         </article>
 
         <article class="dash-card" id="panel-pause">
@@ -168,13 +180,24 @@
             <label>Fun (min) <input name="entertainmentMinutes" type="number" min="0" max="480" /></label>
             <label>School start <input name="schoolStartHour" type="number" min="0" max="23" /></label>
             <label>School end <input name="schoolEndHour" type="number" min="0" max="23" /></label>
-            <input type="hidden" name="schoolModeEnabled" />
-            <input type="hidden" name="filterEnabled" />
-            <input type="hidden" name="installApprovalEnabled" />
-            <input type="hidden" name="liveLocationEnabled" />
-            <input type="hidden" name="settingsUnlockMins" value="0" />
             <button class="btn primary span-form" type="submit">Save budgets to kid</button>
           </form>
+        </article>
+
+        <article class="dash-card span-2" id="panel-installs">
+          <h2>Install asks</h2>
+          <p class="panel-lede">New apps the kid tried to install — Approve or Deny. The kid phone applies the decision on the next sync.</p>
+          <div id="installs-list" class="dash-list"></div>
+        </article>
+
+        <article class="dash-card span-2" id="panel-apps">
+          <h2>Kid apps</h2>
+          <p class="panel-lede">Every app from the kid phone — Always / Fun / Never. Overrides sync with the next refresh on the phone.</p>
+          <div class="apps-toolbar">
+            <input id="apps-filter" type="search" placeholder="Search apps…" autocomplete="off" />
+            <span id="apps-count" class="muted"></span>
+          </div>
+          <div id="apps-list" class="dash-list tall apps-tall"></div>
         </article>
 
         <article class="dash-card" id="panel-todos">
@@ -184,11 +207,6 @@
             <button class="btn primary" type="submit">Add</button>
           </form>
           <div id="todos-list" class="dash-list"></div>
-        </article>
-        <article class="dash-card" id="panel-apps">
-          <h2>Kid apps</h2>
-          <p class="panel-lede">Always / Fun / Never — overrides sync with the next refresh.</p>
-          <div id="apps-list" class="dash-list tall"></div>
         </article>
         <article class="dash-card" id="panel-location">
           <h2>Location</h2>
@@ -210,10 +228,10 @@
     </div>
   </footer>
 
-  <script src="js/runtime-config.js?v=3"></script>
+  <script src="js/runtime-config.js?v=4"></script>
   <script src="js/crypto-lite.js?v=2"></script>
-  <script src="js/github-sync.js?v=2"></script>
-  <script src="js/auth.js?v=3"></script>
-  <script src="js/dashboard.js?v=4"></script>
+  <script src="js/github-sync.js?v=3"></script>
+  <script src="js/auth.js?v=5"></script>
+  <script src="js/dashboard.js?v=6"></script>
 </body>
 </html>
