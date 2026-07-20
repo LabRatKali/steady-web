@@ -362,11 +362,16 @@
   }
 
   // —— Auth wiring ——
+  const redirected = SteadyAuth.consumeRedirectSession && SteadyAuth.consumeRedirectSession();
+  if (redirected && redirected.familyCode) {
+    enterWithSession(redirected).catch((e) => loginError(String(e.message || e)));
+  }
+
   const googleOk = SteadyAuth.initGoogleButton($("google-btn"), (sess) => {
     loginError("");
     enterWithSession(sess).catch((e) => loginError(String(e.message || e)));
   });
-  if (!googleOk) {
+  if (!googleOk && $("google-hint")) {
     $("google-hint").hidden = false;
   }
 
@@ -374,25 +379,38 @@
     ev.preventDefault();
     loginError("");
     const email = $("otp-email").value.trim();
+    const btn = ev.target.querySelector('button[type="submit"]');
+    if (btn) btn.disabled = true;
     try {
       const code = SteadyAuth.randomOtp();
       const magic = SteadyAuth.randomMagicToken();
-      await SteadyAuth.putOtpChallenge(email, code, magic);
       const sent = await SteadyAuth.sendOtpEmail(email, code, magic);
+      try {
+        await SteadyAuth.putOtpChallenge(email, code, magic);
+      } catch (rateErr) {
+        const msg = String(rateErr.message || rateErr);
+        if (/wait a minute/i.test(msg)) {
+          await SteadyAuth.putOtpChallenge(email, code, magic, { replace: true });
+        } else {
+          throw rateErr;
+        }
+      }
       $("otp-verify").hidden = false;
       const disp = $("otp-display");
       disp.hidden = false;
       if (sent.emailed) {
         disp.textContent =
-          "Check your email for a magic link or 6-digit code (10 min). Spam folder too.";
+          "Check your email for a magic link or 6-digit code (about 10 minutes). Check spam too.";
       } else {
-        disp.textContent =
-          "Mailer not configured yet. Your code: " +
+        disp.innerHTML =
+          "Your sign-in code is <strong style=\"letter-spacing:0.2em\">" +
           code +
-          " — add keys/mailer.json (Resend recommended) and republish to email codes.";
+          "</strong> — type it below to continue.";
       }
     } catch (e) {
       loginError(String(e.message || e));
+    } finally {
+      if (btn) btn.disabled = false;
     }
   });
 
@@ -415,31 +433,6 @@
       session.familySecret = account.familySecret;
       SteadyAuth.saveSession(session);
       await enterWithSession(session);
-    } catch (e) {
-      loginError(String(e.message || e));
-    }
-  });
-
-  $("pat-form").addEventListener("submit", async (ev) => {
-    ev.preventDefault();
-    try {
-      const cfg = {
-        pat: $("pat").value.trim(),
-        pair: $("pair").value.trim(),
-        secret: $("secret").value.trim(),
-        child: $("child").value.trim(),
-      };
-      if (!cfg.pair) throw new Error("Family code required");
-      session = {
-        provider: "pat",
-        email: "",
-        familyCode: cfg.pair,
-        familySecret: cfg.secret || cfg.pair,
-      };
-      client = buildClient(cfg);
-      if ($("child-live")) $("child-live").value = cfg.child || "";
-      showApp(true);
-      await refresh();
     } catch (e) {
       loginError(String(e.message || e));
     }
@@ -555,9 +548,11 @@
     }
   });
 
-  const existing = SteadyAuth.loadSession();
-  if (existing && existing.familyCode) {
-    enterWithSession(existing).catch((e) => loginError(String(e.message || e)));
+  if (!redirected) {
+    const existing = SteadyAuth.loadSession();
+    if (existing && existing.familyCode) {
+      enterWithSession(existing).catch((e) => loginError(String(e.message || e)));
+    }
   }
 
   // Magic link: dashboard.html?email=…&magic=…
