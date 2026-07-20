@@ -1,9 +1,9 @@
 {
-  "version": "2.1.7",
-  "versionCode": 108,
-  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.1.7/steady-2.1.7.apk",
-  "sha256": "a7837d57a03a929f29918ae02f24b132af35856cd1a827a27054e0d564aa2827",
+  "version": "2.1.8",
+  "versionCode": 109,
+  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.1.8/steady-2.1.8.apk",
+  "sha256": "7642d4097a1bd531923897b0c09d42169c8b7144ced2211e44a6d4c0dde44030",
   "sizeBytes": 64292205,
-  "notes": "## 2.1.7\n\n## What's new\n\n- **Same family for Google + email** \u2014 website Google Sign-In and kid-phone email OTP (same address) now share one family. Email is the canonical identity; Google `sub` is an alias.\n- **Kid setup** \u2014 Google Sign-In hidden on kid phones; use the parent website email + code (or family code).\n- **Crash \u2192 setup fix** \u2014 setup is marked done in prefs before heavy scanning; restart uses prefs if DataStore lagged.\n- **Lighter Accessibility** \u2014 less aggressive Settings/WhatsApp tree walks (fewer ANRs / freezes) while still blocking dangerous screens and WhatsApp Status/Updates.\n- **Website remote** \u2014 WhatsApp Status/Updates, in-app browsers, and DNS category toggles; app Always/Never still syncs to the kid.",
+  "notes": "## 2.1.8\n\n## What's new\n\n- **Setup finish** \u2014 navigates only after setup is committed (closes remaining crash\u2192wizard race).\n- **Force mode preserved** \u2014 parent phone \u201cSend rules\u201d no longer clears a website-forced Focus/Work/Learn/Fun mode.\n- **Website bedtime** \u2014 bedtime on/off + hours on the parent remote.",
   "assetId": 0
 }
