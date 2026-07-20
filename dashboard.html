@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css?v=24" />
-  <link rel="stylesheet" href="dashboard.css?v=7" />
+  <link rel="stylesheet" href="dashboard.css?v=8" />
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body class="dash-body">
@@ -112,7 +112,7 @@
       <div class="dash-grid dash-grid-remote">
         <article class="dash-card span-2" id="panel-approvals">
           <h2>Pending asks</h2>
-          <p class="panel-lede">Approve Fun time, unlocks, and installs — the kid phone picks this up on the next sync.</p>
+          <p class="panel-lede">Approve Fun time, apps, websites, and unlocks — taps send to GitHub right away. Kid Refresh applies them.</p>
           <div id="approvals-list" class="dash-list"></div>
         </article>
 
@@ -199,11 +199,13 @@
             <button class="btn ghost" type="button" id="btn-unlock-settings">Allow Settings</button>
             <button class="btn ghost" type="button" id="btn-unlock-10">Settings 10 min</button>
           </div>
+          <p id="unlock-state" class="muted"></p>
           <div class="row-btns unlock-row" style="margin-top:0.75rem">
             <button class="btn ghost" type="button" id="btn-soft-5">Break Steady 5 min</button>
             <button class="btn ghost" type="button" id="btn-soft-15">Break Steady 15 min</button>
             <button class="btn ghost" type="button" id="btn-soft-end">End break</button>
           </div>
+          <p id="break-state" class="muted"></p>
           <p class="muted" style="margin-top:0.5rem">Break Steady opens apps for a short window without uninstalling — for dinner or a car ride.</p>
           <div class="toggle-stack" style="margin-top:1rem">
             <label class="toggle-row">
@@ -257,6 +259,15 @@
           </form>
           <div id="todos-list" class="dash-list"></div>
         </article>
+        <article class="dash-card" id="panel-sites">
+          <h2>Website approvals</h2>
+          <p class="panel-lede">Always-allowed sites on the kid phone (DNS allow list). Approve SITE asks above, or add a host here.</p>
+          <form id="site-form" class="dash-form compact row-form">
+            <input id="site-host" type="text" placeholder="example.com" maxlength="120" autocomplete="off" />
+            <button class="btn primary" type="submit">Allow site</button>
+          </form>
+          <div id="sites-list" class="dash-list"></div>
+        </article>
         <article class="dash-card" id="panel-location">
           <h2>Location</h2>
           <div id="location-box" class="muted">Refresh to load.</div>
@@ -281,6 +292,6 @@
   <script src="js/crypto-lite.js?v=2"></script>
   <script src="js/github-sync.js?v=3"></script>
   <script src="js/auth.js?v=6"></script>
-  <script src="js/dashboard.js?v=9"></script>
+  <script src="js/dashboard.js?v=10"></script>
 </body>
 </html>
