@@ -1,9 +1,9 @@
 {
-  "version": "2.1.8",
-  "versionCode": 109,
-  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.1.8/steady-2.1.8.apk",
-  "sha256": "7642d4097a1bd531923897b0c09d42169c8b7144ced2211e44a6d4c0dde44030",
-  "sizeBytes": 64292205,
-  "notes": "## 2.1.8\n\n## What's new\n\n- **Setup finish** \u2014 navigates only after setup is committed (closes remaining crash\u2192wizard race).\n- **Force mode preserved** \u2014 parent phone \u201cSend rules\u201d no longer clears a website-forced Focus/Work/Learn/Fun mode.\n- **Website bedtime** \u2014 bedtime on/off + hours on the parent remote.",
+  "version": "2.2.0",
+  "versionCode": 110,
+  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.2.0/steady-2.2.0.apk",
+  "sha256": "01708f128df2d6046f56390d3247c618e8c6927005a1b1bec7e495a8c16b3d1d",
+  "sizeBytes": 64311905,
+  "notes": "## 2.2.0\n\n## What's new\n\n- **Keyboard** \u2014 email / code fields request focus and open the soft keyboard reliably.\n- **Rest screen** \u2014 scrollable, clearer copy, 5/15/30/60 min asks that go to the parent website.\n- **Make Steady Home** \u2014 opens the Home picker with a short safe window (no \u201cask parent\u201d first).\n- **Lighter** \u2014 enforcement tick ~15s, less background cloud polling; refresh stays primary.\n- **Website** \u2014 day off, Settings 10 min, Break Steady 5/15 min, hide Steady notifications, bedtime + guards.\n- **Home** \u2014 cleaner Android-style header (date + profile + tools).\n- **Setup** \u2014 optional location permission for Live location.",
   "assetId": 0
 }
