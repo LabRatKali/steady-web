@@ -10,8 +10,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=24" />
-  <link rel="stylesheet" href="dashboard.css?v=8" />
+  <link rel="stylesheet" href="styles.css?v=25" />
+  <link rel="stylesheet" href="dashboard.css?v=9" />
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body class="dash-body">
@@ -109,169 +109,207 @@
       </div>
       <p id="status" class="dash-status" role="status"></p>
 
-      <div class="dash-grid dash-grid-remote">
-        <article class="dash-card span-2" id="panel-approvals">
-          <h2>Pending asks</h2>
-          <p class="panel-lede">Approve Fun time, apps, websites, and unlocks — taps send to GitHub right away. Kid Refresh applies them.</p>
-          <div id="approvals-list" class="dash-list"></div>
-        </article>
+      <nav class="dash-tabs" id="dash-tabs" role="tablist" aria-label="Parent remote sections">
+        <button type="button" class="dash-tab is-active" data-tab="asks" role="tab" aria-selected="true">Asks</button>
+        <button type="button" class="dash-tab" data-tab="controls" role="tab" aria-selected="false">Controls</button>
+        <button type="button" class="dash-tab" data-tab="budgets" role="tab" aria-selected="false">Budgets</button>
+        <button type="button" class="dash-tab" data-tab="apps" role="tab" aria-selected="false">Apps</button>
+        <button type="button" class="dash-tab" data-tab="todos" role="tab" aria-selected="false">To-dos</button>
+        <button type="button" class="dash-tab" data-tab="more" role="tab" aria-selected="false">More</button>
+      </nav>
 
-        <article class="dash-card" id="panel-modes">
-          <h2>Modes &amp; guards</h2>
-          <p class="panel-lede">Flip a switch — Steady pushes policy to the kid phone right away.</p>
-          <div class="toggle-stack" id="mode-toggles">
-            <label class="toggle-row">
-              <span><strong>School hours</strong><small>Lock Fun during school window</small></span>
-              <input type="checkbox" id="tog-school" data-policy="schoolModeEnabled" />
-            </label>
-            <label class="toggle-row">
-              <span><strong>Web filter</strong><small>Block risky browsing</small></span>
-              <input type="checkbox" id="tog-filter" data-policy="filterEnabled" />
-            </label>
-            <label class="toggle-row">
-              <span><strong>Install approval</strong><small>New apps need your OK</small></span>
-              <input type="checkbox" id="tog-install" data-policy="installApprovalEnabled" />
-            </label>
-            <label class="toggle-row">
-              <span><strong>Live location</strong><small>Show last known place</small></span>
-              <input type="checkbox" id="tog-location" data-policy="liveLocationEnabled" />
-            </label>
-            <label class="toggle-row">
-              <span><strong>WhatsApp Status / Updates</strong><small>Block Status, Channels, Updates tab</small></span>
-              <input type="checkbox" id="tog-wa" data-policy="blockWhatsappUpdates" />
-            </label>
-            <label class="toggle-row">
-              <span><strong>In-app browsers</strong><small>Block embedded browser screens</small></span>
-              <input type="checkbox" id="tog-inapp" data-policy="blockInAppBrowsers" />
-            </label>
-            <label class="toggle-row">
-              <span><strong>Block adult sites</strong><small>DNS / filter category</small></span>
-              <input type="checkbox" id="tog-adult" data-policy="blockCatAdult" />
-            </label>
-            <label class="toggle-row">
-              <span><strong>Block social sites</strong><small>DNS / filter category</small></span>
-              <input type="checkbox" id="tog-social" data-policy="blockCatSocial" />
-            </label>
-            <label class="toggle-row">
-              <span><strong>Block gambling</strong><small>DNS / filter category</small></span>
-              <input type="checkbox" id="tog-gambling" data-policy="blockCatGambling" />
-            </label>
-            <label class="toggle-row">
-              <span><strong>Block dating</strong><small>DNS / filter category</small></span>
-              <input type="checkbox" id="tog-dating" data-policy="blockCatDating" />
-            </label>
-            <label class="toggle-row">
-              <span><strong>Block gaming sites</strong><small>DNS / filter category</small></span>
-              <input type="checkbox" id="tog-gaming" data-policy="blockCatGaming" />
-            </label>
+      <div class="dash-panels">
+        <div class="dash-panel is-active" data-panel="asks" role="tabpanel">
+          <div class="dash-grid dash-grid-remote">
+            <article class="dash-card span-2" id="panel-approvals">
+              <h2>Pending asks</h2>
+              <p class="panel-lede">Approve Fun, apps, websites, unlocks — sends right away. Kid taps Refresh to apply.</p>
+              <div id="approvals-list" class="dash-list"></div>
+            </article>
+            <article class="dash-card span-2" id="panel-installs">
+              <h2>Install asks</h2>
+              <p class="panel-lede">New apps the kid tried to install — Approve or Deny.</p>
+              <div id="installs-list" class="dash-list"></div>
+            </article>
           </div>
-        </article>
+        </div>
 
-        <article class="dash-card" id="panel-mode">
-          <h2>Force mode</h2>
-          <p class="panel-lede">Push Focus / Work / Learn / Fun onto the kid phone until they change it with parent auth.</p>
-          <div class="row-btns" id="force-mode-btns">
-            <button class="btn ghost" type="button" data-force-mode="FOCUS">Focus</button>
-            <button class="btn ghost" type="button" data-force-mode="WORK">Work</button>
-            <button class="btn ghost" type="button" data-force-mode="LEARNING">Learn</button>
-            <button class="btn ghost" type="button" data-force-mode="ENTERTAINMENT">Fun</button>
-            <button class="btn ghost" type="button" data-force-mode="">Clear</button>
-          </div>
-          <p id="force-mode-state" class="muted"></p>
-        </article>
+        <div class="dash-panel" data-panel="controls" role="tabpanel" hidden>
+          <div class="dash-grid dash-grid-remote">
+            <article class="dash-card" id="panel-modes">
+              <h2>Modes &amp; guards</h2>
+              <p class="panel-lede">Flip switches, then <strong>Save &amp; push</strong> at the bottom.</p>
+              <div class="toggle-stack" id="mode-toggles">
+                <label class="toggle-row">
+                  <span><strong>School hours</strong><small>Lock Fun during school window</small></span>
+                  <input type="checkbox" id="tog-school" data-policy="schoolModeEnabled" />
+                </label>
+                <label class="toggle-row">
+                  <span><strong>Web filter</strong><small>Block risky browsing</small></span>
+                  <input type="checkbox" id="tog-filter" data-policy="filterEnabled" />
+                </label>
+                <label class="toggle-row">
+                  <span><strong>Install approval</strong><small>New apps need your OK</small></span>
+                  <input type="checkbox" id="tog-install" data-policy="installApprovalEnabled" />
+                </label>
+                <label class="toggle-row">
+                  <span><strong>Live location</strong><small>Show last known place</small></span>
+                  <input type="checkbox" id="tog-location" data-policy="liveLocationEnabled" />
+                </label>
+                <label class="toggle-row">
+                  <span><strong>WhatsApp Status / Updates</strong><small>Block Status, Channels, Updates tab</small></span>
+                  <input type="checkbox" id="tog-wa" data-policy="blockWhatsappUpdates" />
+                </label>
+                <label class="toggle-row">
+                  <span><strong>In-app browsers</strong><small>Block embedded browser screens</small></span>
+                  <input type="checkbox" id="tog-inapp" data-policy="blockInAppBrowsers" />
+                </label>
+                <label class="toggle-row">
+                  <span><strong>Block adult sites</strong><small>DNS / filter category</small></span>
+                  <input type="checkbox" id="tog-adult" data-policy="blockCatAdult" />
+                </label>
+                <label class="toggle-row">
+                  <span><strong>Block social sites</strong><small>DNS / filter category</small></span>
+                  <input type="checkbox" id="tog-social" data-policy="blockCatSocial" />
+                </label>
+                <label class="toggle-row">
+                  <span><strong>Block gambling</strong><small>DNS / filter category</small></span>
+                  <input type="checkbox" id="tog-gambling" data-policy="blockCatGambling" />
+                </label>
+                <label class="toggle-row">
+                  <span><strong>Block dating</strong><small>DNS / filter category</small></span>
+                  <input type="checkbox" id="tog-dating" data-policy="blockCatDating" />
+                </label>
+                <label class="toggle-row">
+                  <span><strong>Block gaming sites</strong><small>DNS / filter category</small></span>
+                  <input type="checkbox" id="tog-gaming" data-policy="blockCatGaming" />
+                </label>
+                <label class="toggle-row">
+                  <span><strong>Hide Steady notifications</strong><small>Quiet watch / filter status</small></span>
+                  <input type="checkbox" id="tog-hide-notifs" data-policy="hideServiceNotifications" />
+                </label>
+              </div>
+            </article>
 
-        <article class="dash-card" id="panel-pause">
-          <h2>Pause &amp; unlocks</h2>
-          <p class="panel-lede">Day off, short breaks, Settings unlock, and quiet notifications — same controls as the parent phone.</p>
-          <div class="row-btns">
-            <button class="btn primary" type="button" data-pause="15">15 min</button>
-            <button class="btn primary" type="button" data-pause="30">30 min</button>
-            <button class="btn primary" type="button" data-pause="60">1 hour</button>
-            <button class="btn primary" type="button" data-pause="240">Day off (4h)</button>
-            <button class="btn primary" type="button" data-pause="720">Day off (12h)</button>
-            <button class="btn ghost" type="button" id="btn-end-pause">End pause</button>
-          </div>
-          <p id="pause-state" class="muted"></p>
-          <div class="row-btns unlock-row">
-            <label class="inline-num">Unlock Settings (min)
-              <input id="quick-unlock" type="number" min="0" max="240" value="10" />
-            </label>
-            <button class="btn ghost" type="button" id="btn-unlock-settings">Allow Settings</button>
-            <button class="btn ghost" type="button" id="btn-unlock-10">Settings 10 min</button>
-          </div>
-          <p id="unlock-state" class="muted"></p>
-          <div class="row-btns unlock-row" style="margin-top:0.75rem">
-            <button class="btn ghost" type="button" id="btn-soft-5">Break Steady 5 min</button>
-            <button class="btn ghost" type="button" id="btn-soft-15">Break Steady 15 min</button>
-            <button class="btn ghost" type="button" id="btn-soft-end">End break</button>
-          </div>
-          <p id="break-state" class="muted"></p>
-          <p class="muted" style="margin-top:0.5rem">Break Steady opens apps for a short window without uninstalling — for dinner or a car ride.</p>
-          <div class="toggle-stack" style="margin-top:1rem">
-            <label class="toggle-row">
-              <span><strong>Hide Steady notifications</strong><small>Quiet watch / filter status stay invisible</small></span>
-              <input type="checkbox" id="tog-hide-notifs" data-policy="hideServiceNotifications" />
-            </label>
-          </div>
-        </article>
+            <article class="dash-card" id="panel-mode">
+              <h2>Force mode / profiles</h2>
+              <p class="panel-lede">Push Focus / Work / Learn / Fun onto the kid phone.</p>
+              <div class="row-btns" id="force-mode-btns">
+                <button class="btn ghost" type="button" data-force-mode="FOCUS">Focus</button>
+                <button class="btn ghost" type="button" data-force-mode="WORK">Work</button>
+                <button class="btn ghost" type="button" data-force-mode="LEARNING">Learn</button>
+                <button class="btn ghost" type="button" data-force-mode="ENTERTAINMENT">Fun</button>
+                <button class="btn ghost" type="button" data-force-mode="">Clear</button>
+              </div>
+              <p id="force-mode-state" class="muted"></p>
+            </article>
 
-        <article class="dash-card" id="panel-policy">
-          <h2>Daily budgets</h2>
-          <p class="panel-lede">Minutes per bucket. Save to push to the kid phone.</p>
-          <form id="policy-form" class="dash-form compact">
-            <label>Focus (min) <input name="focusMinutes" type="number" min="0" max="480" /></label>
-            <label>Work (min) <input name="workMinutes" type="number" min="0" max="480" /></label>
-            <label>Learning (min) <input name="learningMinutes" type="number" min="0" max="480" /></label>
-            <label>Fun (min) <input name="entertainmentMinutes" type="number" min="0" max="480" /></label>
-            <label>School start <input name="schoolStartHour" type="number" min="0" max="23" /></label>
-            <label>School end <input name="schoolEndHour" type="number" min="0" max="23" /></label>
-            <label class="span-form toggle-row" style="margin:0.35rem 0">
-              <span><strong>Bedtime</strong><small>Lock Fun overnight</small></span>
-              <input type="checkbox" id="tog-bedtime" data-policy="bedtimeEnabled" />
-            </label>
-            <label>Bedtime start <input name="bedtimeStartHour" type="number" min="0" max="23" /></label>
-            <label>Bedtime end <input name="bedtimeEndHour" type="number" min="0" max="23" /></label>
-            <button class="btn primary span-form" type="submit">Save budgets to kid</button>
-          </form>
-        </article>
-
-        <article class="dash-card span-2" id="panel-installs">
-          <h2>Install asks</h2>
-          <p class="panel-lede">New apps the kid tried to install — Approve or Deny. The kid phone applies the decision on the next sync.</p>
-          <div id="installs-list" class="dash-list"></div>
-        </article>
-
-        <article class="dash-card span-2" id="panel-apps">
-          <h2>Kid apps</h2>
-          <p class="panel-lede">Every app from the kid phone — Always / Fun / Never. Overrides sync with the next refresh on the phone.</p>
-          <div class="apps-toolbar">
-            <input id="apps-filter" type="search" placeholder="Search apps…" autocomplete="off" />
-            <span id="apps-count" class="muted"></span>
+            <article class="dash-card span-2" id="panel-pause">
+              <h2>Pause &amp; unlocks</h2>
+              <p class="panel-lede">Day off, short breaks, Settings unlock — then Save &amp; push.</p>
+              <div class="row-btns">
+                <button class="btn primary" type="button" data-pause="15">15 min</button>
+                <button class="btn primary" type="button" data-pause="30">30 min</button>
+                <button class="btn primary" type="button" data-pause="60">1 hour</button>
+                <button class="btn primary" type="button" data-pause="240">Day off (4h)</button>
+                <button class="btn primary" type="button" data-pause="720">Day off (12h)</button>
+                <button class="btn ghost" type="button" id="btn-end-pause">End pause</button>
+              </div>
+              <p id="pause-state" class="muted"></p>
+              <div class="row-btns unlock-row">
+                <label class="inline-num">Unlock Settings (min)
+                  <input id="quick-unlock" type="number" min="0" max="240" value="10" />
+                </label>
+                <button class="btn ghost" type="button" id="btn-unlock-settings">Allow Settings</button>
+                <button class="btn ghost" type="button" id="btn-unlock-10">Settings 10 min</button>
+              </div>
+              <p id="unlock-state" class="muted"></p>
+              <div class="row-btns unlock-row" style="margin-top:0.75rem">
+                <button class="btn ghost" type="button" id="btn-soft-5">Break Steady 5 min</button>
+                <button class="btn ghost" type="button" id="btn-soft-15">Break Steady 15 min</button>
+                <button class="btn ghost" type="button" id="btn-soft-end">End break</button>
+              </div>
+              <p id="break-state" class="muted"></p>
+            </article>
           </div>
-          <div id="apps-list" class="dash-list tall apps-tall"></div>
-        </article>
+        </div>
 
-        <article class="dash-card" id="panel-todos">
-          <h2>Family to-dos</h2>
-          <form id="todo-form" class="dash-form compact row-form">
-            <input id="todo-title" type="text" placeholder="New to-do" required maxlength="80" />
-            <button class="btn primary" type="submit">Add</button>
-          </form>
-          <div id="todos-list" class="dash-list"></div>
-        </article>
-        <article class="dash-card" id="panel-sites">
-          <h2>Website approvals</h2>
-          <p class="panel-lede">Always-allowed sites on the kid phone (DNS allow list). Approve SITE asks above, or add a host here.</p>
-          <form id="site-form" class="dash-form compact row-form">
-            <input id="site-host" type="text" placeholder="example.com" maxlength="120" autocomplete="off" />
-            <button class="btn primary" type="submit">Allow site</button>
-          </form>
-          <div id="sites-list" class="dash-list"></div>
-        </article>
-        <article class="dash-card" id="panel-location">
-          <h2>Location</h2>
-          <div id="location-box" class="muted">Refresh to load.</div>
-        </article>
+        <div class="dash-panel" data-panel="budgets" role="tabpanel" hidden>
+          <div class="dash-grid dash-grid-remote">
+            <article class="dash-card span-2" id="panel-policy">
+              <h2>Daily budgets &amp; bedtime</h2>
+              <p class="panel-lede">Edit minutes, then Save &amp; push at the bottom.</p>
+              <form id="policy-form" class="dash-form compact">
+                <label>Focus (min) <input name="focusMinutes" type="number" min="0" max="480" /></label>
+                <label>Work (min) <input name="workMinutes" type="number" min="0" max="480" /></label>
+                <label>Learning (min) <input name="learningMinutes" type="number" min="0" max="480" /></label>
+                <label>Fun (min) <input name="entertainmentMinutes" type="number" min="0" max="480" /></label>
+                <label>School start <input name="schoolStartHour" type="number" min="0" max="23" /></label>
+                <label>School end <input name="schoolEndHour" type="number" min="0" max="23" /></label>
+                <label class="span-form toggle-row" style="margin:0.35rem 0">
+                  <span><strong>Bedtime</strong><small>Lock Fun overnight</small></span>
+                  <input type="checkbox" id="tog-bedtime" data-policy="bedtimeEnabled" />
+                </label>
+                <label>Bedtime start <input name="bedtimeStartHour" type="number" min="0" max="23" /></label>
+                <label>Bedtime end <input name="bedtimeEndHour" type="number" min="0" max="23" /></label>
+              </form>
+            </article>
+          </div>
+        </div>
+
+        <div class="dash-panel" data-panel="apps" role="tabpanel" hidden>
+          <div class="dash-grid dash-grid-remote">
+            <article class="dash-card span-2" id="panel-apps">
+              <h2>Kid apps</h2>
+              <p class="panel-lede">Always / Focus / Work / Learn / Fun / Never. App taps send right away.</p>
+              <div class="apps-toolbar">
+                <input id="apps-filter" type="search" placeholder="Search apps…" autocomplete="off" />
+                <span id="apps-count" class="muted"></span>
+              </div>
+              <div id="apps-list" class="dash-list tall apps-tall"></div>
+            </article>
+          </div>
+        </div>
+
+        <div class="dash-panel" data-panel="todos" role="tabpanel" hidden>
+          <div class="dash-grid dash-grid-remote">
+            <article class="dash-card span-2" id="panel-todos">
+              <h2>Family to-dos</h2>
+              <p class="panel-lede">Mark done sends Approve to the kid phone right away.</p>
+              <form id="todo-form" class="dash-form compact row-form">
+                <input id="todo-title" type="text" placeholder="New to-do" required maxlength="80" />
+                <button class="btn primary" type="submit">Add</button>
+              </form>
+              <div id="todos-list" class="dash-list"></div>
+            </article>
+          </div>
+        </div>
+
+        <div class="dash-panel" data-panel="more" role="tabpanel" hidden>
+          <div class="dash-grid dash-grid-remote">
+            <article class="dash-card" id="panel-sites">
+              <h2>Website approvals</h2>
+              <p class="panel-lede">Always-allowed sites (DNS allow list).</p>
+              <form id="site-form" class="dash-form compact row-form">
+                <input id="site-host" type="text" placeholder="example.com" maxlength="120" autocomplete="off" />
+                <button class="btn primary" type="submit">Allow site</button>
+              </form>
+              <div id="sites-list" class="dash-list"></div>
+            </article>
+            <article class="dash-card" id="panel-location">
+              <h2>Location</h2>
+              <div id="location-box" class="muted">Refresh to load.</div>
+            </article>
+          </div>
+        </div>
+      </div>
+
+      <div class="dash-push-bar" id="dash-push-bar">
+        <div class="dash-push-meta">
+          <strong id="push-label">Ready</strong>
+          <span id="push-hint" class="muted">Change Controls or Budgets, then push the whole profile to the kid.</span>
+        </div>
+        <button class="btn primary" type="button" id="btn-push-kid">Save &amp; push to kid</button>
       </div>
     </section>
   </main>
@@ -292,6 +330,6 @@
   <script src="js/crypto-lite.js?v=2"></script>
   <script src="js/github-sync.js?v=3"></script>
   <script src="js/auth.js?v=6"></script>
-  <script src="js/dashboard.js?v=10"></script>
+  <script src="js/dashboard.js?v=11"></script>
 </body>
 </html>
