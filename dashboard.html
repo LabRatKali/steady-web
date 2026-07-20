@@ -181,20 +181,35 @@
         </article>
 
         <article class="dash-card" id="panel-pause">
-          <h2>Family pause</h2>
-          <p class="panel-lede">Quiet the phone for dinner, homework, or bedtime.</p>
+          <h2>Pause &amp; unlocks</h2>
+          <p class="panel-lede">Day off, short breaks, Settings unlock, and quiet notifications — same controls as the parent phone.</p>
           <div class="row-btns">
             <button class="btn primary" type="button" data-pause="15">15 min</button>
             <button class="btn primary" type="button" data-pause="30">30 min</button>
             <button class="btn primary" type="button" data-pause="60">1 hour</button>
+            <button class="btn primary" type="button" data-pause="240">Day off (4h)</button>
+            <button class="btn primary" type="button" data-pause="720">Day off (12h)</button>
             <button class="btn ghost" type="button" id="btn-end-pause">End pause</button>
           </div>
           <p id="pause-state" class="muted"></p>
           <div class="row-btns unlock-row">
             <label class="inline-num">Unlock Settings (min)
-              <input id="quick-unlock" type="number" min="0" max="240" value="15" />
+              <input id="quick-unlock" type="number" min="0" max="240" value="10" />
             </label>
             <button class="btn ghost" type="button" id="btn-unlock-settings">Allow Settings</button>
+            <button class="btn ghost" type="button" id="btn-unlock-10">Settings 10 min</button>
+          </div>
+          <div class="row-btns unlock-row" style="margin-top:0.75rem">
+            <button class="btn ghost" type="button" id="btn-soft-5">Break Steady 5 min</button>
+            <button class="btn ghost" type="button" id="btn-soft-15">Break Steady 15 min</button>
+            <button class="btn ghost" type="button" id="btn-soft-end">End break</button>
+          </div>
+          <p class="muted" style="margin-top:0.5rem">Break Steady opens apps for a short window without uninstalling — for dinner or a car ride.</p>
+          <div class="toggle-stack" style="margin-top:1rem">
+            <label class="toggle-row">
+              <span><strong>Hide Steady notifications</strong><small>Quiet watch / filter status stay invisible</small></span>
+              <input type="checkbox" id="tog-hide-notifs" data-policy="hideServiceNotifications" />
+            </label>
           </div>
         </article>
 
@@ -266,6 +281,6 @@
   <script src="js/crypto-lite.js?v=2"></script>
   <script src="js/github-sync.js?v=3"></script>
   <script src="js/auth.js?v=6"></script>
-  <script src="js/dashboard.js?v=8"></script>
+  <script src="js/dashboard.js?v=9"></script>
 </body>
 </html>
