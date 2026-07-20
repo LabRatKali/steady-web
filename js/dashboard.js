@@ -16,6 +16,7 @@
   let todosPayload = null;
   let session = null;
   let pendingApprovals = [];
+  let policyDirty = false;
 
   const $ = (id) => document.getElementById(id);
   const status = (msg, kind) => {
@@ -28,6 +29,40 @@
   const flashOk = (msg) => status(msg, "ok");
   const flashBusy = (msg) => status(msg, "busy");
   const flashErr = (msg) => status(msg, "err");
+
+  function setDirty(on) {
+    policyDirty = !!on;
+    const bar = $("dash-push-bar");
+    const label = $("push-label");
+    const hint = $("push-hint");
+    const btn = $("btn-push-kid");
+    if (bar) bar.classList.toggle("is-dirty", policyDirty);
+    if (label) label.textContent = policyDirty ? "Unsaved changes" : "Ready";
+    if (hint) {
+      hint.textContent = policyDirty
+        ? "Save & push sends the whole profile to the kid phone."
+        : "Change Controls or Budgets, then push the whole profile to the kid.";
+    }
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = policyDirty ? "Save & push to kid" : "Push again to kid";
+    }
+  }
+
+  function mutatePolicyLocal(mutator) {
+    if (!policy) {
+      policy = {
+        childDeviceId: (client && client.childId) || "",
+        parentDeviceId: (client && client.parentId) || "",
+        updatedAt: Date.now(),
+      };
+    }
+    mutator(policy);
+    policy.updatedAt = Date.now();
+    if (client && client.childId) policy.childDeviceId = client.childId;
+    setDirty(true);
+    fillPolicyForm(policy);
+  }
   const loginError = (msg) => {
     const el = $("login-error");
     if (!el) return;
@@ -203,20 +238,14 @@
   }
 
   async function removeAllowedSite(host) {
-    try {
-      flashBusy("Removing site…");
-      await patchPolicy((p) => {
-        const hosts = String(p.extraAllowedHosts || "")
-          .split(/[,;\s]+/)
-          .map((h) => h.trim().toLowerCase())
-          .filter((h) => h && h !== host);
-        p.extraAllowedHosts = hosts.join(",");
-      });
-      renderAllowedSites(policy.extraAllowedHosts || "");
-      flashOk("Site removed · sent to kid");
-    } catch (e) {
-      flashErr(String(e.message || e));
-    }
+    mutatePolicyLocal((p) => {
+      const hosts = String(p.extraAllowedHosts || "")
+        .split(/[,;\s]+/)
+        .map((h) => h.trim().toLowerCase())
+        .filter((h) => h && h !== host);
+      p.extraAllowedHosts = hosts.join(",");
+    });
+    flashOk("Site removed — tap Save & push");
   }
 
   async function addAllowedSite(raw) {
@@ -227,21 +256,15 @@
       .split("/")[0]
       .replace(/^www\./, "");
     if (!host) return;
-    try {
-      flashBusy("Allowing site…");
-      await patchPolicy((p) => {
-        const hosts = String(p.extraAllowedHosts || "")
-          .split(/[,;\s]+/)
-          .map((h) => h.trim().toLowerCase())
-          .filter(Boolean);
-        if (!hosts.includes(host)) hosts.push(host);
-        p.extraAllowedHosts = hosts.join(",");
-      });
-      renderAllowedSites(policy.extraAllowedHosts || "");
-      flashOk(`${host} allowed · sent to kid`);
-    } catch (e) {
-      flashErr(String(e.message || e));
-    }
+    mutatePolicyLocal((p) => {
+      const hosts = String(p.extraAllowedHosts || "")
+        .split(/[,;\s]+/)
+        .map((h) => h.trim().toLowerCase())
+        .filter(Boolean);
+      if (!hosts.includes(host)) hosts.push(host);
+      p.extraAllowedHosts = hosts.join(",");
+    });
+    flashOk(`${host} allowed — tap Save & push`);
   }
 
   async function loadKidPhones() {
@@ -358,12 +381,23 @@
         approve.className = "btn ghost";
         approve.textContent = "Mark done";
         approve.addEventListener("click", async () => {
-          todosPayload.items = todosPayload.items.map((t) =>
-            t.id === item.id ? Object.assign({}, t, { status: "DONE" }) : t
-          );
-          todosPayload.updatedAt = Date.now();
-          await client.publishTodos(todosPayload);
-          renderTodos(todosPayload);
+          try {
+            approve.disabled = true;
+            flashBusy("Approving to-do…");
+            // APPROVED (not DONE) — matches kid Fun gate + merge ranks
+            todosPayload.items = todosPayload.items.map((t) =>
+              t.id === item.id
+                ? Object.assign({}, t, { status: "APPROVED", updatedAt: Date.now() })
+                : t
+            );
+            todosPayload.updatedAt = Date.now();
+            renderTodos(todosPayload);
+            await client.publishTodos(todosPayload);
+            flashOk("To-do approved · sent");
+          } catch (e) {
+            approve.disabled = false;
+            flashErr(String(e.message || e));
+          }
         });
         row.appendChild(approve);
         div.appendChild(row);
@@ -567,16 +601,10 @@
   }
 
   async function setPause(minutes) {
-    try {
-      flashBusy(minutes > 0 ? "Sending pause…" : "Ending pause…");
-      await patchPolicy((p) => {
-        p.familyPauseUntil = minutes > 0 ? Date.now() + minutes * 60 * 1000 : 0;
-      });
-      fillPolicyForm(policy);
-      flashOk(minutes > 0 ? `Paused ${minutes} min · sent` : "Pause ended · sent");
-    } catch (e) {
-      flashErr(String(e.message || e));
-    }
+    mutatePolicyLocal((p) => {
+      p.familyPauseUntil = minutes > 0 ? Date.now() + minutes * 60 * 1000 : 0;
+    });
+    flashOk(minutes > 0 ? `Pause ${minutes} min — tap Save & push` : "Pause cleared — tap Save & push");
   }
 
   async function setAppOverride(pkg, category) {
@@ -593,11 +621,56 @@
         arr.push({ packageName: pkg, category, userSerial: 0 });
         p.appOverridesJson = JSON.stringify(arr);
       });
+      setDirty(false);
       renderApps(window.__steadyAppsPayload || { apps: [] }, policy.appOverridesJson);
       flashOk("App rule sent");
     } catch (e) {
       flashErr(String(e.message || e));
     }
+  }
+
+  async function pushPolicyToKid() {
+    if (!client || !client.childId) {
+      flashErr("Choose a kid phone first");
+      return;
+    }
+    try {
+      flashBusy("Pushing full profile to kid…");
+      applyBudgetFormToPolicy();
+      policy.updatedAt = Date.now();
+      policy.childDeviceId = client.childId;
+      await client.publishPolicy(policy);
+      setDirty(false);
+      flashOk("Full profile pushed — kid should tap Refresh");
+    } catch (e) {
+      flashErr(String(e.message || e));
+    }
+  }
+
+  function applyBudgetFormToPolicy() {
+    const f = $("policy-form");
+    if (!f || !policy) return;
+    policy.focusMinutes = Number(f.focusMinutes.value) || 0;
+    policy.workMinutes = Number(f.workMinutes.value) || 0;
+    policy.learningMinutes = Number(f.learningMinutes.value) || 0;
+    policy.entertainmentMinutes = Number(f.entertainmentMinutes.value) || 0;
+    policy.schoolStartHour = Number(f.schoolStartHour.value) || 8;
+    policy.schoolEndHour = Number(f.schoolEndHour.value) || 15;
+    policy.bedtimeStartHour = Number(f.bedtimeStartHour && f.bedtimeStartHour.value) || 21;
+    policy.bedtimeEndHour = Number(f.bedtimeEndHour && f.bedtimeEndHour.value) || 7;
+    policy.bedtimeEnabled = !!($("tog-bedtime") && $("tog-bedtime").checked);
+    policy.schoolModeEnabled = !!($("tog-school") && $("tog-school").checked);
+    policy.filterEnabled = !!($("tog-filter") && $("tog-filter").checked);
+    policy.installApprovalEnabled = !!($("tog-install") && $("tog-install").checked);
+    policy.liveLocationEnabled = !!($("tog-location") && $("tog-location").checked);
+    policy.blockWhatsappUpdates = !!($("tog-wa") && $("tog-wa").checked);
+    policy.blockInAppBrowsers = !!($("tog-inapp") && $("tog-inapp").checked);
+    policy.blockCatAdult = !!($("tog-adult") && $("tog-adult").checked);
+    policy.blockCatSocial = !!($("tog-social") && $("tog-social").checked);
+    policy.blockCatGambling = !!($("tog-gambling") && $("tog-gambling").checked);
+    policy.blockCatDating = !!($("tog-dating") && $("tog-dating").checked);
+    policy.blockCatGaming = !!($("tog-gaming") && $("tog-gaming").checked);
+    policy.hideServiceNotifications = !!($("tog-hide-notifs") && $("tog-hide-notifs").checked);
   }
 
   async function refresh() {
@@ -653,6 +726,7 @@
           : "No live location yet.";
       }
       flashOk("Up to date");
+      setDirty(false);
     } catch (e) {
       flashErr(String(e.message || e));
     }
@@ -815,84 +889,51 @@
     btn.addEventListener("click", () => setPause(Number(btn.dataset.pause)));
   });
   document.querySelectorAll("[data-force-mode]").forEach((btn) => {
-    btn.addEventListener("click", async () => {
+    btn.addEventListener("click", () => {
       const mode = btn.dataset.forceMode || "";
-      try {
-        btn.disabled = true;
-        flashBusy(mode ? `Forcing ${mode}…` : "Clearing forced mode…");
-        await patchPolicy((p) => {
-          p.forceMode = mode;
-        });
-        fillPolicyForm(policy);
-        flashOk(mode ? `Kid mode → ${mode} · sent` : "Forced mode cleared · sent");
-      } catch (e) {
-        flashErr(String(e.message || e));
-      } finally {
-        btn.disabled = false;
-      }
+      mutatePolicyLocal((p) => {
+        p.forceMode = mode;
+      });
+      flashOk(mode ? `Mode → ${mode} — tap Save & push` : "Forced mode cleared — tap Save & push");
     });
   });
   $("btn-end-pause").addEventListener("click", () => setPause(0));
 
   document.querySelectorAll("input[data-policy]").forEach((tog) => {
-    tog.addEventListener("change", async () => {
+    tog.addEventListener("change", () => {
       const key = tog.dataset.policy;
-      try {
-        flashBusy(`Sending ${key}…`);
-        await patchPolicy((p) => {
-          p[key] = !!tog.checked;
-        });
-        flashOk(tog.checked ? `${key} on · sent` : `${key} off · sent`);
-      } catch (e) {
-        tog.checked = !tog.checked;
-        flashErr(String(e.message || e));
-      }
+      mutatePolicyLocal((p) => {
+        p[key] = !!tog.checked;
+      });
+      flashOk(`${key} updated — tap Save & push`);
     });
   });
 
   if ($("btn-unlock-settings")) {
-    $("btn-unlock-settings").addEventListener("click", async () => {
+    $("btn-unlock-settings").addEventListener("click", () => {
       const mins = Number(($("quick-unlock") && $("quick-unlock").value) || 15) || 15;
-      try {
-        flashBusy("Unlocking Settings…");
-        await patchPolicy((p) => {
-          p.settingsUnlockUntil = Date.now() + mins * 60 * 1000;
-        });
-        fillPolicyForm(policy);
-        flashOk(`Settings unlock ${mins} min · sent`);
-      } catch (e) {
-        flashErr(String(e.message || e));
-      }
+      mutatePolicyLocal((p) => {
+        p.settingsUnlockUntil = Date.now() + mins * 60 * 1000;
+      });
+      flashOk(`Settings unlock ${mins} min — tap Save & push`);
     });
   }
   if ($("btn-unlock-10")) {
-    $("btn-unlock-10").addEventListener("click", async () => {
-      try {
-        flashBusy("Unlocking Settings…");
-        await patchPolicy((p) => {
-          p.settingsUnlockUntil = Date.now() + 10 * 60 * 1000;
-        });
-        fillPolicyForm(policy);
-        flashOk("Settings unlock 10 min · sent");
-      } catch (e) {
-        flashErr(String(e.message || e));
-      }
+    $("btn-unlock-10").addEventListener("click", () => {
+      mutatePolicyLocal((p) => {
+        p.settingsUnlockUntil = Date.now() + 10 * 60 * 1000;
+      });
+      flashOk("Settings unlock 10 min — tap Save & push");
     });
   }
-  async function softBreak(minutes) {
-    try {
-      flashBusy(minutes > 0 ? `Break Steady ${minutes} min…` : "Ending break…");
-      await patchPolicy((p) => {
-        p.softDisableUntil = minutes > 0 ? Date.now() + minutes * 60 * 1000 : 0;
-        if (minutes > 0) {
-          p.familyPauseUntil = Math.max(p.familyPauseUntil || 0, p.softDisableUntil);
-        }
-      });
-      fillPolicyForm(policy);
-      flashOk(minutes > 0 ? `Steady break ${minutes} min · sent` : "Break ended · sent");
-    } catch (e) {
-      flashErr(String(e.message || e));
-    }
+  function softBreak(minutes) {
+    mutatePolicyLocal((p) => {
+      p.softDisableUntil = minutes > 0 ? Date.now() + minutes * 60 * 1000 : 0;
+      if (minutes > 0) {
+        p.familyPauseUntil = Math.max(p.familyPauseUntil || 0, p.softDisableUntil);
+      }
+    });
+    flashOk(minutes > 0 ? `Break ${minutes} min — tap Save & push` : "Break ended — tap Save & push");
   }
   if ($("btn-soft-5")) $("btn-soft-5").addEventListener("click", () => softBreak(5));
   if ($("btn-soft-15")) $("btn-soft-15").addEventListener("click", () => softBreak(15));
@@ -908,38 +949,40 @@
     });
   }
 
-  $("policy-form").addEventListener("submit", async (ev) => {
-    ev.preventDefault();
-    const f = ev.target;
-    try {
-      flashBusy("Sending budgets…");
-      await patchPolicy((p) => {
-        p.focusMinutes = Number(f.focusMinutes.value) || 0;
-        p.workMinutes = Number(f.workMinutes.value) || 0;
-        p.learningMinutes = Number(f.learningMinutes.value) || 0;
-        p.entertainmentMinutes = Number(f.entertainmentMinutes.value) || 0;
-        p.schoolStartHour = Number(f.schoolStartHour.value) || 8;
-        p.schoolEndHour = Number(f.schoolEndHour.value) || 15;
-        p.bedtimeStartHour = Number(f.bedtimeStartHour && f.bedtimeStartHour.value) || 21;
-        p.bedtimeEndHour = Number(f.bedtimeEndHour && f.bedtimeEndHour.value) || 7;
-        p.bedtimeEnabled = !!($("tog-bedtime") && $("tog-bedtime").checked);
-        p.schoolModeEnabled = !!($("tog-school") && $("tog-school").checked);
-        p.filterEnabled = !!($("tog-filter") && $("tog-filter").checked);
-        p.installApprovalEnabled = !!($("tog-install") && $("tog-install").checked);
-        p.liveLocationEnabled = !!($("tog-location") && $("tog-location").checked);
-        p.blockWhatsappUpdates = !!($("tog-wa") && $("tog-wa").checked);
-        p.blockInAppBrowsers = !!($("tog-inapp") && $("tog-inapp").checked);
-        p.blockCatAdult = !!($("tog-adult") && $("tog-adult").checked);
-        p.blockCatSocial = !!($("tog-social") && $("tog-social").checked);
-        p.blockCatGambling = !!($("tog-gambling") && $("tog-gambling").checked);
-        p.blockCatDating = !!($("tog-dating") && $("tog-dating").checked);
-        p.blockCatGaming = !!($("tog-gaming") && $("tog-gaming").checked);
+  if ($("policy-form")) {
+    $("policy-form").addEventListener("input", () => {
+      applyBudgetFormToPolicy();
+      setDirty(true);
+    });
+    $("policy-form").addEventListener("submit", async (ev) => {
+      ev.preventDefault();
+      applyBudgetFormToPolicy();
+      setDirty(true);
+      await pushPolicyToKid();
+    });
+  }
+
+  if ($("btn-push-kid")) {
+    $("btn-push-kid").addEventListener("click", () => pushPolicyToKid());
+  }
+
+  document.querySelectorAll(".dash-tab").forEach((tab) => {
+    tab.addEventListener("click", () => {
+      const name = tab.dataset.tab;
+      document.querySelectorAll(".dash-tab").forEach((t) => {
+        const on = t === tab;
+        t.classList.toggle("is-active", on);
+        t.setAttribute("aria-selected", on ? "true" : "false");
       });
-      flashOk("Budgets sent to kid");
-    } catch (e) {
-      flashErr(String(e.message || e));
-    }
+      document.querySelectorAll(".dash-panel").forEach((p) => {
+        const on = p.dataset.panel === name;
+        p.classList.toggle("is-active", on);
+        p.hidden = !on;
+      });
+    });
   });
+
+  // Remove old duplicate policy-form / softBreak handlers below if any — handled above.
 
   $("todo-form").addEventListener("submit", async (ev) => {
     ev.preventDefault();
