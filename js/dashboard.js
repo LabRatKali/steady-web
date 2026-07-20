@@ -272,29 +272,77 @@
     if (!sel || !client) return;
     try {
       const phones = await client.listFamilyPhones();
+      window.__steadyPhones = phones || [];
       const current = ($("child-live") && $("child-live").value.trim()) || "";
       sel.innerHTML = '<option value="">Choose a linked phone…</option>';
-      (phones || []).forEach((ph) => {
-        const id = ph.deviceId || ph.childDeviceId || ph.id || "";
-        if (!id) return;
-        const opt = document.createElement("option");
-        opt.value = id;
-        const role = ph.role || ph.mode || "kid";
-        const label = ph.label || ph.name || id;
-        opt.textContent = `${label} (${role})`;
-        if (id === current) opt.selected = true;
-        sel.appendChild(opt);
-      });
+      (phones || [])
+        .filter((ph) => {
+          const role = String(ph.role || "").toUpperCase();
+          return role !== "PARENT";
+        })
+        .forEach((ph) => {
+          const id = ph.deviceId || ph.childDeviceId || ph.id || "";
+          if (!id) return;
+          const opt = document.createElement("option");
+          opt.value = id;
+          const label = (ph.label || ph.name || "Kid phone").trim() || "Kid phone";
+          const shortId = id.length > 10 ? id.slice(0, 8) + "…" : id;
+          opt.textContent = `${label} · ${shortId}`;
+          if (id === current) opt.selected = true;
+          sel.appendChild(opt);
+        });
       if (!current && phones && phones.length === 1) {
         const only =
           phones[0].deviceId || phones[0].childDeviceId || phones[0].id || "";
         if (only && $("child-live")) {
           $("child-live").value = only;
           sel.value = only;
+          syncKidLabelField(only);
         }
+      } else if (current) {
+        syncKidLabelField(current);
       }
     } catch (_) {
       /* phones folder may be empty until kid links */
+    }
+  }
+
+  function syncKidLabelField(deviceId) {
+    const phones = window.__steadyPhones || [];
+    const ph = phones.find(
+      (p) => (p.deviceId || p.childDeviceId || p.id) === deviceId
+    );
+    if ($("child-label")) {
+      $("child-label").value = (ph && (ph.label || ph.name)) || "";
+    }
+  }
+
+  async function renameKidPhone() {
+    if (!client || !client.childId) {
+      flashErr("Choose a kid phone first");
+      return;
+    }
+    const label = (($("child-label") && $("child-label").value) || "").trim();
+    if (!label) {
+      flashErr("Type a name first — e.g. Maya’s phone");
+      return;
+    }
+    try {
+      flashBusy("Saving name…");
+      const phones = window.__steadyPhones || [];
+      const prev = phones.find(
+        (p) => (p.deviceId || p.childDeviceId || p.id) === client.childId
+      ) || {};
+      await client.publishPhoneProfile({
+        deviceId: client.childId,
+        familyCode: client.pairCode || "",
+        role: prev.role || "CHILD",
+        label,
+      });
+      flashOk(`Saved as “${label}”`);
+      await loadKidPhones();
+    } catch (e) {
+      flashErr(String(e.message || e));
     }
   }
 
@@ -353,6 +401,16 @@
         onDecide(req, false, 0, deny);
       });
       btns.appendChild(deny);
+      const dismiss = document.createElement("button");
+      dismiss.type = "button";
+      dismiss.className = "btn ghost";
+      dismiss.textContent = "Dismiss";
+      dismiss.title = "Remove this ask — it will not come back";
+      dismiss.addEventListener("click", (ev) => {
+        ev.preventDefault();
+        onDecide(req, "DISMISS", 0, dismiss);
+      });
+      btns.appendChild(dismiss);
       div.appendChild(btns);
       box.appendChild(div);
     });
@@ -538,20 +596,19 @@
           b.disabled = true;
         });
       }
-      flashBusy(approve ? "Sending approve…" : "Sending deny…");
+      const dismiss = approve === "DISMISS" || approve === "dismiss";
+      flashBusy(dismiss ? "Dismissing…" : approve ? "Sending approve…" : "Sending deny…");
       const mins =
         minutes === null || minutes === undefined
           ? req.requestedMinutes || 5
           : minutes;
-      // Optimistic: drop from local list immediately so UI feels instant.
       pendingApprovals = pendingApprovals.filter((r) => r.id !== req.id);
       if (card) card.remove();
       if (!pendingApprovals.length && box) {
         box.innerHTML = '<p class="muted">No pending asks.</p>';
       }
-      await client.decideApproval(req, approve, mins);
-      // Website Always-allow: also push into policy so DNS / apps update without waiting.
-      if (approve && mins < 0) {
+      await client.decideApproval(req, dismiss ? "DISMISS" : approve, mins);
+      if (!dismiss && approve && mins < 0) {
         const kind = String(req.kind || "").toUpperCase();
         if (kind === "SITE") {
           const host = String(req.targetHost || req.host || "")
@@ -575,10 +632,15 @@
           await setAppOverride(req.targetPackage, "ALWAYS_ALLOWED");
         }
       }
-      flashOk(approve ? "Approved · sent to kid" : "Denied · sent to kid");
+      flashOk(
+        dismiss
+          ? "Dismissed · gone for good"
+          : approve
+            ? "Approved · sent to kid"
+            : "Denied · sent to kid"
+      );
     } catch (e) {
       flashErr(String(e.message || e));
-      // Put it back on next refresh
       try {
         renderApprovals(await client.listPendingApprovals(client.childId));
       } catch (_) {}
@@ -882,8 +944,12 @@
     $("child-select").addEventListener("change", () => {
       const v = $("child-select").value.trim();
       if ($("child-live") && v) $("child-live").value = v;
+      syncKidLabelField(v);
       refresh();
     });
+  }
+  if ($("btn-rename-kid")) {
+    $("btn-rename-kid").addEventListener("click", () => renameKidPhone());
   }
   document.querySelectorAll("[data-pause]").forEach((btn) => {
     btn.addEventListener("click", () => setPause(Number(btn.dataset.pause)));
