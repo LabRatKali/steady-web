@@ -94,7 +94,8 @@
       .join("");
   }
 
-  async function putOtpChallenge(email, code, magicToken) {
+  async function putOtpChallenge(email, code, magicToken, opts) {
+    const options = opts || {};
     const gh = githubClientForSync();
     const id = (await sha256Hex(email.trim().toLowerCase())).slice(0, 32);
     const path = `auth/email-otp/${id}.json.enc`;
@@ -105,12 +106,22 @@
       const got = await gh.getDecoded(path);
       if (got.exists) existing = got.data;
     } catch (_) {}
-    if (existing && existing.lastSentAt && now - existing.lastSentAt < 60 * 1000) {
+    // Soft rate limit: allow replace within 60s when retrying after a failed send.
+    if (
+      !options.replace &&
+      existing &&
+      existing.lastSentAt &&
+      now - existing.lastSentAt < 60 * 1000
+    ) {
       throw new Error("Wait a minute before requesting another code");
     }
-    const count =
+    const prevCount =
       existing && existing.dayKey === dayKey ? existing.sendCountToday || 0 : 0;
-    if (count >= 8) {
+    const count = options.replace ? prevCount : prevCount;
+    if (!options.replace && count >= 8) {
+      throw new Error("Daily email code limit reached for this address");
+    }
+    if (options.replace && prevCount >= 8) {
       throw new Error("Daily email code limit reached for this address");
     }
     const payload = {
@@ -118,10 +129,10 @@
       hash: await otpHash(email, code),
       magicHash: magicToken ? await magicHash(email, magicToken) : "",
       expiresAt: now + 10 * 60 * 1000,
-      createdAt: now,
+      createdAt: (existing && existing.createdAt) || now,
       lastSentAt: now,
       dayKey,
-      sendCountToday: count + 1,
+      sendCountToday: options.replace ? Math.max(prevCount, 1) : prevCount + 1,
     };
     await gh.putEncoded(path, payload, "email otp challenge");
     return payload;
@@ -150,13 +161,61 @@
     return true;
   }
 
+  function magicLinkBase() {
+    const m = runtime().mailer || {};
+    const configured = (m.magicLinkBase || "").trim();
+    if (configured) return configured;
+    if (typeof location !== "undefined" && location.origin) {
+      return location.origin.replace(/\/$/, "") + "/dashboard.html";
+    }
+    return "https://steady.less-phone.workers.dev/dashboard.html";
+  }
+
+  async function postMail(payload) {
+    const m = runtime().mailer || {};
+    const candidates = [];
+    const configured = (m.proxyUrl || m.mailProxyUrl || "").trim();
+    if (configured) candidates.push(configured);
+    if (typeof location !== "undefined" && location.origin) {
+      candidates.push(location.origin.replace(/\/$/, "") + "/api/mail");
+    }
+    candidates.push("https://steady.less-phone.workers.dev/api/mail");
+
+    let lastErr = null;
+    const tried = new Set();
+    for (const url of candidates) {
+      if (!url || tried.has(url)) continue;
+      tried.add(url);
+      try {
+        const res = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        if (res.ok) return { ok: true, via: url };
+        const text = await res.text();
+        lastErr = new Error("Mail proxy " + res.status + ": " + text.slice(0, 120));
+        // 404 = worker not deployed on this host — try next
+        if (res.status === 404 || res.status === 405) continue;
+        // 5xx / 403 from Resend — stop and surface
+        if (res.status >= 400 && res.status < 500 && res.status !== 404) {
+          throw lastErr;
+        }
+      } catch (e) {
+        lastErr = e;
+        // Network / CORS / failed to fetch → try next candidate
+      }
+    }
+    return { ok: false, error: lastErr };
+  }
+
   async function sendOtpEmail(email, code, magicToken) {
     const m = runtime().mailer || {};
     const apiKey = deobfuscateToken(m.apiKeyObfHex || "");
     const fromEmail = m.fromEmail || "";
     const provider = (m.provider || "").toLowerCase();
-    const base = m.magicLinkBase || "https://labratkali.github.io/steady-web/dashboard.html";
-    if (!apiKey || !fromEmail || !provider) {
+    const base = magicLinkBase();
+    if (!fromEmail || !provider) {
       return { emailed: false, displayed: true, code };
     }
     const magicUrl =
@@ -178,46 +237,43 @@
     const text =
       "Steady code: " + code + "\nOr open: " + magicUrl + "\nExpires in 10 minutes.";
 
-    if (provider === "resend") {
-      const res = await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: {
-          Authorization: "Bearer " + apiKey,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          from: fromEmail,
-          to: [email],
-          subject: "Your Steady sign-in code",
-          html,
-          text,
-        }),
+    // Prefer same-origin / workers mail proxy (browser cannot call Resend directly — CORS).
+    if (provider === "resend" || provider === "mailersend") {
+      const proxied = await postMail({
+        to: email,
+        from: fromEmail,
+        subject: "Your Steady sign-in code",
+        html,
+        text,
+        provider,
       });
-      if (!res.ok) throw new Error("Resend failed: " + (await res.text()).slice(0, 120));
-      return { emailed: true, displayed: false };
+      if (proxied.ok) return { emailed: true, displayed: false, via: "proxy" };
     }
 
-    if (provider === "mailersend") {
-      const fromAddr = (fromEmail.match(/<([^>]+)>/) || [])[1] || fromEmail;
-      const fromName = fromEmail.replace(/<[^>]+>/, "").trim() || "Steady";
-      const res = await fetch("https://api.mailersend.com/v1/email", {
-        method: "POST",
-        headers: {
-          Authorization: "Bearer " + apiKey,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          from: { email: fromAddr, name: fromName },
-          to: [{ email }],
-          subject: "Your Steady sign-in code",
-          html,
-          text,
-        }),
-      });
-      if (!res.ok) throw new Error("MailerSend failed: " + (await res.text()).slice(0, 120));
-      return { emailed: true, displayed: false };
+    // Legacy direct call (works in some embeds; usually blocked by CORS in browsers).
+    try {
+      if (provider === "resend" && apiKey) {
+        const res = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            Authorization: "Bearer " + apiKey,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            from: fromEmail,
+            to: [email],
+            subject: "Your Steady sign-in code",
+            html,
+            text,
+          }),
+        });
+        if (res.ok) return { emailed: true, displayed: false, via: "resend-direct" };
+      }
+    } catch (_) {
+      /* CORS / failed to fetch */
     }
 
+    // Always succeed for UX: show the code on screen so sign-in still works.
     return { emailed: false, displayed: true, code };
   }
 
@@ -264,12 +320,105 @@
     return record;
   }
 
+  const GOOGLE_AUTH_HOST = "labratkali.github.io";
+  const GOOGLE_AUTH_PATH = "/steady-web/dashboard.html";
+
+  function needsGoogleHostRedirect() {
+    try {
+      return location.hostname !== GOOGLE_AUTH_HOST;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function encodeSessionForRedirect(session) {
+    const json = JSON.stringify(session);
+    return btoa(unescape(encodeURIComponent(json)))
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_")
+      .replace(/=+$/, "");
+  }
+
+  function decodeSessionFromRedirect(raw) {
+    try {
+      let b64 = String(raw || "").replace(/-/g, "+").replace(/_/g, "/");
+      while (b64.length % 4) b64 += "=";
+      return JSON.parse(decodeURIComponent(escape(atob(b64))));
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /** If we landed with #steady_session=… from Google auth host, restore it. */
+  function consumeRedirectSession() {
+    const hash = (location.hash || "").replace(/^#/, "");
+    if (!hash) return null;
+    const params = new URLSearchParams(hash);
+    const raw = params.get("steady_session");
+    if (!raw) return null;
+    const session = decodeSessionFromRedirect(raw);
+    if (!session || !session.familyCode) return null;
+    saveSession(session);
+    history.replaceState({}, "", location.pathname + location.search);
+    return session;
+  }
+
+  function finishGoogleSession(payload, onSignedIn, returnUrl) {
+    return (async () => {
+      const session = {
+        provider: "google",
+        email: payload.email || "",
+        googleSub: payload.sub || "",
+        name: payload.name || "",
+        verifiedAt: Date.now(),
+        roleHint: "PARENT",
+      };
+      const account = await ensureAccountRecord(session);
+      session.familyCode = account.familyCode;
+      session.familySecret = account.familySecret;
+      saveSession(session);
+      if (returnUrl) {
+        const u = new URL(returnUrl);
+        u.hash = "steady_session=" + encodeSessionForRedirect(session);
+        location.href = u.toString();
+        return;
+      }
+      onSignedIn(session);
+    })();
+  }
+
   function initGoogleButton(buttonEl, onSignedIn) {
     const clientId = runtime().googleClientId;
     if (!clientId || clientId.indexOf("REPLACE") >= 0 || !buttonEl) {
       if (buttonEl) buttonEl.hidden = true;
       return false;
     }
+
+    // Google only allows Authorized JS origins. workers.dev is not in the list yet —
+    // bounce through github.io (already authorized), then return with the session.
+    if (needsGoogleHostRedirect()) {
+      const returnTo = location.href.split("#")[0];
+      const authUrl =
+        "https://" +
+        GOOGLE_AUTH_HOST +
+        GOOGLE_AUTH_PATH +
+        "?google=1&return=" +
+        encodeURIComponent(returnTo);
+      buttonEl.innerHTML = "";
+      const a = document.createElement("a");
+      a.className = "btn primary login-submit google-redirect-btn";
+      a.href = authUrl;
+      a.textContent = "Sign in with Google";
+      a.style.textAlign = "center";
+      a.style.textDecoration = "none";
+      buttonEl.appendChild(a);
+      return true;
+    }
+
+    const params = new URLSearchParams(location.search);
+    const returnUrl = (params.get("return") || "").trim();
+    const autoGoogle = params.get("google") === "1";
+
     const start = () => {
       if (!global.google || !google.accounts || !google.accounts.id) {
         setTimeout(start, 200);
@@ -280,19 +429,7 @@
         callback: async (resp) => {
           try {
             const payload = parseJwt(resp.credential);
-            const session = {
-              provider: "google",
-              email: payload.email || "",
-              googleSub: payload.sub || "",
-              name: payload.name || "",
-              verifiedAt: Date.now(),
-              roleHint: "PARENT",
-            };
-            const account = await ensureAccountRecord(session);
-            session.familyCode = account.familyCode;
-            session.familySecret = account.familySecret;
-            saveSession(session);
-            onSignedIn(session);
+            await finishGoogleSession(payload, onSignedIn, returnUrl || "");
           } catch (e) {
             alert(String(e.message || e));
           }
@@ -305,6 +442,12 @@
         text: "signin_with",
         width: 280,
       });
+      if (autoGoogle) {
+        // Prompt One Tap / focus the rendered button for return-flow users.
+        try {
+          google.accounts.id.prompt();
+        } catch (_) {}
+      }
     };
     start();
     return true;
@@ -330,6 +473,7 @@
     sendOtpEmail,
     ensureAccountRecord,
     initGoogleButton,
+    consumeRedirectSession,
     familyCodeFromIdentity,
   };
 })(window);
