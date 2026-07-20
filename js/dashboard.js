@@ -115,6 +115,8 @@
     f.entertainmentMinutes.value = p.entertainmentMinutes ?? 5;
     f.schoolStartHour.value = p.schoolStartHour ?? 8;
     f.schoolEndHour.value = p.schoolEndHour ?? 15;
+    if (f.bedtimeStartHour) f.bedtimeStartHour.value = p.bedtimeStartHour ?? 21;
+    if (f.bedtimeEndHour) f.bedtimeEndHour.value = p.bedtimeEndHour ?? 7;
     setToggle("tog-school", !!p.schoolModeEnabled);
     setToggle("tog-filter", p.filterEnabled !== false);
     setToggle("tog-install", p.installApprovalEnabled !== false);
@@ -126,6 +128,7 @@
     setToggle("tog-gambling", p.blockCatGambling !== false);
     setToggle("tog-dating", p.blockCatDating !== false);
     setToggle("tog-gaming", !!p.blockCatGaming);
+    setToggle("tog-bedtime", !!p.bedtimeEnabled);
     const until = p.familyPauseUntil || 0;
     const pauseEl = $("pause-state");
     if (pauseEl) {
@@ -688,6 +691,9 @@
         p.entertainmentMinutes = Number(f.entertainmentMinutes.value) || 0;
         p.schoolStartHour = Number(f.schoolStartHour.value) || 8;
         p.schoolEndHour = Number(f.schoolEndHour.value) || 15;
+        p.bedtimeStartHour = Number(f.bedtimeStartHour && f.bedtimeStartHour.value) || 21;
+        p.bedtimeEndHour = Number(f.bedtimeEndHour && f.bedtimeEndHour.value) || 7;
+        p.bedtimeEnabled = !!($("tog-bedtime") && $("tog-bedtime").checked);
         p.schoolModeEnabled = !!($("tog-school") && $("tog-school").checked);
         p.filterEnabled = !!($("tog-filter") && $("tog-filter").checked);
         p.installApprovalEnabled = !!($("tog-install") && $("tog-install").checked);
