@@ -7,7 +7,8 @@ window.STEADY_RUNTIME = {
     "provider": "resend",
     "apiKeyObfHex": "13152f6a1636310f2f2e5c3e571244173d5c7f2e561126475a1c0003273435461b2d1c24",
     "fromEmail": "Steady <onboarding@resend.dev>",
-    "magicLinkBase": "https://labratkali.github.io/steady-web/dashboard.html",
+    "magicLinkBase": "https://steady.less-phone.workers.dev/dashboard.html",
+    "proxyUrl": "https://steady.less-phone.workers.dev/api/mail",
     "replyTo": ""
   }
 };
