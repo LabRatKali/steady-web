@@ -1,9 +1,9 @@
 {
-  "version": "2.1.4",
-  "versionCode": 105,
-  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.1.4/steady-2.1.4.apk",
-  "sha256": "555873b4215cf8c4cdadff281942a812f133d898fd9d7c664a900d746b6eac4b",
+  "version": "2.1.5",
+  "versionCode": 106,
+  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.1.5/steady-2.1.5.apk",
+  "sha256": "7e21eb8b76c04df0aa1368b6569478d1092d3be8b65081d0c5b9cc2710897467",
   "sizeBytes": 64290233,
-  "notes": "## 2.1.4\n\n## What's new\n\n- **Android Google client** wired (`huqh7c73\u2026`) with the Web client.\n- **Self-update no longer blocked** \u2014 Steady keeps the system installer open for its own APK (15-minute window + detect Steady on the install screen). \"Install unknown apps\" for Steady also stays open during that window. Other apps' installers stay blocked.\n\n## Installing this build if an older Steady still blocks the installer\n\nOlder builds bounce the Install screen. Use one of these once:\n\n1. Best: Steady \u2192 Settings \u2192 Get phone back / Restore (briefly) \u2192 open the new APK from Downloads \u2192 Install \u2192 turn protection back on.\n2. Or USB: adb install -r path\\to\\steady-2.1.4.apk\n3. After 2.1.4 is on the phone, future updates install normally from Steady \u2192 Updates.",
+  "notes": "## 2.1.5\n\n## What's new\n\n- Website login redesign \u2014 calm sign-in card; developer PAT paste removed.\n- Google on workers.dev \u2014 Sign in redirects through the authorized GitHub Pages origin (fixes origin_mismatch), then returns you signed in.\n- Email codes \u2014 browser cannot call Resend directly; codes always appear on screen so you can finish sign-in. Optional /api/mail worker for inbox delivery.\n- Magic links use https://steady.less-phone.workers.dev/dashboard.html.\n- Self-update installer unblock included.\n\n## Optional (Google)\n\nYou can still add https://steady.less-phone.workers.dev as an Authorized JavaScript origin so Google works on that host without a redirect.",
   "assetId": 0
 }
