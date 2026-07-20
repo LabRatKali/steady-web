@@ -152,7 +152,37 @@
   color: var(--muted);
 }
 
-code {
-  font-size: 0.88em;
-  color: var(--accent-2);
+.auth-block {
+  margin: 1.25rem 0;
+  padding: 1rem 0;
+  border-top: 1px solid var(--line);
 }
+
+.auth-h {
+  font-family: var(--display);
+  font-size: 1.15rem;
+  margin: 0 0 0.75rem;
+}
+
+.google-btn-wrap {
+  min-height: 44px;
+}
+
+.child-pick {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  color: var(--muted);
+  margin-bottom: 0.75rem;
+  max-width: 420px;
+}
+
+.child-pick input {
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--fg);
+  padding: 0.65rem 0.75rem;
+  font: inherit;
+}
+
