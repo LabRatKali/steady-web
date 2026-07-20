@@ -83,28 +83,54 @@
     });
   }
 
-  async function putOtpChallenge(email, code) {
+  async function magicHash(email, magicToken) {
+    return sha256Hex(`${email.trim().toLowerCase()}|${magicToken}|steady.magic.v1`);
+  }
+
+  function randomMagicToken() {
+    const bytes = crypto.getRandomValues(new Uint8Array(24));
+    return Array.from(bytes)
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
+  }
+
+  async function putOtpChallenge(email, code, magicToken) {
     const gh = githubClientForSync();
-    const id = await sha256Hex(email.trim().toLowerCase());
-    const hash = await otpHash(email, code);
+    const id = (await sha256Hex(email.trim().toLowerCase())).slice(0, 32);
+    const path = `auth/email-otp/${id}.json.enc`;
+    const now = Date.now();
+    const dayKey = new Date().toISOString().slice(0, 10);
+    let existing = null;
+    try {
+      const got = await gh.getDecoded(path);
+      if (got.exists) existing = got.data;
+    } catch (_) {}
+    if (existing && existing.lastSentAt && now - existing.lastSentAt < 60 * 1000) {
+      throw new Error("Wait a minute before requesting another code");
+    }
+    const count =
+      existing && existing.dayKey === dayKey ? existing.sendCountToday || 0 : 0;
+    if (count >= 8) {
+      throw new Error("Daily email code limit reached for this address");
+    }
     const payload = {
       email: email.trim().toLowerCase(),
-      hash,
-      expiresAt: Date.now() + 10 * 60 * 1000,
-      createdAt: Date.now(),
+      hash: await otpHash(email, code),
+      magicHash: magicToken ? await magicHash(email, magicToken) : "",
+      expiresAt: now + 10 * 60 * 1000,
+      createdAt: now,
+      lastSentAt: now,
+      dayKey,
+      sendCountToday: count + 1,
     };
-    await gh.putEncoded(
-      `auth/email-otp/${id.slice(0, 32)}.json.enc`,
-      payload,
-      "email otp challenge"
-    );
+    await gh.putEncoded(path, payload, "email otp challenge");
     return payload;
   }
 
   async function verifyOtpChallenge(email, code) {
     const gh = githubClientForSync();
-    const id = await sha256Hex(email.trim().toLowerCase());
-    const got = await gh.getDecoded(`auth/email-otp/${id.slice(0, 32)}.json.enc`);
+    const id = (await sha256Hex(email.trim().toLowerCase())).slice(0, 32);
+    const got = await gh.getDecoded(`auth/email-otp/${id}.json.enc`);
     if (!got.exists || !got.data) throw new Error("No code pending — request a new one");
     if (got.data.expiresAt < Date.now()) throw new Error("Code expired — request a new one");
     const hash = await otpHash(email, code);
@@ -112,30 +138,86 @@
     return true;
   }
 
-  async function sendOtpEmail(email, code) {
-    const ej = runtime().emailjs || {};
-    if (ej.serviceId && ej.templateId && ej.publicKey) {
-      const res = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
+  async function verifyMagicChallenge(email, magicToken) {
+    const gh = githubClientForSync();
+    const id = (await sha256Hex(email.trim().toLowerCase())).slice(0, 32);
+    const got = await gh.getDecoded(`auth/email-otp/${id}.json.enc`);
+    if (!got.exists || !got.data) throw new Error("Magic link invalid");
+    if (got.data.expiresAt < Date.now()) throw new Error("Magic link expired");
+    if (!got.data.magicHash) throw new Error("Magic link invalid");
+    const h = await magicHash(email, magicToken);
+    if (h !== got.data.magicHash) throw new Error("Magic link invalid");
+    return true;
+  }
+
+  async function sendOtpEmail(email, code, magicToken) {
+    const m = runtime().mailer || {};
+    const apiKey = deobfuscateToken(m.apiKeyObfHex || "");
+    const fromEmail = m.fromEmail || "";
+    const provider = (m.provider || "").toLowerCase();
+    const base = m.magicLinkBase || "https://labratkali.github.io/steady-web/dashboard.html";
+    if (!apiKey || !fromEmail || !provider) {
+      return { emailed: false, displayed: true, code };
+    }
+    const magicUrl =
+      base +
+      "?email=" +
+      encodeURIComponent(email) +
+      "&magic=" +
+      encodeURIComponent(magicToken);
+    const html =
+      '<div style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto;padding:24px">' +
+      "<h1>Steady sign-in</h1>" +
+      '<p><a href="' +
+      magicUrl +
+      '" style="background:#3dcf8a;color:#042316;padding:12px 20px;border-radius:10px;text-decoration:none;font-weight:700">Sign in to Steady</a></p>' +
+      "<p>Or enter this code: <strong style=\"letter-spacing:4px\">" +
+      code +
+      "</strong></p>" +
+      "<p style=\"color:#666;font-size:13px\">Expires in 10 minutes. If you did not ask for this, ignore this email. Steady does not sell data.</p></div>";
+    const text =
+      "Steady code: " + code + "\nOr open: " + magicUrl + "\nExpires in 10 minutes.";
+
+    if (provider === "resend") {
+      const res = await fetch("https://api.resend.com/emails", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          Authorization: "Bearer " + apiKey,
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
-          service_id: ej.serviceId,
-          template_id: ej.templateId,
-          user_id: ej.publicKey,
-          template_params: {
-            to_email: email,
-            otp_code: code,
-            app_name: "Steady",
-          },
+          from: fromEmail,
+          to: [email],
+          subject: "Your Steady sign-in code",
+          html,
+          text,
         }),
       });
-      if (!res.ok) {
-        const t = await res.text();
-        throw new Error(`Email send failed: ${t.slice(0, 120)}`);
-      }
+      if (!res.ok) throw new Error("Resend failed: " + (await res.text()).slice(0, 120));
       return { emailed: true, displayed: false };
     }
-    // Free fallback — no SMS/email vendor: show code once (same as many bank “display OTP” modes)
+
+    if (provider === "mailersend") {
+      const fromAddr = (fromEmail.match(/<([^>]+)>/) || [])[1] || fromEmail;
+      const fromName = fromEmail.replace(/<[^>]+>/, "").trim() || "Steady";
+      const res = await fetch("https://api.mailersend.com/v1/email", {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer " + apiKey,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: { email: fromAddr, name: fromName },
+          to: [{ email }],
+          subject: "Your Steady sign-in code",
+          html,
+          text,
+        }),
+      });
+      if (!res.ok) throw new Error("MailerSend failed: " + (await res.text()).slice(0, 120));
+      return { emailed: true, displayed: false };
+    }
+
     return { emailed: false, displayed: true, code };
   }
 
@@ -184,10 +266,8 @@
 
   function initGoogleButton(buttonEl, onSignedIn) {
     const clientId = runtime().googleClientId;
-    if (!clientId || !buttonEl) {
-      if (buttonEl) {
-        buttonEl.hidden = true;
-      }
+    if (!clientId || clientId.indexOf("REPLACE") >= 0 || !buttonEl) {
+      if (buttonEl) buttonEl.hidden = true;
       return false;
     }
     const start = () => {
@@ -242,12 +322,14 @@
     loadSession,
     saveSession,
     clearSession,
+    randomOtp,
+    randomMagicToken,
     putOtpChallenge,
     verifyOtpChallenge,
+    verifyMagicChallenge,
     sendOtpEmail,
     ensureAccountRecord,
     initGoogleButton,
     familyCodeFromIdentity,
-    randomOtp,
   };
 })(window);
