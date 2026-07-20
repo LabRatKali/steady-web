@@ -208,6 +208,12 @@
             <label>Fun (min) <input name="entertainmentMinutes" type="number" min="0" max="480" /></label>
             <label>School start <input name="schoolStartHour" type="number" min="0" max="23" /></label>
             <label>School end <input name="schoolEndHour" type="number" min="0" max="23" /></label>
+            <label class="span-form toggle-row" style="margin:0.35rem 0">
+              <span><strong>Bedtime</strong><small>Lock Fun overnight</small></span>
+              <input type="checkbox" id="tog-bedtime" data-policy="bedtimeEnabled" />
+            </label>
+            <label>Bedtime start <input name="bedtimeStartHour" type="number" min="0" max="23" /></label>
+            <label>Bedtime end <input name="bedtimeEndHour" type="number" min="0" max="23" /></label>
             <button class="btn primary span-form" type="submit">Save budgets to kid</button>
           </form>
         </article>
@@ -260,6 +266,6 @@
   <script src="js/crypto-lite.js?v=2"></script>
   <script src="js/github-sync.js?v=3"></script>
   <script src="js/auth.js?v=6"></script>
-  <script src="js/dashboard.js?v=7"></script>
+  <script src="js/dashboard.js?v=8"></script>
 </body>
 </html>
