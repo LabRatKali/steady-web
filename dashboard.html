@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css?v=24" />
-  <link rel="stylesheet" href="dashboard.css?v=6" />
+  <link rel="stylesheet" href="dashboard.css?v=7" />
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body class="dash-body">
@@ -136,6 +136,34 @@
               <span><strong>Live location</strong><small>Show last known place</small></span>
               <input type="checkbox" id="tog-location" data-policy="liveLocationEnabled" />
             </label>
+            <label class="toggle-row">
+              <span><strong>WhatsApp Status / Updates</strong><small>Block Status, Channels, Updates tab</small></span>
+              <input type="checkbox" id="tog-wa" data-policy="blockWhatsappUpdates" />
+            </label>
+            <label class="toggle-row">
+              <span><strong>In-app browsers</strong><small>Block embedded browser screens</small></span>
+              <input type="checkbox" id="tog-inapp" data-policy="blockInAppBrowsers" />
+            </label>
+            <label class="toggle-row">
+              <span><strong>Block adult sites</strong><small>DNS / filter category</small></span>
+              <input type="checkbox" id="tog-adult" data-policy="blockCatAdult" />
+            </label>
+            <label class="toggle-row">
+              <span><strong>Block social sites</strong><small>DNS / filter category</small></span>
+              <input type="checkbox" id="tog-social" data-policy="blockCatSocial" />
+            </label>
+            <label class="toggle-row">
+              <span><strong>Block gambling</strong><small>DNS / filter category</small></span>
+              <input type="checkbox" id="tog-gambling" data-policy="blockCatGambling" />
+            </label>
+            <label class="toggle-row">
+              <span><strong>Block dating</strong><small>DNS / filter category</small></span>
+              <input type="checkbox" id="tog-dating" data-policy="blockCatDating" />
+            </label>
+            <label class="toggle-row">
+              <span><strong>Block gaming sites</strong><small>DNS / filter category</small></span>
+              <input type="checkbox" id="tog-gaming" data-policy="blockCatGaming" />
+            </label>
           </div>
         </article>
 
@@ -231,7 +259,7 @@
   <script src="js/runtime-config.js?v=4"></script>
   <script src="js/crypto-lite.js?v=2"></script>
   <script src="js/github-sync.js?v=3"></script>
-  <script src="js/auth.js?v=5"></script>
-  <script src="js/dashboard.js?v=6"></script>
+  <script src="js/auth.js?v=6"></script>
+  <script src="js/dashboard.js?v=7"></script>
 </body>
 </html>
