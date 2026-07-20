@@ -1,9 +1,9 @@
 {
-  "version": "2.3.0",
-  "versionCode": 112,
-  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.3.0/steady-2.3.0.apk",
-  "sha256": "bccde8c03c3c1e6e9d3faabecb9daefea02b82240715f5740dd1a0f47bef1297",
-  "sizeBytes": 64330561,
-  "notes": "## 2.3.0\n\n## What's new\n\n- Sync and parent remote improvements.\n- Update **both** the parent phone and the kid phone together.\n- Tap Refresh on Home after installing so family link catches up.\n\n_Tip: add `release_notes/2.3.0.md` before the next ship for a full changelog in the app._\n",
+  "version": "2.4.0",
+  "versionCode": 113,
+  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.4.0/steady-2.4.0.apk",
+  "sha256": "dd99add0538a8abe2749e4390df068a452b10bccdccc146f50cf54574fdc73bf",
+  "sizeBytes": 64349217,
+  "notes": "## 2.4.0\n\n## What's new\n\n- **To-dos that sync** \u2014 Website \u201cMark done\u201d sets APPROVED (Fun gate works). Kid claims publish even before a parent list exists; Refresh pulls Approves fast.\n- **Usage report rebuilt** \u2014 Dark, clear Today hero + weekly bars + top apps. Imports Android Usage Stats so the list isn\u2019t empty. Asks for usage access when needed.\n- **Allowed apps open immediately** \u2014 No mindful delay on allowed home icons.\n- **Parent dashboard tabs** \u2014 Asks / Controls / Budgets / Apps / To-dos / More, plus sticky **Save & push to kid** for the whole profile.\n- **Marketing site** updated for website-first remote, Home, usage, install approval, and current Steady.\n\n_After installing, open Usage once (grant access if asked). On the website: edit Controls/Budgets \u2192 Save & push \u2192 kid taps Refresh._",
   "assetId": 0
 }
