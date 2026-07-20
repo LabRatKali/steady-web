@@ -110,6 +110,21 @@
   min-height: 1.4em;
   color: var(--accent-2);
   margin: 0 0 1rem;
+  font-weight: 600;
+  transition: color 0.15s ease, opacity 0.15s ease;
+}
+.dash-status.ok {
+  color: #7dcea0;
+}
+.dash-status.busy {
+  color: #f0c674;
+}
+.dash-status.err {
+  color: #e07a7a;
+}
+.dash-item-sent {
+  opacity: 0.45;
+  pointer-events: none;
 }
 
 .dash-grid {
