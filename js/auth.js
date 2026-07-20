@@ -4,6 +4,7 @@
  */
 (function (global) {
   const SESSION_KEY = "steady.web.auth.v1";
+  const STAY_KEY = "steady.web.stay.v1";
   const OBF_KEY = "app.steady.android.v1";
 
   function utf8(str) {
@@ -30,20 +31,40 @@
     return deobfuscateToken(runtime().tokenObfHex || "");
   }
 
+  function staySignedIn() {
+    const v = localStorage.getItem(STAY_KEY);
+    return v !== "0";
+  }
+
+  function setStaySignedIn(on) {
+    localStorage.setItem(STAY_KEY, on ? "1" : "0");
+  }
+
+  function sessionStore() {
+    return staySignedIn() ? localStorage : sessionStorage;
+  }
+
   function loadSession() {
     try {
-      return JSON.parse(localStorage.getItem(SESSION_KEY) || "null");
+      const raw =
+        localStorage.getItem(SESSION_KEY) || sessionStorage.getItem(SESSION_KEY) || "null";
+      return JSON.parse(raw);
     } catch (_) {
       return null;
     }
   }
 
   function saveSession(s) {
-    localStorage.setItem(SESSION_KEY, JSON.stringify(s));
+    const store = sessionStore();
+    store.setItem(SESSION_KEY, JSON.stringify(s));
+    // Clear the other store so stay-signed-in preference is respected.
+    if (store === localStorage) sessionStorage.removeItem(SESSION_KEY);
+    else localStorage.removeItem(SESSION_KEY);
   }
 
   function clearSession() {
     localStorage.removeItem(SESSION_KEY);
+    sessionStorage.removeItem(SESSION_KEY);
   }
 
   async function sha256Hex(text) {
@@ -465,6 +486,8 @@
     loadSession,
     saveSession,
     clearSession,
+    staySignedIn,
+    setStaySignedIn,
     randomOtp,
     randomMagicToken,
     putOtpChallenge,
