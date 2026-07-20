@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css?v=21" />
-  <link rel="stylesheet" href="dashboard.css?v=2" />
+  <link rel="stylesheet" href="dashboard.css?v=3" />
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body class="dash-body">
@@ -45,7 +45,7 @@
         <h2 class="auth-h">Google</h2>
         <div id="google-btn" class="google-btn-wrap"></div>
         <p id="google-hint" class="muted" hidden>
-          Add <code>keys/google-oauth.json</code> (Web client ID) and republish the site to enable Google Sign-In.
+          Google Sign-In needs a real Web client ID in <code>keys/google-oauth.json</code> (then republish).
         </p>
       </div>
 
@@ -83,7 +83,7 @@
     <section id="app" class="dash-app" hidden>
       <div class="dash-toolbar">
         <div>
-          <h1>Family remote</h1>
+          <h1>Parent remote</h1>
           <p id="session-meta" class="muted"></p>
         </div>
         <div class="dash-actions">
@@ -91,44 +91,99 @@
           <button class="btn ghost" type="button" id="btn-logout">Sign out</button>
         </div>
       </div>
-      <label class="child-pick">Kid device ID
-        <input id="child-live" type="text" placeholder="From kid phone Settings / Parent home" />
-      </label>
+
+      <div class="dash-card kid-bar">
+        <label class="child-pick">Kid phone
+          <select id="child-select" aria-label="Choose kid phone">
+            <option value="">Choose a linked phone…</option>
+          </select>
+        </label>
+        <label class="child-pick">Or paste device ID
+          <input id="child-live" type="text" placeholder="From kid phone → Parent home / Settings" autocomplete="off" />
+        </label>
+        <p class="muted kid-hint">Approves, pause, and toggles sync to this phone over the same private GitHub channel as the app.</p>
+      </div>
       <p id="status" class="dash-status" role="status"></p>
 
-      <div class="dash-grid">
-        <article class="dash-card" id="panel-approvals">
-          <h2>Approves</h2>
+      <div class="dash-grid dash-grid-remote">
+        <article class="dash-card span-2" id="panel-approvals">
+          <h2>Pending asks</h2>
+          <p class="panel-lede">Approve Fun time, unlocks, and installs — changes hit the kid phone on the next sync.</p>
           <div id="approvals-list" class="dash-list"></div>
         </article>
+
+        <article class="dash-card" id="panel-modes">
+          <h2>Modes &amp; guards</h2>
+          <p class="panel-lede">Flip a switch — Steady sends it to the kid phone right away.</p>
+          <div class="toggle-stack" id="mode-toggles">
+            <label class="toggle-row">
+              <span>
+                <strong>School hours</strong>
+                <small>Lock Fun during school window</small>
+              </span>
+              <input type="checkbox" id="tog-school" data-policy="schoolModeEnabled" />
+            </label>
+            <label class="toggle-row">
+              <span>
+                <strong>Web filter</strong>
+                <small>Block risky browsing</small>
+              </span>
+              <input type="checkbox" id="tog-filter" data-policy="filterEnabled" />
+            </label>
+            <label class="toggle-row">
+              <span>
+                <strong>Install approval</strong>
+                <small>New apps need your OK</small>
+              </span>
+              <input type="checkbox" id="tog-install" data-policy="installApprovalEnabled" />
+            </label>
+            <label class="toggle-row">
+              <span>
+                <strong>Live location</strong>
+                <small>Show last known place</small>
+              </span>
+              <input type="checkbox" id="tog-location" data-policy="liveLocationEnabled" />
+            </label>
+          </div>
+        </article>
+
         <article class="dash-card" id="panel-pause">
           <h2>Family pause</h2>
+          <p class="panel-lede">Quiet the phone for dinner, homework, or bedtime.</p>
           <div class="row-btns">
-            <button class="btn primary" type="button" data-pause="30">Pause 30 min</button>
-            <button class="btn primary" type="button" data-pause="60">Pause 60 min</button>
+            <button class="btn primary" type="button" data-pause="15">15 min</button>
+            <button class="btn primary" type="button" data-pause="30">30 min</button>
+            <button class="btn primary" type="button" data-pause="60">1 hour</button>
             <button class="btn ghost" type="button" id="btn-end-pause">End pause</button>
           </div>
           <p id="pause-state" class="muted"></p>
+          <div class="row-btns unlock-row">
+            <label class="inline-num">Unlock Settings (min)
+              <input id="quick-unlock" type="number" min="0" max="240" value="15" />
+            </label>
+            <button class="btn ghost" type="button" id="btn-unlock-settings">Allow Settings</button>
+          </div>
         </article>
+
         <article class="dash-card" id="panel-policy">
-          <h2>Budgets &amp; rules</h2>
+          <h2>Daily budgets</h2>
+          <p class="panel-lede">Minutes per bucket. Save to push to the kid phone.</p>
           <form id="policy-form" class="dash-form compact">
             <label>Focus (min) <input name="focusMinutes" type="number" min="0" max="480" /></label>
             <label>Work (min) <input name="workMinutes" type="number" min="0" max="480" /></label>
             <label>Learning (min) <input name="learningMinutes" type="number" min="0" max="480" /></label>
             <label>Fun (min) <input name="entertainmentMinutes" type="number" min="0" max="480" /></label>
-            <label class="check"><input name="schoolModeEnabled" type="checkbox" /> School hours</label>
             <label>School start <input name="schoolStartHour" type="number" min="0" max="23" /></label>
             <label>School end <input name="schoolEndHour" type="number" min="0" max="23" /></label>
-            <label class="check"><input name="filterEnabled" type="checkbox" /> Web filter</label>
-            <label class="check"><input name="installApprovalEnabled" type="checkbox" /> Install approval</label>
-            <label class="check"><input name="liveLocationEnabled" type="checkbox" /> Live location</label>
-            <label>Settings unlock (min)
-              <input name="settingsUnlockMins" type="number" min="0" max="240" value="0" />
-            </label>
-            <button class="btn primary" type="submit">Send rules to kid</button>
+            <input type="hidden" name="schoolModeEnabled" />
+            <input type="hidden" name="filterEnabled" />
+            <input type="hidden" name="installApprovalEnabled" />
+            <input type="hidden" name="liveLocationEnabled" />
+            <input type="hidden" name="settingsUnlockMins" value="0" />
+            <button class="btn primary span-form" type="submit">Save budgets to kid</button>
           </form>
         </article>
+
         <article class="dash-card" id="panel-todos">
           <h2>Family to-dos</h2>
           <form id="todo-form" class="dash-form compact row-form">
@@ -139,6 +194,7 @@
         </article>
         <article class="dash-card" id="panel-apps">
           <h2>Kid apps</h2>
+          <p class="panel-lede">Always / Fun / Never — overrides sync with the next refresh.</p>
           <div id="apps-list" class="dash-list tall"></div>
         </article>
         <article class="dash-card" id="panel-location">
@@ -161,10 +217,10 @@
     </div>
   </footer>
 
-  <script src="js/runtime-config.js?v=1"></script>
+  <script src="js/runtime-config.js?v=2"></script>
   <script src="js/crypto-lite.js?v=2"></script>
   <script src="js/github-sync.js?v=2"></script>
-  <script src="js/auth.js?v=1"></script>
-  <script src="js/dashboard.js?v=2"></script>
+  <script src="js/auth.js?v=2"></script>
+  <script src="js/dashboard.js?v=3"></script>
 </body>
 </html>
