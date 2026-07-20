@@ -1,9 +1,12 @@
 (function () {
   const DURATIONS = [
     { label: "5m", mins: 5 },
+    { label: "10m", mins: 10 },
     { label: "15m", mins: 15 },
     { label: "30m", mins: 30 },
+    { label: "45m", mins: 45 },
     { label: "1h", mins: 60 },
+    { label: "2h", mins: 120 },
     { label: "Always", mins: -1 },
     { label: "As asked", mins: null },
   ];
@@ -12,12 +15,19 @@
   let policy = null;
   let todosPayload = null;
   let session = null;
+  let pendingApprovals = [];
 
   const $ = (id) => document.getElementById(id);
-  const status = (msg) => {
+  const status = (msg, kind) => {
     const el = $("status");
-    if (el) el.textContent = msg || "";
+    if (!el) return;
+    el.textContent = msg || "";
+    el.classList.remove("ok", "err", "busy");
+    if (kind) el.classList.add(kind);
   };
+  const flashOk = (msg) => status(msg, "ok");
+  const flashBusy = (msg) => status(msg, "busy");
+  const flashErr = (msg) => status(msg, "err");
   const loginError = (msg) => {
     const el = $("login-error");
     if (!el) return;
@@ -138,11 +148,99 @@
           ? `Paused — about ${Math.ceil((until - Date.now()) / 60000)} min left`
           : "Not paused";
     }
+    const unlockUntil = p.settingsUnlockUntil || 0;
+    const unlockEl = $("unlock-state");
+    if (unlockEl) {
+      unlockEl.textContent =
+        unlockUntil > Date.now()
+          ? `Settings unlock — about ${Math.ceil((unlockUntil - Date.now()) / 60000)} min left`
+          : "Settings locked on kid phone";
+    }
+    const breakUntil = p.softDisableUntil || 0;
+    const breakEl = $("break-state");
+    if (breakEl) {
+      breakEl.textContent =
+        breakUntil > Date.now()
+          ? `Break Steady — about ${Math.ceil((breakUntil - Date.now()) / 60000)} min left`
+          : "No break active";
+    }
     const forceEl = $("force-mode-state");
     if (forceEl) {
       forceEl.textContent = p.forceMode
         ? `Forced: ${p.forceMode}`
         : "No forced mode";
+    }
+    renderAllowedSites(p.extraAllowedHosts || "");
+  }
+
+  function renderAllowedSites(csv) {
+    const box = $("sites-list");
+    if (!box) return;
+    const hosts = String(csv || "")
+      .split(/[,;\s]+/)
+      .map((h) => h.trim().toLowerCase())
+      .filter(Boolean);
+    if (!hosts.length) {
+      box.innerHTML = '<p class="muted">No always-allowed sites yet. Approve a site ask, or add one below.</p>';
+      return;
+    }
+    box.innerHTML = "";
+    hosts.forEach((host) => {
+      const div = document.createElement("div");
+      div.className = "dash-item";
+      div.innerHTML = `<strong>${escapeHtml(host)}</strong>`;
+      const row = document.createElement("div");
+      row.className = "approve-btns";
+      const rm = document.createElement("button");
+      rm.type = "button";
+      rm.className = "btn ghost";
+      rm.textContent = "Remove";
+      rm.addEventListener("click", () => removeAllowedSite(host));
+      row.appendChild(rm);
+      div.appendChild(row);
+      box.appendChild(div);
+    });
+  }
+
+  async function removeAllowedSite(host) {
+    try {
+      flashBusy("Removing site…");
+      await patchPolicy((p) => {
+        const hosts = String(p.extraAllowedHosts || "")
+          .split(/[,;\s]+/)
+          .map((h) => h.trim().toLowerCase())
+          .filter((h) => h && h !== host);
+        p.extraAllowedHosts = hosts.join(",");
+      });
+      renderAllowedSites(policy.extraAllowedHosts || "");
+      flashOk("Site removed · sent to kid");
+    } catch (e) {
+      flashErr(String(e.message || e));
+    }
+  }
+
+  async function addAllowedSite(raw) {
+    const host = String(raw || "")
+      .trim()
+      .toLowerCase()
+      .replace(/^https?:\/\//, "")
+      .split("/")[0]
+      .replace(/^www\./, "");
+    if (!host) return;
+    try {
+      flashBusy("Allowing site…");
+      await patchPolicy((p) => {
+        const hosts = String(p.extraAllowedHosts || "")
+          .split(/[,;\s]+/)
+          .map((h) => h.trim().toLowerCase())
+          .filter(Boolean);
+        if (!hosts.includes(host)) hosts.push(host);
+        p.extraAllowedHosts = hosts.join(",");
+      });
+      renderAllowedSites(policy.extraAllowedHosts || "");
+      flashOk(`${host} allowed · sent to kid`);
+    } catch (e) {
+      flashErr(String(e.message || e));
     }
   }
 
@@ -177,19 +275,39 @@
     }
   }
 
+  function kindLabel(kind) {
+    switch (String(kind || "").toUpperCase()) {
+      case "APP":
+        return "App";
+      case "SITE":
+        return "Website";
+      case "MODE":
+        return "Mode";
+      case "GATE":
+      case "SETTINGS":
+      case "CATEGORIES":
+        return "Unlock";
+      default:
+        return "Fun";
+    }
+  }
+
   function renderApprovals(list) {
+    pendingApprovals = Array.isArray(list) ? list.slice() : [];
     const box = $("approvals-list");
     if (!box) return;
-    if (!list.length) {
+    if (!pendingApprovals.length) {
       box.innerHTML = '<p class="muted">No pending asks.</p>';
       return;
     }
     box.innerHTML = "";
-    list.forEach((req) => {
+    pendingApprovals.forEach((req) => {
       const div = document.createElement("div");
       div.className = "dash-item";
+      div.dataset.reqId = req.id || "";
+      const kind = kindLabel(req.kind);
       div.innerHTML = `<strong>${escapeHtml(req.message || req.kind || "Ask")}</strong>
-        <span class="muted">${escapeHtml(req.kind || "FUN")} · ${req.requestedMinutes || "?"} min</span>`;
+        <span class="muted">${escapeHtml(kind)} · ${req.requestedMinutes || "?"} min</span>`;
       const btns = document.createElement("div");
       btns.className = "approve-btns";
       DURATIONS.forEach((d) => {
@@ -197,14 +315,20 @@
         b.type = "button";
         b.className = "btn ghost";
         b.textContent = d.label;
-        b.addEventListener("click", () => onDecide(req, true, d.mins));
+        b.addEventListener("click", (ev) => {
+          ev.preventDefault();
+          onDecide(req, true, d.mins, b);
+        });
         btns.appendChild(b);
       });
       const deny = document.createElement("button");
       deny.type = "button";
       deny.className = "btn ghost";
       deny.textContent = "Deny";
-      deny.addEventListener("click", () => onDecide(req, false, 0));
+      deny.addEventListener("click", (ev) => {
+        ev.preventDefault();
+        onDecide(req, false, 0, deny);
+      });
       btns.appendChild(deny);
       div.appendChild(btns);
       box.appendChild(div);
@@ -267,28 +391,40 @@
       yes.type = "button";
       yes.className = "btn primary";
       yes.textContent = "Approve install";
-      yes.addEventListener("click", async () => {
-        try {
-          status("Approving install…");
-          await client.decideInstall(req, true);
-          status("Install approved");
-          await refresh();
-        } catch (e) {
-          status(String(e.message || e));
-        }
-      });
       const no = document.createElement("button");
       no.type = "button";
       no.className = "btn ghost";
       no.textContent = "Deny";
+      yes.addEventListener("click", async () => {
+        try {
+          div.classList.add("dash-item-sent");
+          yes.disabled = true;
+          no.disabled = true;
+          flashBusy("Sending install approve…");
+          await client.decideInstall(req, true);
+          div.remove();
+          flashOk("Install approved · sent");
+        } catch (e) {
+          yes.disabled = false;
+          no.disabled = false;
+          div.classList.remove("dash-item-sent");
+          flashErr(String(e.message || e));
+        }
+      });
       no.addEventListener("click", async () => {
         try {
-          status("Denying install…");
+          div.classList.add("dash-item-sent");
+          yes.disabled = true;
+          no.disabled = true;
+          flashBusy("Sending install deny…");
           await client.decideInstall(req, false);
-          status("Install denied");
-          await refresh();
+          div.remove();
+          flashOk("Install denied · sent");
         } catch (e) {
-          status(String(e.message || e));
+          yes.disabled = false;
+          no.disabled = false;
+          div.classList.remove("dash-item-sent");
+          flashErr(String(e.message || e));
         }
       });
       row.appendChild(yes);
@@ -354,18 +490,64 @@
     });
   }
 
-  async function onDecide(req, approve, minutes) {
+  async function onDecide(req, approve, minutes, btn) {
+    const box = $("approvals-list");
+    const card =
+      (btn && btn.closest && btn.closest(".dash-item")) ||
+      (box &&
+        box.querySelector(`[data-req-id="${CSS.escape(req.id || "")}"]`));
     try {
-      status(approve ? "Publishing approve…" : "Publishing deny…");
+      if (btn) btn.disabled = true;
+      if (card) {
+        card.classList.add("dash-item-sent");
+        card.querySelectorAll("button").forEach((b) => {
+          b.disabled = true;
+        });
+      }
+      flashBusy(approve ? "Sending approve…" : "Sending deny…");
       const mins =
         minutes === null || minutes === undefined
           ? req.requestedMinutes || 5
           : minutes;
+      // Optimistic: drop from local list immediately so UI feels instant.
+      pendingApprovals = pendingApprovals.filter((r) => r.id !== req.id);
+      if (card) card.remove();
+      if (!pendingApprovals.length && box) {
+        box.innerHTML = '<p class="muted">No pending asks.</p>';
+      }
       await client.decideApproval(req, approve, mins);
-      status(approve ? "Approved" : "Denied");
-      await refresh();
+      // Website Always-allow: also push into policy so DNS / apps update without waiting.
+      if (approve && mins < 0) {
+        const kind = String(req.kind || "").toUpperCase();
+        if (kind === "SITE") {
+          const host = String(req.targetHost || req.host || "")
+            .trim()
+            .toLowerCase()
+            .replace(/^https?:\/\//, "")
+            .split("/")[0]
+            .replace(/^www\./, "");
+          if (host) {
+            await patchPolicy((p) => {
+              const hosts = String(p.extraAllowedHosts || "")
+                .split(/[,;\s]+/)
+                .map((h) => h.trim().toLowerCase())
+                .filter(Boolean);
+              if (!hosts.includes(host)) hosts.push(host);
+              p.extraAllowedHosts = hosts.join(",");
+            });
+            renderAllowedSites(policy.extraAllowedHosts || "");
+          }
+        } else if (kind === "APP" && req.targetPackage) {
+          await setAppOverride(req.targetPackage, "ALWAYS_ALLOWED");
+        }
+      }
+      flashOk(approve ? "Approved · sent to kid" : "Denied · sent to kid");
     } catch (e) {
-      status(String(e.message || e));
+      flashErr(String(e.message || e));
+      // Put it back on next refresh
+      try {
+        renderApprovals(await client.listPendingApprovals(client.childId));
+      } catch (_) {}
     }
   }
 
@@ -386,19 +568,20 @@
 
   async function setPause(minutes) {
     try {
-      status("Updating pause…");
+      flashBusy(minutes > 0 ? "Sending pause…" : "Ending pause…");
       await patchPolicy((p) => {
         p.familyPauseUntil = minutes > 0 ? Date.now() + minutes * 60 * 1000 : 0;
       });
-      status(minutes > 0 ? `Paused ${minutes} min` : "Pause ended");
-      await refresh();
+      fillPolicyForm(policy);
+      flashOk(minutes > 0 ? `Paused ${minutes} min · sent` : "Pause ended · sent");
     } catch (e) {
-      status(String(e.message || e));
+      flashErr(String(e.message || e));
     }
   }
 
   async function setAppOverride(pkg, category) {
     try {
+      flashBusy("Sending app rule…");
       await patchPolicy((p) => {
         let arr = [];
         try {
@@ -410,10 +593,10 @@
         arr.push({ packageName: pkg, category, userSerial: 0 });
         p.appOverridesJson = JSON.stringify(arr);
       });
-      status("App rule sent");
-      await refresh();
+      renderApps(window.__steadyAppsPayload || { apps: [] }, policy.appOverridesJson);
+      flashOk("App rule sent");
     } catch (e) {
-      status(String(e.message || e));
+      flashErr(String(e.message || e));
     }
   }
 
@@ -423,11 +606,11 @@
     client.childId = child;
     if (child) localStorage.setItem("steady.web.child", child);
     if (!child) {
-      status("Enter the kid device ID to load Approves / policy (Parent home shows it).");
+      flashErr("Enter the kid device ID to load Approves / policy.");
       return;
     }
-    status("Refreshing…");
-    try {
+      flashBusy("Refreshing…");
+      try {
       renderApprovals(await client.listPendingApprovals(child));
       if (client.listPendingInstalls) {
         renderInstalls(await client.listPendingInstalls(child));
@@ -469,9 +652,9 @@
           ? `Lat ${loc.data.latitude?.toFixed?.(4)}, Lon ${loc.data.longitude?.toFixed?.(4)} · ${new Date(loc.data.updatedAt || 0).toLocaleString()}`
           : "No live location yet.";
       }
-      status("Up to date");
+      flashOk("Up to date");
     } catch (e) {
-      status(String(e.message || e));
+      flashErr(String(e.message || e));
     }
   }
 
@@ -635,14 +818,17 @@
     btn.addEventListener("click", async () => {
       const mode = btn.dataset.forceMode || "";
       try {
-        status(mode ? `Forcing ${mode}…` : "Clearing forced mode…");
+        btn.disabled = true;
+        flashBusy(mode ? `Forcing ${mode}…` : "Clearing forced mode…");
         await patchPolicy((p) => {
           p.forceMode = mode;
         });
-        status(mode ? `Kid mode → ${mode}` : "Forced mode cleared");
-        await refresh();
+        fillPolicyForm(policy);
+        flashOk(mode ? `Kid mode → ${mode} · sent` : "Forced mode cleared · sent");
       } catch (e) {
-        status(String(e.message || e));
+        flashErr(String(e.message || e));
+      } finally {
+        btn.disabled = false;
       }
     });
   });
@@ -652,15 +838,14 @@
     tog.addEventListener("change", async () => {
       const key = tog.dataset.policy;
       try {
-        status(`Updating ${key}…`);
+        flashBusy(`Sending ${key}…`);
         await patchPolicy((p) => {
           p[key] = !!tog.checked;
         });
-        status(tog.checked ? `${key} on` : `${key} off`);
-        await refresh();
+        flashOk(tog.checked ? `${key} on · sent` : `${key} off · sent`);
       } catch (e) {
         tog.checked = !tog.checked;
-        status(String(e.message || e));
+        flashErr(String(e.message || e));
       }
     });
   });
@@ -669,53 +854,65 @@
     $("btn-unlock-settings").addEventListener("click", async () => {
       const mins = Number(($("quick-unlock") && $("quick-unlock").value) || 15) || 15;
       try {
-        status("Unlocking Settings…");
+        flashBusy("Unlocking Settings…");
         await patchPolicy((p) => {
           p.settingsUnlockUntil = Date.now() + mins * 60 * 1000;
         });
-        status(`Settings unlock for ${mins} min`);
-        await refresh();
+        fillPolicyForm(policy);
+        flashOk(`Settings unlock ${mins} min · sent`);
       } catch (e) {
-        status(String(e.message || e));
+        flashErr(String(e.message || e));
       }
     });
   }
   if ($("btn-unlock-10")) {
     $("btn-unlock-10").addEventListener("click", async () => {
       try {
+        flashBusy("Unlocking Settings…");
         await patchPolicy((p) => {
           p.settingsUnlockUntil = Date.now() + 10 * 60 * 1000;
         });
-        status("Settings unlock for 10 min");
-        await refresh();
+        fillPolicyForm(policy);
+        flashOk("Settings unlock 10 min · sent");
       } catch (e) {
-        status(String(e.message || e));
+        flashErr(String(e.message || e));
       }
     });
   }
   async function softBreak(minutes) {
     try {
-      status(minutes > 0 ? `Break Steady ${minutes} min…` : "Ending break…");
+      flashBusy(minutes > 0 ? `Break Steady ${minutes} min…` : "Ending break…");
       await patchPolicy((p) => {
         p.softDisableUntil = minutes > 0 ? Date.now() + minutes * 60 * 1000 : 0;
         if (minutes > 0) {
           p.familyPauseUntil = Math.max(p.familyPauseUntil || 0, p.softDisableUntil);
         }
       });
-      status(minutes > 0 ? `Steady break ${minutes} min` : "Break ended");
-      await refresh();
+      fillPolicyForm(policy);
+      flashOk(minutes > 0 ? `Steady break ${minutes} min · sent` : "Break ended · sent");
     } catch (e) {
-      status(String(e.message || e));
+      flashErr(String(e.message || e));
     }
   }
   if ($("btn-soft-5")) $("btn-soft-5").addEventListener("click", () => softBreak(5));
   if ($("btn-soft-15")) $("btn-soft-15").addEventListener("click", () => softBreak(15));
   if ($("btn-soft-end")) $("btn-soft-end").addEventListener("click", () => softBreak(0));
 
+  if ($("site-form")) {
+    $("site-form").addEventListener("submit", async (ev) => {
+      ev.preventDefault();
+      const input = $("site-host");
+      const raw = input && input.value;
+      await addAllowedSite(raw);
+      if (input) input.value = "";
+    });
+  }
+
   $("policy-form").addEventListener("submit", async (ev) => {
     ev.preventDefault();
     const f = ev.target;
     try {
+      flashBusy("Sending budgets…");
       await patchPolicy((p) => {
         p.focusMinutes = Number(f.focusMinutes.value) || 0;
         p.workMinutes = Number(f.workMinutes.value) || 0;
@@ -738,10 +935,9 @@
         p.blockCatDating = !!($("tog-dating") && $("tog-dating").checked);
         p.blockCatGaming = !!($("tog-gaming") && $("tog-gaming").checked);
       });
-      status("Budgets sent to kid");
-      await refresh();
+      flashOk("Budgets sent to kid");
     } catch (e) {
-      status(String(e.message || e));
+      flashErr(String(e.message || e));
     }
   });
 
