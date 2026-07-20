@@ -183,6 +183,43 @@
       return { exists: false, data: null };
     }
 
+    async listPendingInstalls(childFilter) {
+      const entries = await this.listDir("family/installs");
+      const out = [];
+      for (const e of entries) {
+        if (!e.name || !e.name.endsWith(".json.enc")) continue;
+        if (childFilter && !e.name.startsWith(childFilter)) continue;
+        try {
+          const got = await this.getDecoded(`family/installs/${e.name}`);
+          if (got.data && got.data.status === "PENDING") out.push(got.data);
+        } catch (_) {}
+      }
+      out.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+      return out;
+    }
+
+    async decideInstall(req, approve) {
+      const safePkg = String(req.packageName || "").replace(/\./g, "_");
+      const decision = Object.assign({}, req, {
+        status: approve ? "APPROVED" : "DENIED",
+        updatedAt: Date.now(),
+      });
+      await this.putEncoded(
+        `family/install_decisions/${req.childDeviceId}_${safePkg}.json.enc`,
+        decision,
+        approve ? "install approved" : "install denied"
+      );
+      // Clear pending request so it leaves the queue.
+      try {
+        await this.putEncoded(
+          `family/installs/${req.childDeviceId}_${safePkg}.json.enc`,
+          decision,
+          "install request closed"
+        );
+      } catch (_) {}
+      return decision;
+    }
+
     async decideApproval(req, approve, minutes) {
       const secret = this.familySecret || this.pairCode;
       const status = approve ? "APPROVED" : "DENIED";
