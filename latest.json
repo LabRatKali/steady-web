@@ -1,9 +1,9 @@
 {
-  "version": "1.7.5",
-  "versionCode": 82,
-  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v1.7.5/steady-1.7.5.apk",
-  "sha256": "07c477c89bb61d23da3669564e881ed47ad7ba48aa44fbf4c98205bdda68a602",
-  "sizeBytes": 63821143,
-  "notes": "## 1.7.5\n\n## What's new\n\n- **Block profile / user switch** \u2014 notification shade user switcher and Settings \u2192 Users bounce back to Steady.\n- **Device Owner hard-lock** \u2014 no add/remove/switch user, logout tile disabled when Steady is Device Owner.\n- Catches OEM wording (Guest, Secure Folder, Second Space, Dual Apps) without false-bouncing normal shade text.\n\n## Update tip\n\nInstall on the **kid** phone. Pull down notifications and try the user/profile chip \u2014 Steady should bounce you. Settings \u2192 Users should also bounce.",
+  "version": "1.7.6",
+  "versionCode": 83,
+  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v1.7.6/steady-1.7.6.apk",
+  "sha256": "4a1fa9711fbf561500587efa8503e05582f9469e24c4a978d4dd13df4388f50d",
+  "sizeBytes": 63823623,
+  "notes": "## 1.7.6\n\n## What's new\n\n- **Never times out waiting for parent** \u2014 kid asks stay open on the family link until Approve or Deny. Phones stay synced; tap Refresh anytime.\n- **Richer parent Approves** \u2014 5 / 10 / 15 / 30 / 45 / 60 / 2h / 3h, Always allow, or Approve as asked.\n- **What's new always ships** \u2014 update screen shows release notes from `latest.json` by default (even when you are already up to date).\n\n## Update tip\n\nInstall on **both** phones. On parent: open an ask and try Always allow / 2h. On kid: Ask for Fun and leave it open \u2014 it will not say Timed out.",
   "assetId": 0
 }
