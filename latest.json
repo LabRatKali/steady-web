@@ -4,6 +4,6 @@
   "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.1.1/steady-2.1.1.apk",
   "sha256": "496a00d365797b1992b8fa902719361c893aa7d4fc30538063b2428ede92eb41",
   "sizeBytes": 64290033,
-  "notes": "## 2.1.1\n\n## What's new\n\n- **Resend / MailerSend email** \u2014 magic link + 6-digit code for web dashboard and Android (Resend free ~3k/mo recommended). Rate limits + hashed challenges.\n- Google Sign-In wiring ready \u2014 add your Web client ID in `keys/google-oauth.json` (see `keys/README.txt`).\n\n## Setup tip\n\n1. `keys/mailer.json` from `mailer.example.json` with a Resend API key.\n2. Finish Google Cloud OAuth steps in `keys/README.txt`.\n3. Rebuild & republish once.",
+  "notes": "## 2.1.1\n\n## What's new\n\n- **Resend / MailerSend email** \u2014 magic link + 6-digit code for web dashboard and Android (Resend free ~3k/mo recommended). Rate limits + hashed challenges.\n- Google Sign-In wiring ready \u2014 add your Web client ID in `keys/google-oauth.json` (see `keys/README.txt`).\n\n## Setup tip\n\n1. `keys/mailer.json` from `mailer.example.json` with a Resend API key.\n2. Finish Google Cloud OAuth steps in `keys/README.txt`.\n3. Rebuild & republish once.\n",
   "assetId": 0
 }
