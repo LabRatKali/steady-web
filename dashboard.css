@@ -1,4 +1,17 @@
 /* Family dashboard — extends Steady site tokens */
+
+/* Critical: class display rules must not override HTML hidden */
+#gate[hidden],
+#app[hidden],
+.login-shell[hidden],
+.dash-app[hidden] {
+  display: none !important;
+}
+
+.dash-body.signed-in #gate {
+  display: none !important;
+}
+
 .dash-body .dash-main {
   max-width: 1100px;
   margin: 0 auto;
@@ -415,6 +428,84 @@
   border: 1px solid rgba(61, 207, 138, 0.28);
   color: var(--fg);
   line-height: 1.45;
+}
+
+.login-code strong {
+  font-size: 1.35rem;
+}
+
+.auth-tabs {
+  display: flex;
+  gap: 0.35rem;
+  margin: 0 0 1rem;
+  padding: 0.25rem;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid var(--line);
+}
+
+.auth-tab {
+  flex: 1;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-weight: 700;
+  padding: 0.55rem 0.75rem;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.auth-tab.is-active {
+  background: rgba(124, 184, 154, 0.22);
+  color: var(--fg);
+}
+
+.stay-check {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-top: 1rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.nav-auth {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.nav-user {
+  font-size: 0.85rem;
+  max-width: 12rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.apps-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.apps-toolbar input {
+  flex: 1;
+  min-width: 180px;
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--fg);
+  padding: 0.65rem 0.75rem;
+  font: inherit;
+}
+
+.apps-tall {
+  max-height: 480px;
 }
 
 .google-redirect-btn {
