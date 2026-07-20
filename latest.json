@@ -1,9 +1,9 @@
 {
-  "version": "2.1.2",
-  "versionCode": 103,
-  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.1.2/steady-2.1.2.apk",
-  "sha256": "cffd4dfe3315f50129c5c1f869b38e67a9ca8df3cf630a53bbee3a0b4e7fba19",
+  "version": "2.1.3",
+  "versionCode": 104,
+  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.1.3/steady-2.1.3.apk",
+  "sha256": "80b9a510092b2bf801791654b49e62942bf9d8028b347c0b773e9231ae770116",
   "sizeBytes": 64290033,
-  "notes": "## 2.1.2\n\n## What's new\n\n- **Google Sign-In live** \u2014 Web OAuth client baked into app + site (project `steady-503020`).\n- **Resend email live** \u2014 magic link + 6-digit codes for dashboard and Android.\n- **Parent remote dashboard** \u2014 instant mode toggles (school / filter / installs / location), clearer Approves, kid phone picker, Settings unlock, pause presets.\n\n## Note\n\nPhone Google Sign-In still needs an **Android** OAuth client in Google Cloud (package `app.steady.android` + debug SHA-1). The second JSON from Testing was a Desktop/installed client, not Android.\n",
+  "notes": "## 2.1.3\n\n## What's new\n\n- Clearer Google Sign-In errors on Android when the **Android** OAuth client (package + SHA-1) is missing.\n- Smoke suite proves Resend delivery, sync approve/deny crypto, live site, and baked Google/mailer keys.\n\n## Still manual\n\n1. Google Cloud \u2192 create **Android** OAuth client: `app.steady.android` + debug SHA-1 (see `keys/README.txt`).\n2. OAuth consent **Test users** must include every Google account that signs in.\n3. For email to anyone besides your Resend account address: verify a domain in Resend and update `fromEmail`.",
   "assetId": 0
 }
