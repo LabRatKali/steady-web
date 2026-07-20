@@ -1,9 +1,9 @@
 {
-  "version": "2.4.0",
-  "versionCode": 113,
-  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.4.0/steady-2.4.0.apk",
-  "sha256": "dd99add0538a8abe2749e4390df068a452b10bccdccc146f50cf54574fdc73bf",
-  "sizeBytes": 64349217,
-  "notes": "## 2.4.0\n\n## What's new\n\n- **To-dos that sync** \u2014 Website \u201cMark done\u201d sets APPROVED (Fun gate works). Kid claims publish even before a parent list exists; Refresh pulls Approves fast.\n- **Usage report rebuilt** \u2014 Dark, clear Today hero + weekly bars + top apps. Imports Android Usage Stats so the list isn\u2019t empty. Asks for usage access when needed.\n- **Allowed apps open immediately** \u2014 No mindful delay on allowed home icons.\n- **Parent dashboard tabs** \u2014 Asks / Controls / Budgets / Apps / To-dos / More, plus sticky **Save & push to kid** for the whole profile.\n- **Marketing site** updated for website-first remote, Home, usage, install approval, and current Steady.\n\n_After installing, open Usage once (grant access if asked). On the website: edit Controls/Budgets \u2192 Save & push \u2192 kid taps Refresh._",
+  "version": "2.5.0",
+  "versionCode": 114,
+  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.5.0/steady-2.5.0.apk",
+  "sha256": "cf3aa4e72a44b2a1e6af40791b7305757595f6019d38d5ee9a68f0173cfee289",
+  "sizeBytes": 64352633,
+  "notes": "## 2.5.0\n\n## What's new\n\n- **Rename kid phones** on the website (\u270e Save name) \u2014 pick Maya / David from the list; device ID fills in; names stay on GitHub.\n- **Home cleanup** \u2014 Settings + Quick Focus in the \u22ee menu; no Android Recents item; no todo banner / Quick Focus strip; Focus shows \u201cNo daily clock\u201d; app labels stay one line.\n- **Rest / lock screen** \u2014 no more giant Focus numbers; clear \u201c5 minutes / 15 minutes\u2026\u201d ask buttons.\n- **Settings stays open** \u2014 dangerous pages Back out instead of kicking you to the Steady lock; Make Steady my Home briefly allows Permission Manager.\n- **Asks stay gone** \u2014 Approve / Deny / **Dismiss** (website + parent phone) close the queue so Refresh doesn\u2019t bring them back.\n- **Faster sync** \u2014 kid phone polls website rules and ask decisions about every 15 seconds; Refresh still applies immediately.\n\n_Rename phones on the dashboard. Install on the kid phone, then Refresh after you Save & push._",
   "assetId": 0
 }
