@@ -1,9 +1,9 @@
 {
-  "version": "2.1.6",
-  "versionCode": 107,
-  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.1.6/steady-2.1.6.apk",
-  "sha256": "5e8b13767bd6f69054b7ee5f9baaf1486e4d51d075b8a19615e2cc569630ddf1",
-  "sizeBytes": 64290685,
-  "notes": "## 2.1.6\n\n## What's new\n\n- **Dashboard** \u2014 login shell fully hides after sign-in; Sign in / Sign up tabs; Stay signed in; Sign out in nav; full kid app list with search.\n- **Setup** \u2014 Google / email (or family code) required before continuing; SELF also goes through account link.\n- **Settings lockdown** \u2014 blocks About phone, Apps lists, System, Security, search-in-Settings, and more; faster Accessibility scans.\n- **Workers** \u2014 Cloudflare worker proxies latest GitHub Pages + `/api/mail` for Resend.",
+  "version": "2.1.7",
+  "versionCode": 108,
+  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.1.7/steady-2.1.7.apk",
+  "sha256": "a7837d57a03a929f29918ae02f24b132af35856cd1a827a27054e0d564aa2827",
+  "sizeBytes": 64292205,
+  "notes": "## 2.1.7\n\n## What's new\n\n- **Same family for Google + email** \u2014 website Google Sign-In and kid-phone email OTP (same address) now share one family. Email is the canonical identity; Google `sub` is an alias.\n- **Kid setup** \u2014 Google Sign-In hidden on kid phones; use the parent website email + code (or family code).\n- **Crash \u2192 setup fix** \u2014 setup is marked done in prefs before heavy scanning; restart uses prefs if DataStore lagged.\n- **Lighter Accessibility** \u2014 less aggressive Settings/WhatsApp tree walks (fewer ANRs / freezes) while still blocking dangerous screens and WhatsApp Status/Updates.\n- **Website remote** \u2014 WhatsApp Status/Updates, in-app browsers, and DNS category toggles; app Always/Never still syncs to the kid.",
   "assetId": 0
 }
