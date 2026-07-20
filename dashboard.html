@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Steady family dashboard — Sign in with Google or email code. Same GitHub sync as the phones." />
+  <meta name="description" content="Sign in to Steady — parent remote for family phones. Google or email code." />
   <meta name="theme-color" content="#0c1b15" />
   <meta name="referrer" content="strict-origin-when-cross-origin" />
-  <title>Steady — Family dashboard</title>
+  <title>Sign in · Steady</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=21" />
-  <link rel="stylesheet" href="dashboard.css?v=3" />
+  <link rel="stylesheet" href="styles.css?v=23" />
+  <link rel="stylesheet" href="dashboard.css?v=4" />
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body class="dash-body">
@@ -21,63 +21,56 @@
     <span class="veil"></span>
   </div>
 
-  <header class="top">
-    <a class="logo" href="index.html"><span>Steady</span></a>
-    <nav id="site-nav">
-      <a href="index.html">Site</a>
+  <header class="top top-dash">
+    <a class="logo" href="index.html" aria-label="Steady home">
+      <svg class="logo-mark" viewBox="0 0 32 32" aria-hidden="true">
+        <path d="M8 14.5V24a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V14.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M6 15.5 16 7l10 8.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M13 26v-6.5a1.5 1.5 0 0 1 1.5-1.5h3a1.5 1.5 0 0 1 1.5 1.5V26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <span>Steady</span>
+    </a>
+    <nav id="site-nav" class="dash-nav">
+      <a href="index.html">Home</a>
       <a href="setup.html">Setup</a>
-      <a href="dashboard.html" aria-current="page">Dashboard</a>
-      <a href="index.html#download">Download</a>
+      <a class="nav-cta" href="index.html#download">Download</a>
     </nav>
   </header>
 
   <main class="dash-main">
-    <section id="gate" class="dash-card">
-      <h1>Sign in to Steady</h1>
-      <p class="lede">
-        Same private GitHub sync the phones use — no Cloudflare bill.
-        Best free path: <strong>Sign in with Google</strong> (same account on website + kid phone).
-        Or <strong>email magic link / one-time code</strong> via Resend or MailerSend (free tiers).
-        SMS codes are not free, so Steady does not text.
-      </p>
-
-      <div class="auth-block">
-        <h2 class="auth-h">Google</h2>
-        <div id="google-btn" class="google-btn-wrap"></div>
-        <p id="google-hint" class="muted" hidden>
-          Google Sign-In needs a real Web client ID in <code>keys/google-oauth.json</code> (then republish).
+    <section id="gate" class="login-shell">
+      <div class="login-card">
+        <p class="login-brand">Steady</p>
+        <h1>Welcome back</h1>
+        <p class="login-lede">
+          Sign in to run the kid phone from here — approve asks, pause, budgets, and modes.
+          Use the same Google or email on the website and the phones.
         </p>
-      </div>
 
-      <div class="auth-block">
-        <h2 class="auth-h">Email one-time code</h2>
-        <form id="otp-request" class="dash-form compact">
-          <label>Email
+        <div class="login-google">
+          <div id="google-btn" class="google-btn-wrap"></div>
+          <p id="google-hint" class="muted login-hint" hidden>
+            Google Sign-In isn’t ready on this site yet. Use email below, or add this site’s address in Google Cloud → OAuth → Authorized JavaScript origins.
+          </p>
+        </div>
+
+        <div class="login-divider" aria-hidden="true"><span>or</span></div>
+
+        <form id="otp-request" class="login-form">
+          <label class="login-label">Email
             <input id="otp-email" type="email" required placeholder="you@family.com" autocomplete="email" />
           </label>
-          <button class="btn primary" type="submit">Send code</button>
+          <button class="btn primary login-submit" type="submit">Send sign-in code</button>
         </form>
-        <form id="otp-verify" class="dash-form compact" hidden>
-          <label>6-digit code
-            <input id="otp-code" type="text" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required />
+        <form id="otp-verify" class="login-form" hidden>
+          <label class="login-label">6-digit code
+            <input id="otp-code" type="text" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required autocomplete="one-time-code" />
           </label>
-          <button class="btn primary" type="submit">Verify &amp; open</button>
+          <button class="btn primary login-submit" type="submit">Verify &amp; open</button>
         </form>
-        <p id="otp-display" class="dash-status" hidden></p>
+        <p id="otp-display" class="login-code" hidden></p>
+        <p id="login-error" class="dash-error" hidden></p>
       </div>
-
-      <details class="dash-help">
-        <summary>Advanced: paste your own PAT</summary>
-        <p class="muted">Usually not needed — Steady embeds the sync token at publish (like the app). Use only if you fork the sync repo.</p>
-        <form id="pat-form" class="dash-form">
-          <label>PAT override <input id="pat" type="password" autocomplete="off" /></label>
-          <label>Family code <input id="pair" type="text" /></label>
-          <label>Family secret <input id="secret" type="password" autocomplete="off" /></label>
-          <label>Child device ID <input id="child" type="text" /></label>
-          <button class="btn ghost" type="submit">Open with PAT</button>
-        </form>
-      </details>
-      <p id="login-error" class="dash-error" hidden></p>
     </section>
 
     <section id="app" class="dash-app" hidden>
@@ -101,7 +94,7 @@
         <label class="child-pick">Or paste device ID
           <input id="child-live" type="text" placeholder="From kid phone → Parent home / Settings" autocomplete="off" />
         </label>
-        <p class="muted kid-hint">Approves, pause, and toggles sync to this phone over the same private GitHub channel as the app.</p>
+        <p class="muted kid-hint">Approves, pause, and toggles sync to this phone.</p>
       </div>
       <p id="status" class="dash-status" role="status"></p>
 
@@ -208,7 +201,7 @@
   <footer>
     <div>
       <p class="footer-brand">Steady</p>
-      <p>Less phone. More life. Auth + sync stay free-tier friendly.</p>
+      <p>Less phone. More life.</p>
     </div>
     <div class="footer-links">
       <a href="index.html">Home</a>
@@ -217,10 +210,10 @@
     </div>
   </footer>
 
-  <script src="js/runtime-config.js?v=2"></script>
+  <script src="js/runtime-config.js?v=3"></script>
   <script src="js/crypto-lite.js?v=2"></script>
   <script src="js/github-sync.js?v=2"></script>
-  <script src="js/auth.js?v=2"></script>
-  <script src="js/dashboard.js?v=3"></script>
+  <script src="js/auth.js?v=3"></script>
+  <script src="js/dashboard.js?v=4"></script>
 </body>
 </html>
