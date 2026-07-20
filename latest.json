@@ -1,9 +1,9 @@
 {
-  "version": "1.7.6",
-  "versionCode": 83,
-  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v1.7.6/steady-1.7.6.apk",
-  "sha256": "4a1fa9711fbf561500587efa8503e05582f9469e24c4a978d4dd13df4388f50d",
-  "sizeBytes": 63823623,
-  "notes": "## 1.7.6\n\n## What's new\n\n- **Never times out waiting for parent** \u2014 kid asks stay open on the family link until Approve or Deny. Phones stay synced; tap Refresh anytime.\n- **Richer parent Approves** \u2014 5 / 10 / 15 / 30 / 45 / 60 / 2h / 3h, Always allow, or Approve as asked.\n- **What's new always ships** \u2014 update screen shows release notes from `latest.json` by default (even when you are already up to date).\n\n## Update tip\n\nInstall on **both** phones. On parent: open an ask and try Always allow / 2h. On kid: Ask for Fun and leave it open \u2014 it will not say Timed out.",
+  "version": "1.7.7",
+  "versionCode": 84,
+  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v1.7.7/steady-1.7.7.apk",
+  "sha256": "5d16efde3cac11491aa177644aa962f8ecd57debf201f1cdcc6317df40a09c6b",
+  "sizeBytes": 63823619,
+  "notes": "## 1.7.7\n\n## What's new\n\n- **Faster & steadier** \u2014 less \u201cSteady isn\u2019t responding\u201d: lighter Settings scans, slower background ticks, coalesced Home refreshes, parallel icon loads, quieter parent sync.\n- **Tighter Settings lock** \u2014 tamper repair no longer opens all of Settings. Only Accessibility + Device Admin for a short window. Home-app picker stays gated. About phone / build number treated as dangerous.\n- **Honest lockdown** \u2014 without Device Owner (ADB / factory setup), Safe Mode, hard uninstall, and factory reset can still escape. With Device Owner on the kid phone, Accessibility and uninstall stay locked.\n\n## Update tip\n\nInstall on **both** phones. Kid phone: use Device Owner for real lockdown. Parent: Refresh still works; sync is quieter so the app stays responsive.",
   "assetId": 0
 }
