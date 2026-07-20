@@ -300,32 +300,46 @@
 
   async function ensureAccountRecord(session) {
     const gh = githubClientForSync();
-    const key = await sha256Hex(
-      (session.googleSub || session.email || "").toLowerCase()
-    );
-    const path = `accounts/${key.slice(0, 32)}.json.enc`;
-    const existing = await gh.getDecoded(path);
-    if (existing.data && existing.data.familyCode) {
-      return existing.data;
+    const email = String(session.email || "").trim().toLowerCase();
+    const googleSub = String(session.googleSub || "").trim();
+    // Email is canonical — Google on the website and email OTP on a kid phone merge.
+    const emailKey = email && email.includes("@") ? await sha256Hex(email) : "";
+    const subKey = googleSub ? await sha256Hex(googleSub.toLowerCase()) : "";
+    let existing = null;
+    if (emailKey) {
+      try {
+        const got = await gh.getDecoded(`accounts/${emailKey.slice(0, 32)}.json.enc`);
+        if (got.data && got.data.familyCode) existing = got.data;
+      } catch (_) {}
     }
-    const familyCode = await familyCodeFromIdentity(
-      session.googleSub || session.email
-    );
-    const familySecret =
-      (await sha256Hex(`secret|${session.googleSub || session.email}|steady`)).slice(
-        0,
-        48
-      );
+    if (!existing && subKey) {
+      try {
+        const got = await gh.getDecoded(`accounts/${subKey.slice(0, 32)}.json.enc`);
+        if (got.data && got.data.familyCode) existing = got.data;
+      } catch (_) {}
+    }
+    if (existing && existing.familyCode) {
+      const merged = Object.assign({}, existing, {
+        email: email || existing.email || "",
+        googleSub: googleSub || existing.googleSub || "",
+        updatedAt: Date.now(),
+      });
+      await writeAccountAliases(gh, merged);
+      return merged;
+    }
+    const id = email && email.includes("@") ? email : googleSub;
+    if (!id) throw new Error("Email or Google account required");
+    const familyCode = await familyCodeFromIdentity(id);
+    const familySecret = (await sha256Hex(`secret|${id}|steady`)).slice(0, 48);
     const record = {
-      email: session.email || "",
-      googleSub: session.googleSub || "",
+      email: email || "",
+      googleSub: googleSub || "",
       familyCode,
       familySecret,
       roleHint: session.roleHint || "PARENT",
       updatedAt: Date.now(),
     };
-    await gh.putEncoded(path, record, "steady account");
-    // Seed family folder README so paths exist
+    await writeAccountAliases(gh, record);
     try {
       await gh.putEncoded(
         `families/${steadyFamilyFolder(familyCode)}/account.json.enc`,
@@ -339,6 +353,22 @@
       );
     } catch (_) {}
     return record;
+  }
+
+  async function writeAccountAliases(gh, record) {
+    const email = String(record.email || "").trim().toLowerCase();
+    const googleSub = String(record.googleSub || "").trim();
+    const keys = [];
+    if (email && email.includes("@")) keys.push((await sha256Hex(email)).slice(0, 32));
+    if (googleSub) keys.push((await sha256Hex(googleSub.toLowerCase())).slice(0, 32));
+    if (!keys.length) {
+      const id = email || googleSub;
+      if (id) keys.push((await sha256Hex(id.toLowerCase())).slice(0, 32));
+    }
+    const unique = Array.from(new Set(keys));
+    for (const key of unique) {
+      await gh.putEncoded(`accounts/${key}.json.enc`, record, "steady account");
+    }
   }
 
   const GOOGLE_AUTH_HOST = "labratkali.github.io";
