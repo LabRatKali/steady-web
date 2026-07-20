@@ -69,9 +69,15 @@
     if ($("child-live")) $("child-live").value = child;
     showApp(true);
     $("session-meta").textContent = `${sess.email || sess.googleSub || "signed in"} · family ${sess.familyCode}`;
+    await loadKidPhones();
     await refresh();
     if (window.__steadyPoll) clearInterval(window.__steadyPoll);
     window.__steadyPoll = setInterval(refresh, 15000);
+  }
+
+  function setToggle(id, on) {
+    const el = $(id);
+    if (el) el.checked = !!on;
   }
 
   function fillPolicyForm(p) {
@@ -81,13 +87,12 @@
     f.workMinutes.value = p.workMinutes ?? 120;
     f.learningMinutes.value = p.learningMinutes ?? 120;
     f.entertainmentMinutes.value = p.entertainmentMinutes ?? 5;
-    f.schoolModeEnabled.checked = !!p.schoolModeEnabled;
     f.schoolStartHour.value = p.schoolStartHour ?? 8;
     f.schoolEndHour.value = p.schoolEndHour ?? 15;
-    f.filterEnabled.checked = p.filterEnabled !== false;
-    f.installApprovalEnabled.checked = p.installApprovalEnabled !== false;
-    f.liveLocationEnabled.checked = !!p.liveLocationEnabled;
-    f.settingsUnlockMins.value = 0;
+    setToggle("tog-school", !!p.schoolModeEnabled);
+    setToggle("tog-filter", p.filterEnabled !== false);
+    setToggle("tog-install", p.installApprovalEnabled !== false);
+    setToggle("tog-location", !!p.liveLocationEnabled);
     const until = p.familyPauseUntil || 0;
     const pauseEl = $("pause-state");
     if (pauseEl) {
@@ -95,6 +100,37 @@
         until > Date.now()
           ? `Paused — about ${Math.ceil((until - Date.now()) / 60000)} min left`
           : "Not paused";
+    }
+  }
+
+  async function loadKidPhones() {
+    const sel = $("child-select");
+    if (!sel || !client) return;
+    try {
+      const phones = await client.listFamilyPhones();
+      const current = ($("child-live") && $("child-live").value.trim()) || "";
+      sel.innerHTML = '<option value="">Choose a linked phone…</option>';
+      (phones || []).forEach((ph) => {
+        const id = ph.deviceId || ph.childDeviceId || ph.id || "";
+        if (!id) return;
+        const opt = document.createElement("option");
+        opt.value = id;
+        const role = ph.role || ph.mode || "kid";
+        const label = ph.label || ph.name || id;
+        opt.textContent = `${label} (${role})`;
+        if (id === current) opt.selected = true;
+        sel.appendChild(opt);
+      });
+      if (!current && phones && phones.length === 1) {
+        const only =
+          phones[0].deviceId || phones[0].childDeviceId || phones[0].id || "";
+        if (only && $("child-live")) {
+          $("child-live").value = only;
+          sel.value = only;
+        }
+      }
+    } catch (_) {
+      /* phones folder may be empty until kid links */
     }
   }
 
@@ -416,14 +452,57 @@
     session = null;
     showApp(false);
   });
-  $("btn-refresh").addEventListener("click", () => refresh());
+  $("btn-refresh").addEventListener("click", async () => {
+    await loadKidPhones();
+    await refresh();
+  });
   if ($("child-live")) {
     $("child-live").addEventListener("change", () => refresh());
+  }
+  if ($("child-select")) {
+    $("child-select").addEventListener("change", () => {
+      const v = $("child-select").value.trim();
+      if ($("child-live") && v) $("child-live").value = v;
+      refresh();
+    });
   }
   document.querySelectorAll("[data-pause]").forEach((btn) => {
     btn.addEventListener("click", () => setPause(Number(btn.dataset.pause)));
   });
   $("btn-end-pause").addEventListener("click", () => setPause(0));
+
+  document.querySelectorAll("#mode-toggles input[data-policy]").forEach((tog) => {
+    tog.addEventListener("change", async () => {
+      const key = tog.dataset.policy;
+      try {
+        status(`Updating ${key}…`);
+        await patchPolicy((p) => {
+          p[key] = !!tog.checked;
+        });
+        status(tog.checked ? `${key} on` : `${key} off`);
+        await refresh();
+      } catch (e) {
+        tog.checked = !tog.checked;
+        status(String(e.message || e));
+      }
+    });
+  });
+
+  if ($("btn-unlock-settings")) {
+    $("btn-unlock-settings").addEventListener("click", async () => {
+      const mins = Number(($("quick-unlock") && $("quick-unlock").value) || 15) || 15;
+      try {
+        status("Unlocking Settings…");
+        await patchPolicy((p) => {
+          p.settingsUnlockUntil = Date.now() + mins * 60 * 1000;
+        });
+        status(`Settings unlock for ${mins} min`);
+        await refresh();
+      } catch (e) {
+        status(String(e.message || e));
+      }
+    });
+  }
 
   $("policy-form").addEventListener("submit", async (ev) => {
     ev.preventDefault();
@@ -434,17 +513,14 @@
         p.workMinutes = Number(f.workMinutes.value) || 0;
         p.learningMinutes = Number(f.learningMinutes.value) || 0;
         p.entertainmentMinutes = Number(f.entertainmentMinutes.value) || 0;
-        p.schoolModeEnabled = f.schoolModeEnabled.checked;
         p.schoolStartHour = Number(f.schoolStartHour.value) || 8;
         p.schoolEndHour = Number(f.schoolEndHour.value) || 15;
-        p.filterEnabled = f.filterEnabled.checked;
-        p.installApprovalEnabled = f.installApprovalEnabled.checked;
-        p.liveLocationEnabled = f.liveLocationEnabled.checked;
-        const unlockMins = Number(f.settingsUnlockMins.value) || 0;
-        p.settingsUnlockUntil =
-          unlockMins > 0 ? Date.now() + unlockMins * 60 * 1000 : 0;
+        p.schoolModeEnabled = !!($("tog-school") && $("tog-school").checked);
+        p.filterEnabled = !!($("tog-filter") && $("tog-filter").checked);
+        p.installApprovalEnabled = !!($("tog-install") && $("tog-install").checked);
+        p.liveLocationEnabled = !!($("tog-location") && $("tog-location").checked);
       });
-      status("Rules sent");
+      status("Budgets sent to kid");
       await refresh();
     } catch (e) {
       status(String(e.message || e));
