@@ -235,6 +235,20 @@ nav a {
 nav a:hover,
 nav a[aria-current="page"] { color: var(--fg); }
 
+nav a.nav-signin {
+  color: var(--fg);
+  padding: 0.35rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+}
+
+nav a.nav-cta {
+  color: #0c1b15;
+  background: var(--accent, #7cb89a);
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+}
+
 main {
   max-width: 1160px;
   margin: 0 auto;
