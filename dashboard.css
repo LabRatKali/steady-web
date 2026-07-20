@@ -106,7 +106,23 @@
   gap: 0.5rem;
 }
 
-.dash-tabs {
+.kid-rename-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  align-items: flex-end;
+  margin-top: 0.75rem;
+}
+.kid-rename-grow {
+  flex: 1;
+  min-width: 12rem;
+}
+.panel-lede {
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: var(--muted);
+  margin: 0 0 0.85rem;
+}
   display: flex;
   flex-wrap: wrap;
   gap: 0.4rem;
