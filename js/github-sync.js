@@ -222,7 +222,12 @@
 
     async decideApproval(req, approve, minutes) {
       const secret = this.familySecret || this.pairCode;
-      const status = approve ? "APPROVED" : "DENIED";
+      const status =
+        approve === "DISMISS" || approve === "dismiss"
+          ? "DISMISSED"
+          : approve
+            ? "APPROVED"
+            : "DENIED";
       const mins =
         minutes == null
           ? req.requestedMinutes || 5
@@ -231,7 +236,7 @@
       const expiresAt = Date.now() + 24 * 60 * 60 * 1000;
       const payloadStr = SteadyCrypto.decisionPayload(
         req.id,
-        status,
+        status === "DISMISSED" ? "DENIED" : status,
         mins < 0 ? -1 : mins,
         nonce,
         expiresAt
@@ -241,13 +246,31 @@
         : "";
       const decision = Object.assign({}, req, {
         status,
-        approvedMinutes: approve ? mins : null,
+        approvedMinutes: status === "APPROVED" ? mins : null,
         nonce,
         expiresAt,
         signature,
+        updatedAt: Date.now(),
       });
       await this.publishDecision(decision);
+      // Close queue so it never comes back on Refresh.
+      try {
+        await this.putEncoded(
+          `parent/queue/${req.childDeviceId}_${req.id}.json.enc`,
+          decision,
+          "ask closed"
+        );
+      } catch (_) {}
       return decision;
+    }
+
+    async publishPhoneProfile(profile) {
+      if (!profile || !profile.deviceId) throw new Error("Missing device id");
+      await this.putEncoded(
+        this.phonesPath(profile.deviceId),
+        Object.assign({}, profile, { updatedAt: Date.now() }),
+        "rename kid phone"
+      );
     }
   }
 
