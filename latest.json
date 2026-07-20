@@ -1,9 +1,9 @@
 {
-  "version": "1.7.7",
-  "versionCode": 84,
-  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v1.7.7/steady-1.7.7.apk",
-  "sha256": "5d16efde3cac11491aa177644aa962f8ecd57debf201f1cdcc6317df40a09c6b",
-  "sizeBytes": 63823619,
-  "notes": "## 1.7.7\n\n## What's new\n\n- **Faster & steadier** \u2014 less \u201cSteady isn\u2019t responding\u201d: lighter Settings scans, slower background ticks, coalesced Home refreshes, parallel icon loads, quieter parent sync.\n- **Tighter Settings lock** \u2014 tamper repair no longer opens all of Settings. Only Accessibility + Device Admin for a short window. Home-app picker stays gated. About phone / build number treated as dangerous.\n- **Honest lockdown** \u2014 without Device Owner (ADB / factory setup), Safe Mode, hard uninstall, and factory reset can still escape. With Device Owner on the kid phone, Accessibility and uninstall stay locked.\n\n## Update tip\n\nInstall on **both** phones. Kid phone: use Device Owner for real lockdown. Parent: Refresh still works; sync is quieter so the app stays responsive.\n",
+  "version": "2.0.0",
+  "versionCode": 100,
+  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.0.0/steady-2.0.0.apk",
+  "sha256": "1c541a2b2e3d080a4bd9570f51a951dac962b00623f17e4f21f76e346464bf2e",
+  "sizeBytes": 63827559,
+  "notes": "## 2.0.0\n\n## What's new\n\n- **Family web dashboard (GitHub only)** \u2014 Approves, pause, budgets, to-dos, kid apps, location from the website. Same `steady-sync` files the phones use. Fine-grained PAT + family code \u2014 no Cloudflare/Supabase.\n- **One Sec\u2013style Fun friction** \u2014 breathing pause + reflection prompts before Fun apps (and Ask for Fun). Progressive wait if you open Fun again quickly.\n- **Calm Home** \u2014 optional grayscale icons, app search, streak nudge, shareable weekly usage summary.\n- **Security honesty** \u2014 Device Owner still required for Safe Mode / hard uninstall / factory reset. Tamper repair stays narrow (Accessibility + Admin only).\n\n## Update tip\n\nInstall on **both** phones. Parents: try [dashboard.html](https://labratkali.github.io/steady-web/dashboard.html) with a fine-grained PAT. Kids/self: open a Fun app and take the mindful pause.",
   "assetId": 0
 }
