@@ -299,60 +299,84 @@
   }
 
   async function ensureAccountRecord(session) {
-    const gh = githubClientForSync();
     const email = String(session.email || "").trim().toLowerCase();
     const googleSub = String(session.googleSub || "").trim();
-    // Email is canonical — Google on the website and email OTP on a kid phone merge.
-    const emailKey = email && email.includes("@") ? await sha256Hex(email) : "";
-    const subKey = googleSub ? await sha256Hex(googleSub.toLowerCase()) : "";
-    let existing = null;
-    if (emailKey) {
-      try {
-        const got = await gh.getDecoded(`accounts/${emailKey.slice(0, 32)}.json.enc`);
-        if (got.data && got.data.familyCode) existing = got.data;
-      } catch (_) {}
-    }
-    if (!existing && subKey) {
-      try {
-        const got = await gh.getDecoded(`accounts/${subKey.slice(0, 32)}.json.enc`);
-        if (got.data && got.data.familyCode) existing = got.data;
-      } catch (_) {}
-    }
-    if (existing && existing.familyCode) {
-      const merged = Object.assign({}, existing, {
-        email: email || existing.email || "",
-        googleSub: googleSub || existing.googleSub || "",
-        updatedAt: Date.now(),
-      });
-      await writeAccountAliases(gh, merged);
-      return merged;
-    }
     const id = email && email.includes("@") ? email : googleSub;
     if (!id) throw new Error("Email or Google account required");
-    const familyCode = await familyCodeFromIdentity(id);
-    const familySecret = (await sha256Hex(`secret|${id}|steady`)).slice(0, 48);
-    const record = {
+
+    // Instant local identity — Google Sign-In must never wait on GitHub.
+    const localCode = await familyCodeFromIdentity(id);
+    const localSecret = (await sha256Hex(`secret|${id}|steady`)).slice(0, 48);
+    const localRecord = {
       email: email || "",
       googleSub: googleSub || "",
-      familyCode,
-      familySecret,
+      familyCode: localCode,
+      familySecret: localSecret,
       roleHint: session.roleHint || "PARENT",
       updatedAt: Date.now(),
     };
-    await writeAccountAliases(gh, record);
-    try {
-      await gh.putEncoded(
-        `families/${steadyFamilyFolder(familyCode)}/account.json.enc`,
-        {
-          familyCode,
-          email: record.email,
-          googleSub: record.googleSub,
-          updatedAt: Date.now(),
-        },
-        "family account link"
-      );
-    } catch (_) {}
-    return record;
+
+    // Background: merge existing cloud account (same email) + write aliases.
+    Promise.resolve()
+      .then(async () => {
+        let gh;
+        try {
+          gh = githubClientForSync();
+        } catch (_) {
+          return;
+        }
+        const emailKey = email && email.includes("@") ? await sha256Hex(email) : "";
+        const subKey = googleSub ? await sha256Hex(googleSub.toLowerCase()) : "";
+        let existing = null;
+        if (emailKey) {
+          try {
+            const got = await gh.getDecoded(`accounts/${emailKey.slice(0, 32)}.json.enc`);
+            if (got.data && got.data.familyCode) existing = got.data;
+          } catch (_) {}
+        }
+        if (!existing && subKey) {
+          try {
+            const got = await gh.getDecoded(`accounts/${subKey.slice(0, 32)}.json.enc`);
+            if (got.data && got.data.familyCode) existing = got.data;
+          } catch (_) {}
+        }
+        const record =
+          existing && existing.familyCode
+            ? Object.assign({}, existing, {
+                email: email || existing.email || "",
+                googleSub: googleSub || existing.googleSub || "",
+                updatedAt: Date.now(),
+              })
+            : localRecord;
+        await writeAccountAliases(gh, record);
+        await gh.putEncoded(
+          `families/${steadyFamilyFolder(record.familyCode)}/account.json.enc`,
+          {
+            familyCode: record.familyCode,
+            email: record.email,
+            googleSub: record.googleSub,
+            updatedAt: Date.now(),
+          },
+          "family account link"
+        );
+        // If cloud had a different family code (rare email-merge), refresh session.
+        try {
+          const sess = loadSession();
+          if (
+            sess &&
+            sess.googleSub === googleSub &&
+            record.familyCode &&
+            sess.familyCode !== record.familyCode
+          ) {
+            sess.familyCode = record.familyCode;
+            sess.familySecret = record.familySecret;
+            saveSession(sess);
+          }
+        } catch (_) {}
+      })
+      .catch(() => {});
+
+    return localRecord;
   }
 
   async function writeAccountAliases(gh, record) {
@@ -481,9 +505,19 @@
     const returnUrl = (params.get("return") || "").trim();
     const autoGoogle = params.get("google") === "1";
 
-    const start = () => {
+    const start = (tries) => {
+      const n = tries || 0;
       if (!global.google || !google.accounts || !google.accounts.id) {
-        setTimeout(start, 200);
+        if (n > 50) {
+          buttonEl.innerHTML = "";
+          const p = document.createElement("p");
+          p.className = "muted login-hint";
+          p.textContent =
+            "Google Sign-In didn’t load. Refresh the page, or use email below.";
+          buttonEl.appendChild(p);
+          return;
+        }
+        setTimeout(() => start(n + 1), 200);
         return;
       }
       google.accounts.id.initialize({
@@ -494,34 +528,44 @@
             await finishGoogleSession(payload, onSignedIn, returnUrl || "");
           } catch (e) {
             const raw = String((e && e.message) || e || "Sign-in failed");
-            const friendly = /failed to fetch|network error|Could not reach GitHub/i.test(raw)
-              ? "Could not finish sign-in (network). Disable ad-block for labratkali.github.io, check Wi‑Fi, then try Google again."
-              : raw;
-            alert(friendly);
+            alert(raw);
           }
         },
+        auto_select: false,
+        cancel_on_tap_outside: true,
+        itp_support: true,
+        use_fedcm_for_prompt: true,
       });
+      buttonEl.innerHTML = "";
       google.accounts.id.renderButton(buttonEl, {
         theme: "outline",
         size: "large",
         shape: "pill",
         text: "signin_with",
         width: 280,
+        logo_alignment: "left",
       });
       if (autoGoogle) {
-        // Prompt One Tap / focus the rendered button for return-flow users.
         try {
           google.accounts.id.prompt();
         } catch (_) {}
       }
     };
-    start();
+    start(0);
     return true;
   }
 
   function parseJwt(token) {
     const part = token.split(".")[1];
-    const json = atob(part.replace(/-/g, "+").replace(/_/g, "/"));
+    const b64 = part.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = b64 + "===".slice((b64.length + 3) % 4);
+    const binary = atob(padded);
+    // UTF-8 safe (Google names can include non-ASCII)
+    const json = decodeURIComponent(
+      Array.prototype.map
+        .call(binary, (c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        .join("")
+    );
     return JSON.parse(json);
   }
 
