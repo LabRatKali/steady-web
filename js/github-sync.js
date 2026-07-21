@@ -68,24 +68,33 @@
 
     async putEncoded(path, obj, message) {
       const encoded = SteadyCrypto.encode(JSON.stringify(obj));
-      let sha = null;
-      const existing = await this.api(path, { method: "GET" });
-      if (existing.ok && existing.json && existing.json.sha) {
-        sha = existing.json.sha;
-      }
-      const body = {
-        message: message || "Steady web dashboard",
-        content: btoa(encoded),
-      };
-      if (sha) body.sha = sha;
-      const { ok, status, text } = await this.api(path, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      if (!ok && status !== 422) {
+      let lastErr = null;
+      for (let attempt = 0; attempt < 5; attempt++) {
+        let sha = null;
+        const existing = await this.api(path, { method: "GET" });
+        if (existing.ok && existing.json && existing.json.sha) {
+          sha = existing.json.sha;
+        }
+        const body = {
+          message: message || "Steady web dashboard",
+          content: btoa(encoded),
+        };
+        if (sha) body.sha = sha;
+        const { ok, status, text } = await this.api(path, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        if (ok || status === 422) return;
+        // 409 = stale SHA / concurrent write — refresh SHA and retry
+        if (status === 409 || status === 404) {
+          lastErr = new Error(`Put failed (${status}): ${String(text).slice(0, 180)}`);
+          await new Promise((r) => setTimeout(r, 120 * (attempt + 1)));
+          continue;
+        }
         throw new Error(`Put failed (${status}): ${String(text).slice(0, 180)}`);
       }
+      throw lastErr || new Error("Put failed after retries");
     }
 
     policyPath(childId) {
