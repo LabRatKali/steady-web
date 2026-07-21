@@ -1,9 +1,9 @@
 {
-  "version": "2.6.0",
-  "versionCode": 115,
-  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.6.0/steady-2.6.0.apk",
-  "sha256": "240cc4e0fc38c9be9ae4141efb25f717bab5e693d00b79bcb9890dd0363f1a36",
-  "sizeBytes": 64355389,
-  "notes": "## 2.6.0\n\n## What's new\n\n- **Play Protect / installer** \u2014 Protect can scan Steady updates; confirm UI re-arms the allow window so install doesn\u2019t bounce away.\n- **Approved Play Store stays open** \u2014 timed-allow / allow-cache wins over the hard block list.\n- **Day off** \u2014 apps stay colorful and open; gray-out clears; hard blocks rest during pause.\n- **Home cleanup** \u2014 no streak line, no Focus \u201cno daily clock\u201d pill, no duplicate date; search icon next to Refresh; profiles open from \u22ee as a menu (not a home card).\n- **Ask from parent** \u2014 wording no longer says \u201cparent phone / website\u201d; Pending asks supports Allow / Don\u2019t allow for mode unlocks; publish retries + clearer status.\n- **Focus** \u2014 all non-Never apps allowed; switching profiles on a kid phone still needs parent PIN / ask.\n- **Kid settings** \u2014 Look, Home, and This phone sections with plain blurbs.\n- **Share weekly summary** \u2014 share sheet allowed briefly so it doesn\u2019t snap shut; app names in the report.\n- **Dashboard** \u2014 compact Refresh / Sign out, cleaner kid rename, usage + tips in More, app labels instead of package codes.\n\n_Install on the kid phone. Hard-refresh the dashboard after deploy._",
+  "version": "2.6.1",
+  "versionCode": 116,
+  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.6.1/steady-2.6.1.apk",
+  "sha256": "e4c1d180262e57b1fdfb56e39f93d046ab1c97ace62e3c9bb51a2c6cc794f349",
+  "sizeBytes": 64357225,
+  "notes": "## 2.6.1\n\n## What's new\n\n- **Setup welcome** \u2014 cleaner first screen: \u201cGet your time back,\u201d two clear choices (child / self), less clutter.\n- **Email codes only** \u2014 Send code shows \u201cSending\u2026\u201d then \u201ccheck your email.\u201d Steady no longer prints the code on the phone or website.\n- **No parent-phone fingerprint** \u2014 Android fingerprint/face for a parent phone is removed. Use Ask from parent (website) or Steady Face in-app.\n\n_Hard-refresh the dashboard after deploy. Install on new setups especially._",
   "assetId": 0
 }
