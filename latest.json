@@ -1,9 +1,9 @@
 {
-  "version": "2.7.0",
-  "versionCode": 117,
-  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.7.0/steady-2.7.0.apk",
-  "sha256": "382a823597e9ebd7a669aff8ec353dbe8b7c2b3c1a95d6bdbd8feec7bc26aeab",
+  "version": "2.7.1",
+  "versionCode": 118,
+  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.7.1/steady-2.7.1.apk",
+  "sha256": "6858e9dc8ffae729f4c7d63adb323b1da769a2b80cb26636e12715df343643dc",
   "sizeBytes": 64427845,
-  "notes": "## 2.7.0\n\n## What's new\n\n- **Steady Home** \u2014 swipe between pages, create app folders, dock + rearrange, and home widgets (to-dos / intention).\n- **Recents** \u2014 Android Recents from the \u22ee menu and lock/rest screen; Samsung gesture Recents no longer gets bounced.\n- **Lock screen Back** \u2014 Back returns to Steady Home; Recents button opens overview.\n- **WhatsApp Status / Channels** \u2014 stronger leave-Updates path (tap Chats, Back, re-check) so Status doesn\u2019t stick.\n- **Hide Steady notifications** \u2014 quieter enforcement / filter status when the parent toggle is on.\n- **Rename phone** \u2014 website GitHub sync retries on 409 SHA conflicts.\n- **Website** \u2014 removed \u201cboth on one phone / weaker\u201d marketing; parent remote is the dashboard. Signed-in dashboard polish.\n\n_Hard-refresh the dashboard after deploy. Install on kid phones for Home + WhatsApp + Recents fixes._",
+  "notes": "## 2.7.1\n\n## What's new\n\n- **Hide Steady notifications** \u2014 turning the toggle off again restores the normal enforcement status notification (not only when hiding).\n\n_Hard-refresh the dashboard after deploy if you had 2.7.0 open._",
   "assetId": 0
 }
