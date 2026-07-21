@@ -39,6 +39,7 @@
       </svg>
       <span>Steady</span>
     </a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
     <nav id="site-nav" class="dash-nav">
       <a href="index.html">Home</a>
       <a href="setup.html">Setup</a>
@@ -349,7 +350,8 @@
         <div class="dash-panel" data-panel="more" role="tabpanel" hidden>
           <div class="dash-grid dash-grid-remote">
             <article class="dash-card span-2" id="panel-usage">
-              <h2>Usage report</h2>
+              <h2>Synced apps</h2>
+              <p class="lede">Apps reported by the kid phone (not live screen-time minutes).</p>
               <p class="panel-lede">What the kid used today — real app names, not package codes. Refresh to load the latest from the phone.</p>
               <div id="usage-box" class="muted">Refresh to load usage.</div>
             </article>
@@ -403,10 +405,11 @@
     </div>
   </footer>
 
+  <script src="site.js?v=18"></script>
   <script src="js/runtime-config.js?v=6"></script>
   <script src="js/crypto-lite.js?v=3"></script>
-  <script src="js/github-sync.js?v=9"></script>
-  <script src="js/auth.js?v=8"></script>
-  <script src="js/dashboard.js?v=19"></script>
+  <script src="js/github-sync.js?v=10"></script>
+  <script src="js/auth.js?v=9"></script>
+  <script src="js/dashboard.js?v=20"></script>
 </body>
 </html>
