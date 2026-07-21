@@ -22,57 +22,88 @@
     }
 
     headers(extra) {
+      // Keep headers minimal — extra headers force CORS preflight that often fails in browsers.
       return Object.assign(
         {
           Accept: "application/vnd.github+json",
           Authorization: `Bearer ${this.token}`,
           "X-GitHub-Api-Version": "2022-11-28",
-          "User-Agent": "Steady-Web-Dashboard",
         },
         extra || {}
       );
     }
 
+    /**
+     * Prefer direct GitHub (after CORS-safe headers). Worker proxy is fallback.
+     */
+    apiBases() {
+      const bases = ["https://api.github.com"];
+      try {
+        const rt = (typeof window !== "undefined" && window.STEADY_RUNTIME) || {};
+        const mailer = rt.mailer || {};
+        const proxyRoot = String(mailer.proxyUrl || mailer.mailProxyUrl || "")
+          .trim()
+          .replace(/\/api\/mail\/?$/, "");
+        if (proxyRoot) bases.push(proxyRoot.replace(/\/$/, "") + "/api/github");
+        if (typeof location !== "undefined" && location.hostname.endsWith("workers.dev")) {
+          bases.push(location.origin.replace(/\/$/, "") + "/api/github");
+        }
+        bases.push("https://steady.less-phone.workers.dev/api/github");
+      } catch (_) {}
+      return Array.from(new Set(bases));
+    }
+
     async api(path, opts) {
       const options = opts || {};
       const { cacheBust, headers: extraHeaders, ...fetchOpts } = options;
-      // Prefer Cache-Control over ?t= query — GitHub Contents + some browsers choke on bust query.
-      const url = `${API}/repos/${this.repo}/contents/${path}`;
+      // Do NOT send Cache-Control/Pragma — they force a CORS preflight GitHub often rejects
+      // ("Failed to fetch" with no HTTP status).
+      const method = (fetchOpts.method || "GET").toUpperCase();
+      const body = fetchOpts.body;
+      const contentPath = `repos/${this.repo}/contents/${path}`;
       let lastErr = null;
-      for (let attempt = 0; attempt < 4; attempt++) {
-        try {
-          const res = await fetch(url, {
-            method: fetchOpts.method || "GET",
-            body: fetchOpts.body,
-            headers: this.headers(
-              Object.assign(
-                {
-                  "Cache-Control": "no-cache",
-                  Pragma: "no-cache",
-                },
-                extraHeaders || {}
-              )
-            ),
-          });
-          const text = await res.text();
-          let json = null;
+      const bases = this.apiBases();
+      for (const base of bases) {
+        const isProxy = base.indexOf("/api/github") >= 0;
+        const url = isProxy
+          ? `${base}/${contentPath}`
+          : `${base}/${contentPath}`;
+        for (let attempt = 0; attempt < 2; attempt++) {
           try {
-            json = text ? JSON.parse(text) : null;
-          } catch (_) {
-            json = null;
+            const res = await fetch(url, {
+              method,
+              body,
+              headers: this.headers(extraHeaders || {}),
+            });
+            const text = await res.text();
+            let json = null;
+            try {
+              json = text ? JSON.parse(text) : null;
+            } catch (_) {
+              json = null;
+            }
+            // Proxy missing (404 / not deployed) → try next base
+            if (isProxy && (res.status === 404 || res.status === 405)) {
+              lastErr = new Error("GitHub proxy not deployed");
+              break;
+            }
+            // Proxy returned non-JSON HTML error page
+            if (isProxy && !json && res.status >= 400) {
+              lastErr = new Error("GitHub proxy error " + res.status);
+              break;
+            }
+            return { ok: res.ok, status: res.status, json, text, via: base };
+          } catch (e) {
+            lastErr = e;
+            await new Promise((r) => setTimeout(r, 120 * (attempt + 1)));
           }
-          return { ok: res.ok, status: res.status, json, text };
-        } catch (e) {
-          lastErr = e;
-          // TypeError: Failed to fetch — transient network / DNS / blocker
-          await new Promise((r) => setTimeout(r, 200 * (attempt + 1) * (attempt + 1)));
         }
       }
       const msg = lastErr && lastErr.message ? lastErr.message : "network error";
       throw new Error(
         "Could not reach GitHub sync (" +
           msg +
-          "). Check connection, disable ad-block for this site, then try again."
+          "). Try again in a moment — or open https://steady.less-phone.workers.dev/dashboard.html"
       );
     }
 
