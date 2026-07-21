@@ -22,14 +22,12 @@
     }
 
     headers(extra) {
-      // GitHub CORS allow-list does NOT include Accept (or Cache-Control/Pragma).
-      // Sending Accept: application/vnd.github+json makes browsers preflight with
-      // Access-Control-Request-Headers: accept,… → preflight "succeeds" 204 but
-      // missing Accept in Allow-Headers → browser blocks as TypeError Failed to fetch.
+      // Browser→api.github.com CORS allow-list: Authorization (+ Content-Type on writes).
+      // Do NOT send Accept / Cache-Control / Pragma — missing from Allow-Headers → Failed to fetch.
+      // X-GitHub-Api-Version is allowed but optional; omit to keep preflight minimal.
       return Object.assign(
         {
           Authorization: `Bearer ${this.token}`,
-          "X-GitHub-Api-Version": "2022-11-28",
         },
         extra || {}
       );
@@ -63,13 +61,12 @@
       const method = (fetchOpts.method || "GET").toUpperCase();
       const body = fetchOpts.body;
       const contentPath = `repos/${this.repo}/contents/${path}`;
+      const bust = cacheBust ? `?t=${Date.now()}` : "";
       let lastErr = null;
       const bases = this.apiBases();
       for (const base of bases) {
         const isProxy = base.indexOf("/api/github") >= 0;
-        const url = isProxy
-          ? `${base}/${contentPath}`
-          : `${base}/${contentPath}`;
+        const url = `${base}/${contentPath}${bust}`;
         for (let attempt = 0; attempt < 2; attempt++) {
           try {
             const res = await fetch(url, {
@@ -121,10 +118,14 @@
       const { ok, status, json } = await this.api(path, { method: "GET", cacheBust: true });
       if (status === 404) return { exists: false, sha: null, data: null };
       if (!ok) throw new Error(`Get failed (${status}): ${path}`);
-      const b64 = String(json.content || "").replace(/\n/g, "");
-      const raw = atob(b64);
-      const plain = SteadyCrypto.decode(raw);
-      return { exists: true, sha: json.sha, data: JSON.parse(plain), raw };
+      try {
+        const b64 = String(json.content || "").replace(/\n/g, "");
+        const raw = atob(b64);
+        const plain = SteadyCrypto.decode(raw);
+        return { exists: true, sha: json.sha, data: JSON.parse(plain), raw };
+      } catch (_) {
+        return { exists: true, sha: json.sha || null, data: null, corrupt: true };
+      }
     }
 
     async putEncoded(path, obj, message) {
@@ -153,8 +154,8 @@
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(body),
           });
-          if (ok || status === 422) return;
-          if (status === 409 || status === 404) {
+          if (ok) return;
+          if (status === 409 || status === 404 || status === 422) {
             lastErr = new Error(`Put failed (${status}): ${String(text).slice(0, 180)}`);
             await new Promise((r) => setTimeout(r, 120 * (attempt + 1)));
             continue;
