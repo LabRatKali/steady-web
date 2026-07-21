@@ -1,9 +1,9 @@
 {
-  "version": "2.9.0",
-  "versionCode": 125,
-  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.9.0/steady-2.9.0.apk",
-  "sha256": "3d5a2adc6abf36034680fc9e8941bb9ff8260e6e707cd15f4a816b0730b0bfa7",
-  "sizeBytes": 64594549,
-  "notes": "## 2.9.0\n\n## What's new\n\n- **Anti-Addiction Boost (Self)** \u2014 Opt-in pause before Fun, optional grayscale Home, streaks, Fun open awareness, and unlock-ask log. Off by default.\n- **Day Off journal & Quick Focus reflection** \u2014 Short optional notes when you start/end Day Off or end Quick Focus (including 25\u2011min Pomodoro).\n- **Self insights** \u2014 Streak, Boost status, Fun opens, and recent unlock asks on the usage screen.\n- **Website** \u2014 Calm Family + Self redesign, Self dashboard tab, and light/dark mode.\n- **WhatsApp Status** \u2014 Blocking Status/Updates stays inside WhatsApp (Chats or one Back) \u2014 no longer kicks you to Steady Home.\n\n_Self users: turn on Boost in Settings when you want stronger friction. Parents: same Family protection; kid phones get the WhatsApp fix._",
+  "version": "2.9.1",
+  "versionCode": 126,
+  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.9.1/steady-2.9.1.apk",
+  "sha256": "138649208e9e4044d5159d28a2f3bfa88185c05982093889863a4927a9a15caa",
+  "sizeBytes": 64610933,
+  "notes": "## 2.9.1\n\n## What's new\n\n- **Faster kid Refresh** \u2014 Home refresh pulls parent rules first (cache-busted), applies mode right away, and shows what changed (e.g. Learning). Presence upload no longer blocks the sync.\n- **Forced mode sticks** \u2014 Website Learn / Work / Focus push is no longer overwritten by the day schedule.\n- **Website mode buttons** \u2014 Tapping a mode pushes to the kid immediately (no extra Save & push).\n- **Website colors** \u2014 Restored the previous green Steady palette.\n\n_Update the kid phone, then push a mode from the site and tap Refresh \u2014 you should see it land._",
   "assetId": 0
 }
