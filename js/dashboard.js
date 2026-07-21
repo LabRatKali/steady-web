@@ -275,25 +275,27 @@
       window.__steadyPhones = phones || [];
       const current = ($("child-live") && $("child-live").value.trim()) || "";
       sel.innerHTML = '<option value="">Choose a linked phone…</option>';
-      (phones || [])
-        .filter((ph) => {
-          const role = String(ph.role || "").toUpperCase();
-          return role !== "PARENT";
-        })
-        .forEach((ph) => {
-          const id = ph.deviceId || ph.childDeviceId || ph.id || "";
-          if (!id) return;
-          const opt = document.createElement("option");
-          opt.value = id;
-          const label = (ph.label || ph.name || "Kid phone").trim() || "Kid phone";
-          const shortId = id.length > 10 ? id.slice(0, 8) + "…" : id;
-          opt.textContent = `${label} · ${shortId}`;
-          if (id === current) opt.selected = true;
-          sel.appendChild(opt);
-        });
-      if (!current && phones && phones.length === 1) {
+      const kids = (phones || []).filter((ph) => {
+        const role = String(ph.role || "").toUpperCase();
+        return role !== "PARENT";
+      });
+      kids.forEach((ph) => {
+        const id = ph.deviceId || ph.childDeviceId || ph.id || "";
+        if (!id) return;
+        const opt = document.createElement("option");
+        opt.value = id;
+        const label = (ph.label || ph.name || "Kid phone").trim() || "Kid phone";
+        const shortId = id.length > 10 ? id.slice(0, 8) + "…" : id;
+        opt.textContent = `${label} · ${shortId}`;
+        if (id === current) opt.selected = true;
+        sel.appendChild(opt);
+      });
+      if (!kids.length) {
+        flashOk("No linked kid phones yet — open Steady on the kid phone so it appears here.");
+      }
+      if (!current && kids.length === 1) {
         const only =
-          phones[0].deviceId || phones[0].childDeviceId || phones[0].id || "";
+          kids[0].deviceId || kids[0].childDeviceId || kids[0].id || "";
         if (only && $("child-live")) {
           $("child-live").value = only;
           sel.value = only;
@@ -302,8 +304,11 @@
       } else if (current) {
         syncKidLabelField(current);
       }
-    } catch (_) {
-      /* phones folder may be empty until kid links */
+    } catch (e) {
+      flashErr(
+        (e && e.message) ||
+          "Couldn’t load linked phones. Hard-refresh the page and try again."
+      );
     }
   }
 
