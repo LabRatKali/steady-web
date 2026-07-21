@@ -1,16 +1,17 @@
 :root {
-  --bg-deep: #050f14;
-  --bg: #07141a;
-  --fg: #e8f2f4;
-  --muted: #8aa4ab;
-  --accent: #3aa89a;
-  --accent-2: #7ecfc4;
-  --accent-ink: #031510;
-  --mist: #b8d4dc;
-  --line: rgba(232, 242, 244, 0.11);
+  --bg-deep: #06110d;
+  --bg: #0c1b15;
+  --fg: #f4f8f5;
+  --muted: #a8b9b0;
+  --accent: #3dcf8a;
+  --accent-2: #8ee0b8;
+  --accent-ink: #042316;
+  --mist: #c5ddd2;
+  --sand: #e2cba6;
+  --line: rgba(244, 248, 245, 0.12);
   --panel: rgba(255, 255, 255, 0.035);
-  --display: "Literata", Georgia, "Times New Roman", serif;
-  --body: "Sora", system-ui, sans-serif;
+  --display: "Fraunces", Georgia, serif;
+  --body: "Manrope", system-ui, sans-serif;
 }
 
 * { box-sizing: border-box; }
@@ -31,51 +32,50 @@ body {
   position: fixed;
   inset: 0;
   z-index: -2;
-  background:
-    linear-gradient(168deg, #0d2830 0%, var(--bg-deep) 38%, #030a0e 100%);
+  background: linear-gradient(165deg, #123028 0%, var(--bg-deep) 42%, #040a08 100%);
   overflow: hidden;
 }
 
 .orb {
   position: absolute;
   border-radius: 50%;
-  filter: blur(56px);
-  opacity: 0.48;
-  animation: drift 20s ease-in-out infinite alternate;
+  filter: blur(48px);
+  opacity: 0.5;
+  animation: drift 18s ease-in-out infinite alternate;
 }
 
 .orb-a {
-  width: 58vw;
-  height: 58vw;
-  left: -18vw;
-  top: -22vw;
-  background: radial-gradient(circle, #1a5a5c 0%, transparent 70%);
+  width: 52vw;
+  height: 52vw;
+  left: -16vw;
+  top: -20vw;
+  background: radial-gradient(circle, #2f6b52 0%, transparent 70%);
 }
 
 .orb-b {
-  width: 40vw;
-  height: 40vw;
-  right: -14vw;
-  top: 18vh;
-  background: radial-gradient(circle, #163848 0%, transparent 70%);
-  animation-delay: -6s;
+  width: 38vw;
+  height: 38vw;
+  right: -12vw;
+  top: 12vh;
+  background: radial-gradient(circle, #1f4638 0%, transparent 70%);
+  animation-delay: -5s;
 }
 
 .orb-c {
-  width: 46vw;
-  height: 46vw;
-  left: 30vw;
-  bottom: -22vw;
-  background: radial-gradient(circle, #1e4a3a 0%, transparent 72%);
-  animation-delay: -11s;
+  width: 44vw;
+  height: 44vw;
+  left: 28vw;
+  bottom: -20vw;
+  background: radial-gradient(circle, #3a5c2f 0%, transparent 72%);
+  animation-delay: -9s;
 }
 
 .veil {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(1000px 520px at 78% 12%, rgba(184, 212, 220, 0.07), transparent 58%),
-    linear-gradient(180deg, transparent 55%, rgba(3, 10, 14, 0.65) 100%);
+    radial-gradient(900px 480px at 80% 20%, rgba(226, 203, 166, 0.06), transparent 60%),
+    linear-gradient(180deg, transparent 60%, rgba(4, 10, 8, 0.55) 100%);
 }
 
 .grain {
@@ -104,7 +104,7 @@ body {
   margin: 0 auto;
   padding: 0.85rem 1.4rem;
   backdrop-filter: blur(16px);
-  background: rgba(5, 15, 20, 0.72);
+  background: rgba(6, 17, 13, 0.72);
   border-bottom: 1px solid var(--line);
 }
 
@@ -295,7 +295,7 @@ main {
   inset: auto 0 0;
   height: 42%;
   background:
-    linear-gradient(180deg, transparent, rgba(5, 15, 20, 0.55) 40%, rgba(5, 15, 20, 0.92) 100%);
+    linear-gradient(180deg, transparent, rgba(6, 17, 13, 0.55) 40%, rgba(6, 17, 13, 0.92) 100%);
 }
 
 .hero-copy {
@@ -1187,7 +1187,7 @@ footer a:hover { color: var(--accent); }
   justify-content: space-between;
   gap: 1rem;
   padding: 0.75rem 1.25rem calc(0.75rem + env(safe-area-inset-bottom));
-  background: rgba(5, 15, 20, 0.92);
+  background: rgba(6, 17, 13, 0.92);
   border-top: 1px solid var(--line);
   backdrop-filter: blur(10px);
   transition: transform 0.25s ease, opacity 0.25s ease;
@@ -1219,7 +1219,7 @@ footer a:hover { color: var(--accent); }
     padding: 1rem 1.1rem;
     border-radius: 1rem;
     border: 1px solid var(--line);
-    background: rgba(5, 15, 20, 0.97);
+    background: rgba(6, 17, 13, 0.97);
     min-width: 170px;
     z-index: 50;
   }
