@@ -1,9 +1,9 @@
 {
-  "version": "2.10.2",
-  "versionCode": 129,
-  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.10.2/steady-2.10.2.apk",
-  "sha256": "31c49a29e24e7dc8c7111ab2a54dbbb27c2bc80c0f800529237815932d2a2a14",
-  "sizeBytes": 64656741,
-  "notes": "## 2.10.2\n\n## What's new\n\n- **Website sync reliability** \u2014 Fixed parent remote \u201cFailed to fetch\u201d / empty linked phones (CORS-safe GitHub calls). Unsaved Controls no longer wiped by auto-refresh. Focus app category from the site now maps correctly on the phone.\n- **Family pairing** \u2014 Parent family codes only show after they publish successfully; reuses an existing 6-digit code when present.\n- **Weekend Fun** \u2014 Bonus minutes no longer double-count or stick into Monday.\n- **Home polish** \u2014 Wallpaper respects Light/low-RAM performance; to-dos no longer block Fun when the parent hasn\u2019t published a list.\n- **Dashboard mobile** \u2014 Menu toggle works on small screens; clearer OTP / empty-phone states.",
+  "version": "2.11.0",
+  "versionCode": 130,
+  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.11.0/steady-2.11.0.apk",
+  "sha256": "c52a5c3f87c0eb4abe876de24ffffd8b983d81f712dfbe3fcb0eaf7e6a325734",
+  "sizeBytes": 64680489,
+  "notes": "## 2.11.0\n\n## What's new\n\nResearch-backed focus + parent remote upgrades (one sec, ScreenZen/Jolt, Qustodio/Opal patterns):\n\n- **Resisted opens** \u2014 Choosing Stay on the mindful pause counts as a win; Home shows \u201cSkipped Fun N\u00d7 today.\u201d\n- **Intention chips** \u2014 Habit / Bored / Message / Need it before Fun; optional Quick Focus alternative.\n- **Boost cool-down** \u2014 Turning Boost off requires an 8-second wait (stops impulse bypass).\n- **Daily Fun open cap** \u2014 Optional limit while Boost is on (5 / 8 / 12 / 20 / unlimited).\n- **Website routines** \u2014 School night, Weekend, Bedtime now, Focus hour (one-tap push).\n- **Today at a glance** \u2014 Pending asks, pause, forced mode, school/bedtime status on the Asks tab.\n",
   "assetId": 0
 }
