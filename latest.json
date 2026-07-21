@@ -1,9 +1,9 @@
 {
-  "version": "2.10.1",
-  "versionCode": 128,
-  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.10.1/steady-2.10.1.apk",
-  "sha256": "c1ed0d876f10da18c662cb9ee6deb4c20257378b765ba354fc33e04f82ae2be6",
-  "sizeBytes": 64656737,
-  "notes": "## 2.10.1\n\n## What's new\n\n- **Built-in icon looks** \u2014 Soft, Glass, Mono, Bold, System. Change in Home settings \u2192 Icons. No Play Store pack required.\n- **Premium Home polish** \u2014 Glass tools row, richer dock, refined mode pill, softer dots, light icon shadows (still light on low RAM).\n- **Website Google Sign-In** \u2014 Completes instantly offline; cloud sync runs in the background (fixes hang / failed-to-fetch after Google).\n\n_Home \u2192 \u22ee \u2192 Home settings \u2192 Icons / Performance._",
+  "version": "2.10.2",
+  "versionCode": 129,
+  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.10.2/steady-2.10.2.apk",
+  "sha256": "31c49a29e24e7dc8c7111ab2a54dbbb27c2bc80c0f800529237815932d2a2a14",
+  "sizeBytes": 64656741,
+  "notes": "## 2.10.2\n\n## What's new\n\n- **Website sync reliability** \u2014 Fixed parent remote \u201cFailed to fetch\u201d / empty linked phones (CORS-safe GitHub calls). Unsaved Controls no longer wiped by auto-refresh. Focus app category from the site now maps correctly on the phone.\n- **Family pairing** \u2014 Parent family codes only show after they publish successfully; reuses an existing 6-digit code when present.\n- **Weekend Fun** \u2014 Bonus minutes no longer double-count or stick into Monday.\n- **Home polish** \u2014 Wallpaper respects Light/low-RAM performance; to-dos no longer block Fun when the parent hasn\u2019t published a list.\n- **Dashboard mobile** \u2014 Menu toggle works on small screens; clearer OTP / empty-phone states.",
   "assetId": 0
 }
