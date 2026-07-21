@@ -374,9 +374,12 @@
       if ($("child-label")) $("child-label").value = "";
       if ($("child-select")) $("child-select").value = "";
       client.childId = "";
+      try {
+        localStorage.removeItem("steady.web.child");
+      } catch (_) {}
       flashOk("Phone forgotten from parent remote");
       await loadKidPhones();
-      refresh();
+      refresh({ quiet: true });
     } catch (e) {
       flashErr(e && e.message ? e.message : "Couldn’t forget phone");
     }
@@ -672,7 +675,7 @@
       row.className = "approve-btns";
       [
         { cat: "ALWAYS_ALLOWED", label: "Always" },
-        { cat: "FOCUS", label: "Focus" },
+        { cat: "FOCUS_ONLY", label: "Focus" },
         { cat: "WORK", label: "Work" },
         { cat: "LEARNING", label: "Learn" },
         { cat: "ENTERTAINMENT", label: "Fun" },
@@ -843,39 +846,55 @@
     policy.hideServiceNotifications = !!($("tog-hide-notifs") && $("tog-hide-notifs").checked);
   }
 
-  async function refresh() {
+  async function refresh(opts) {
+    const options = opts || {};
     if (!client) return;
     const child = ($("child-live") && $("child-live").value.trim()) || "";
     client.childId = child;
-    if (child) localStorage.setItem("steady.web.child", child);
+    if (child) {
+      try {
+        localStorage.setItem("steady.web.child", child);
+      } catch (_) {}
+    } else {
+      try {
+        localStorage.removeItem("steady.web.child");
+      } catch (_) {}
+    }
     if (!child) {
-      flashErr("Enter the kid device ID to load Approves / policy.");
+      if (options.manual) {
+        flashErr("Choose a linked phone first.");
+      }
       return;
     }
-      flashBusy("Refreshing…");
-      try {
+    if (!options.quiet) flashBusy("Refreshing…");
+    try {
       renderApprovals(await client.listPendingApprovals(child));
       if (client.listPendingInstalls) {
         renderInstalls(await client.listPendingInstalls(child));
       }
-      const pol = await client.fetchPolicy(child);
-      policy = pol.data || {
-        childDeviceId: child,
-        focusMinutes: 15,
-        workMinutes: 120,
-        learningMinutes: 120,
-        entertainmentMinutes: 5,
-        schoolModeEnabled: false,
-        schoolStartHour: 8,
-        schoolEndHour: 15,
-        filterEnabled: true,
-        installApprovalEnabled: true,
-        liveLocationEnabled: false,
-        familyPauseUntil: 0,
-        appOverridesJson: "[]",
-        updatedAt: Date.now(),
-      };
-      fillPolicyForm(policy);
+      // Never wipe unsaved Controls / Budgets on the 12s poll.
+      const applyPolicy = !policyDirty || options.forcePolicy;
+      if (applyPolicy) {
+        const pol = await client.fetchPolicy(child);
+        policy = pol.data || {
+          childDeviceId: child,
+          focusMinutes: 15,
+          workMinutes: 120,
+          learningMinutes: 120,
+          entertainmentMinutes: 5,
+          schoolModeEnabled: false,
+          schoolStartHour: 8,
+          schoolEndHour: 15,
+          filterEnabled: true,
+          installApprovalEnabled: true,
+          liveLocationEnabled: false,
+          familyPauseUntil: 0,
+          appOverridesJson: "[]",
+          updatedAt: Date.now(),
+        };
+        fillPolicyForm(policy);
+        setDirty(false);
+      }
       const todos = await client.fetchTodos(child);
       todosPayload = todos.data || {
         childDeviceId: child,
@@ -887,7 +906,11 @@
       renderTodos(todosPayload);
       const apps = await client.fetchApps(child);
       window.__steadyAppsPayload = apps.data || { apps: [] };
-      renderApps(window.__steadyAppsPayload, policy.appOverridesJson);
+      const overrides =
+        (policy && policy.appOverridesJson) ||
+        (apps.data && apps.data.appOverridesJson) ||
+        "[]";
+      renderApps(window.__steadyAppsPayload, overrides);
       renderUsageFromApps(window.__steadyAppsPayload);
       const loc = await client.fetchLiveLocation(child);
       const locBox = $("location-box");
@@ -896,8 +919,9 @@
           ? `Lat ${loc.data.latitude?.toFixed?.(4)}, Lon ${loc.data.longitude?.toFixed?.(4)} · ${new Date(loc.data.updatedAt || 0).toLocaleString()}`
           : "No live location yet.";
       }
-      flashOk("Up to date");
-      setDirty(false);
+      if (!options.quiet) {
+        flashOk(policyDirty ? "Asks updated · unsaved edits kept" : "Up to date");
+      }
     } catch (e) {
       flashErr(String(e.message || e));
     }
@@ -988,7 +1012,7 @@
     try {
       const code = SteadyAuth.randomOtp();
       const magic = SteadyAuth.randomMagicToken();
-      const sent = await SteadyAuth.sendOtpEmail(email, code, magic);
+      // Store challenge first — never email a code that can't verify.
       try {
         await SteadyAuth.putOtpChallenge(email, code, magic);
       } catch (rateErr) {
@@ -999,15 +1023,21 @@
           throw rateErr;
         }
       }
+      const sent = await SteadyAuth.sendOtpEmail(email, code, magic);
       $("otp-verify").hidden = false;
       if (disp) {
         disp.hidden = false;
         if (sent.emailed) {
           disp.textContent =
-            "Code sent — check your email for a magic link or 6-digit code (about 10 minutes). Check spam too. Steady never shows the code on this page.";
+            "Code sent — check your email for a magic link or 6-digit code (about 10 minutes). Check spam too.";
+        } else if (sent.code) {
+          disp.textContent =
+            "Email didn’t send — use this code now: " +
+            sent.code +
+            " (valid about 10 minutes).";
         } else {
           disp.textContent =
-            "Couldn’t email the code right now. Check the address and try again — Steady does not show codes on screen. You must receive them by email.";
+            "Couldn’t email the code right now. Check the address and try again, or use Google Sign-In.";
         }
       }
     } catch (e) {
@@ -1052,7 +1082,7 @@
   if ($("btn-refresh")) {
     $("btn-refresh").addEventListener("click", async () => {
       await loadKidPhones();
-      await refresh();
+      await refresh({ manual: true, forcePolicy: !policyDirty });
     });
   }
   if ($("apps-filter")) {
@@ -1061,14 +1091,23 @@
     });
   }
   if ($("child-live")) {
-    $("child-live").addEventListener("change", () => refresh());
+    $("child-live").addEventListener("change", () => refresh({ manual: true, forcePolicy: true }));
   }
   if ($("child-select")) {
     $("child-select").addEventListener("change", () => {
       const v = $("child-select").value.trim();
-      if ($("child-live") && v) $("child-live").value = v;
+      if ($("child-live")) $("child-live").value = v;
+      if (client) client.childId = v;
+      if (!v) {
+        try {
+          localStorage.removeItem("steady.web.child");
+        } catch (_) {}
+        syncKidLabelField("");
+        flashOk("Choose a linked phone to load Approves and rules.");
+        return;
+      }
       syncKidLabelField(v);
-      refresh();
+      refresh({ manual: true, forcePolicy: true });
     });
   }
   if ($("btn-rename-kid")) {
@@ -1296,7 +1335,11 @@
   $("todo-form").addEventListener("submit", async (ev) => {
     ev.preventDefault();
     const title = $("todo-title").value.trim();
-    if (!title || !client.childId) return;
+    if (!title) return;
+    if (!client || !client.childId) {
+      flashErr("Choose a kid phone first");
+      return;
+    }
     try {
       if (!todosPayload) {
         todosPayload = {
@@ -1317,8 +1360,25 @@
       $("todo-title").value = "";
       renderTodos(todosPayload);
     } catch (e) {
-      status(String(e.message || e));
+      flashErr(String(e.message || e));
     }
+  });
+
+  window.addEventListener("beforeunload", (ev) => {
+    if (!policyDirty) return;
+    ev.preventDefault();
+    ev.returnValue = "";
+  });
+
+  window.addEventListener("steady-account-merged", (ev) => {
+    const record = ev && ev.detail;
+    if (!record || !record.familyCode || !session) return;
+    if (session.familyCode === record.familyCode) return;
+    session.familyCode = record.familyCode;
+    session.familySecret = record.familySecret || session.familySecret;
+    SteadyAuth.saveSession(session);
+    enterWithSession(session).catch(() => {});
+    flashOk("Family link updated");
   });
 
   if (!redirected) {
