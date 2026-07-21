@@ -1,9 +1,9 @@
 {
-  "version": "2.8.4",
-  "versionCode": 123,
-  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.8.4/steady-2.8.4.apk",
-  "sha256": "8c75b474249c957b290558404d0dc45064b01b5be3e8ac8869fba7e04aa98dce",
-  "sizeBytes": 64546549,
-  "notes": "## 2.8.4\n\n## What's new\n\n- **Folders** \u2014 Apps inside folders work like the grid: tap to open, long-press for Open / widgets / Dock / App info / Edit home.\n- **Customize Home** \u2014 In Edit home: remove, resize (\u2212/+), and cycle styles for clock, date, and the mode chip. Show them again from edit or Home settings.\n- **App widgets** \u2014 Resize height with \u2212/+, reorder, remove. Premium drag lift when rearranging apps.\n\n_Install on the phone \u00b7 \u22ee \u2192 Edit home to customize._",
+  "version": "2.9.0",
+  "versionCode": 125,
+  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.9.0/steady-2.9.0.apk",
+  "sha256": "3d5a2adc6abf36034680fc9e8941bb9ff8260e6e707cd15f4a816b0730b0bfa7",
+  "sizeBytes": 64594549,
+  "notes": "## 2.9.0\n\n## What's new\n\n- **Anti-Addiction Boost (Self)** \u2014 Opt-in pause before Fun, optional grayscale Home, streaks, Fun open awareness, and unlock-ask log. Off by default.\n- **Day Off journal & Quick Focus reflection** \u2014 Short optional notes when you start/end Day Off or end Quick Focus (including 25\u2011min Pomodoro).\n- **Self insights** \u2014 Streak, Boost status, Fun opens, and recent unlock asks on the usage screen.\n- **Website** \u2014 Calm Family + Self redesign, Self dashboard tab, and light/dark mode.\n- **WhatsApp Status** \u2014 Blocking Status/Updates stays inside WhatsApp (Chats or one Back) \u2014 no longer kicks you to Steady Home.\n\n_Self users: turn on Boost in Settings when you want stronger friction. Parents: same Family protection; kid phones get the WhatsApp fix._",
   "assetId": 0
 }
