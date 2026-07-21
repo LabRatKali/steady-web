@@ -1,9 +1,9 @@
 {
-  "version": "2.7.1",
-  "versionCode": 118,
-  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.7.1/steady-2.7.1.apk",
-  "sha256": "6858e9dc8ffae729f4c7d63adb323b1da769a2b80cb26636e12715df343643dc",
-  "sizeBytes": 64427845,
-  "notes": "## 2.7.1\n\n## What's new\n\n- **Hide Steady notifications** \u2014 turning the toggle off again restores the normal enforcement status notification (not only when hiding).\n\n_Hard-refresh the dashboard after deploy if you had 2.7.0 open._",
+  "version": "2.8.0",
+  "versionCode": 119,
+  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.8.0/steady-2.8.0.apk",
+  "sha256": "ad481fea472734d5ed7376e8a70c124b9c27fce0cfef9c706c0aa189f2158b6a",
+  "sizeBytes": 64487941,
+  "notes": "## 2.8.0\n\n## What's new\n\n- **Drag & drop Home** \u2014 long-press and drag apps; drop one on another to make a folder. Long-press menu: Open, Dock, App info.\n- **Any-app widgets** \u2014 add Android widgets from Clock, Weather, Music, and more onto Steady Home.\n- **Home settings** \u2014 fonts, theme, icon size, widgets, system apps \u2014 from \u22ee without a parent PIN.\n- **System apps list** \u2014 toggle to show all packages (Daydream / AOD helpers) plus a Daydream settings shortcut.\n- **Real Home launches** \u2014 opening an app moves Steady Home under it (like Samsung / Pixel Home), not like switching apps.\n\n_Hard-refresh the dashboard after deploy. Install on kid phones for the Home rewrite._",
   "assetId": 0
 }
