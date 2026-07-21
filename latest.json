@@ -1,9 +1,9 @@
 {
-  "version": "2.10.0",
-  "versionCode": 127,
-  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.10.0/steady-2.10.0.apk",
-  "sha256": "ea8551b1f474f5082f34f8659a537074af1be12e0e9d1e322362eb70e8303f49",
-  "sizeBytes": 64637061,
-  "notes": "## 2.10.0\n\n## What's new\n\n- **Smart Performance** \u2014 Auto-detects low-RAM phones. Strong phones unlock icon packs + wallpaper blur; weak phones stay Steady-native and light.\n- **Icon packs** \u2014 Install any ADW/GO/Nova-style pack; pick it in Home settings (Premium / Auto on strong devices).\n- **Icon shapes** \u2014 Rounded, circle, squircle, teardrop, square on every tile.\n- **Hybrid Home backdrop** \u2014 Steady sky by default; optional phone wallpaper + blur (off on low RAM).\n\n_Home \u2192 \u22ee \u2192 Home settings \u2192 Performance / Icons._",
+  "version": "2.10.1",
+  "versionCode": 128,
+  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.10.1/steady-2.10.1.apk",
+  "sha256": "c1ed0d876f10da18c662cb9ee6deb4c20257378b765ba354fc33e04f82ae2be6",
+  "sizeBytes": 64656737,
+  "notes": "## 2.10.1\n\n## What's new\n\n- **Built-in icon looks** \u2014 Soft, Glass, Mono, Bold, System. Change in Home settings \u2192 Icons. No Play Store pack required.\n- **Premium Home polish** \u2014 Glass tools row, richer dock, refined mode pill, softer dots, light icon shadows (still light on low RAM).\n- **Website Google Sign-In** \u2014 Completes instantly offline; cloud sync runs in the background (fixes hang / failed-to-fetch after Google).\n\n_Home \u2192 \u22ee \u2192 Home settings \u2192 Icons / Performance._",
   "assetId": 0
 }
