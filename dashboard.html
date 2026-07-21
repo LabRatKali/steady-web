@@ -11,13 +11,14 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css?v=25" />
-  <link rel="stylesheet" href="dashboard.css?v=12" />
+  <link rel="stylesheet" href="dashboard.css?v=13" />
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body class="dash-body">
   <div class="atmosphere" aria-hidden="true">
     <span class="orb orb-a"></span>
     <span class="orb orb-b"></span>
+    <span class="orb orb-c"></span>
     <span class="veil"></span>
   </div>
 
@@ -37,7 +38,7 @@
       <a id="nav-signin-link" class="nav-signin" href="dashboard.html">Sign in</a>
       <span id="nav-auth" class="nav-auth" hidden>
         <span id="nav-user" class="nav-user muted"></span>
-        <button class="btn ghost" type="button" id="nav-logout" style="padding:0.35rem 0.75rem">Sign out</button>
+        <button class="btn ghost nav-logout-btn" type="button" id="nav-logout">Sign out</button>
       </span>
     </nav>
   </header>
@@ -85,36 +86,46 @@
     </section>
 
     <section id="app" class="dash-app" hidden>
-      <div class="dash-toolbar">
-        <div class="dash-toolbar-copy">
-          <h1>Parent remote</h1>
-          <p id="session-meta" class="muted"></p>
-        </div>
-        <div class="dash-actions dash-actions-compact">
-          <button class="btn-icon" type="button" id="btn-refresh" title="Refresh">↻</button>
-          <button class="btn-icon" type="button" id="btn-logout" title="Sign out">Sign out</button>
-        </div>
-      </div>
-
-      <div class="dash-card kid-bar">
-        <div class="kid-bar-main">
-          <label class="child-pick kid-select-grow">Which phone?
-            <select id="child-select" aria-label="Choose kid phone">
-              <option value="">Choose a linked phone…</option>
-            </select>
-          </label>
-          <div class="kid-rename-inline">
-            <input id="child-label" type="text" placeholder="Name (e.g. Maya)" maxlength="40" autocomplete="off" aria-label="Name for this phone" />
-            <button class="btn-icon" type="button" id="btn-rename-kid" title="Save name">✎</button>
+      <header class="dash-shell-head">
+        <div class="dash-toolbar">
+          <div class="dash-toolbar-copy">
+            <p class="dash-eyebrow">Family remote</p>
+            <h1>Parent remote</h1>
+            <p id="session-meta" class="muted"></p>
+          </div>
+          <div class="dash-actions dash-actions-compact">
+            <button class="btn-icon" type="button" id="btn-refresh" title="Refresh">↻ Refresh</button>
+            <button class="btn-icon btn-icon-quiet" type="button" id="btn-logout" title="Sign out">Sign out</button>
           </div>
         </div>
-        <p class="muted kid-hint">Pick a phone under your account. Names save for next time. Device ID is only for support.</p>
-        <details class="kid-id-details">
-          <summary>Show device ID</summary>
-          <input id="child-live" type="text" placeholder="Filled when you pick a phone" autocomplete="off" readonly />
-        </details>
-      </div>
-      <p id="status" class="dash-status" role="status"></p>
+
+        <div class="dash-card kid-bar">
+          <div class="kid-bar-intro">
+            <p class="kid-bar-label">Kid phone</p>
+            <p class="muted kid-hint">Pick a linked phone. Names save for next time.</p>
+          </div>
+          <div class="kid-bar-main">
+            <label class="child-pick kid-select-grow">Which phone?
+              <select id="child-select" aria-label="Choose kid phone">
+                <option value="">Choose a linked phone…</option>
+              </select>
+            </label>
+            <div class="kid-rename-inline">
+              <label class="kid-rename-label">Name
+                <span class="kid-rename-row-inner">
+                  <input id="child-label" type="text" placeholder="e.g. Maya" maxlength="40" autocomplete="off" aria-label="Name for this phone" />
+                  <button class="btn-icon" type="button" id="btn-rename-kid" title="Save name">Save</button>
+                </span>
+              </label>
+            </div>
+          </div>
+          <details class="kid-id-details">
+            <summary>Show device ID</summary>
+            <input id="child-live" type="text" placeholder="Filled when you pick a phone" autocomplete="off" readonly />
+          </details>
+        </div>
+        <p id="status" class="dash-status" role="status"></p>
+      </header>
 
       <nav class="dash-tabs" id="dash-tabs" role="tablist" aria-label="Parent remote sections">
         <button type="button" class="dash-tab is-active" data-tab="asks" role="tab" aria-selected="true">Asks</button>
