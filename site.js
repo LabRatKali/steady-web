@@ -236,11 +236,7 @@ function wireFitQuiz() {
     if (answers.who === "child") {
       headline = "Parenting path";
       copy =
-        "Child phone + parent Approve. Turn on school hours and bedtime. Use family to-dos so Fun is earned.";
-    } else if (answers.who === "both") {
-      headline = "Both on one phone";
-      copy =
-        "It works, but keep the PIN secret. Prefer two phones when you can. Start with Focus + Ask → Approve.";
+        "Kid phone + Family dashboard website. Turn on school hours and bedtime. Use family to-dos so Fun is earned.";
     }
     if (answers.leak === "impulse" && answers.who === "me") {
       copy =
