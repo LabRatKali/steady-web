@@ -1,9 +1,9 @@
 {
-  "version": "2.5.0",
-  "versionCode": 114,
-  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.5.0/steady-2.5.0.apk",
-  "sha256": "cf3aa4e72a44b2a1e6af40791b7305757595f6019d38d5ee9a68f0173cfee289",
-  "sizeBytes": 64352633,
-  "notes": "## 2.5.0\n\n## What's new\n\n- **Rename kid phones** on the website (\u270e Save name) \u2014 pick Maya / David from the list; device ID fills in; names stay on GitHub.\n- **Home cleanup** \u2014 Settings + Quick Focus in the \u22ee menu; no Android Recents item; no todo banner / Quick Focus strip; Focus shows \u201cNo daily clock\u201d; app labels stay one line.\n- **Rest / lock screen** \u2014 no more giant Focus numbers; clear \u201c5 minutes / 15 minutes\u2026\u201d ask buttons.\n- **Settings stays open** \u2014 dangerous pages Back out instead of kicking you to the Steady lock; Make Steady my Home briefly allows Permission Manager.\n- **Asks stay gone** \u2014 Approve / Deny / **Dismiss** (website + parent phone) close the queue so Refresh doesn\u2019t bring them back.\n- **Faster sync** \u2014 kid phone polls website rules and ask decisions about every 15 seconds; Refresh still applies immediately.\n\n_Rename phones on the dashboard. Install on the kid phone, then Refresh after you Save & push._",
+  "version": "2.6.0",
+  "versionCode": 115,
+  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.6.0/steady-2.6.0.apk",
+  "sha256": "240cc4e0fc38c9be9ae4141efb25f717bab5e693d00b79bcb9890dd0363f1a36",
+  "sizeBytes": 64355389,
+  "notes": "## 2.6.0\n\n## What's new\n\n- **Play Protect / installer** \u2014 Protect can scan Steady updates; confirm UI re-arms the allow window so install doesn\u2019t bounce away.\n- **Approved Play Store stays open** \u2014 timed-allow / allow-cache wins over the hard block list.\n- **Day off** \u2014 apps stay colorful and open; gray-out clears; hard blocks rest during pause.\n- **Home cleanup** \u2014 no streak line, no Focus \u201cno daily clock\u201d pill, no duplicate date; search icon next to Refresh; profiles open from \u22ee as a menu (not a home card).\n- **Ask from parent** \u2014 wording no longer says \u201cparent phone / website\u201d; Pending asks supports Allow / Don\u2019t allow for mode unlocks; publish retries + clearer status.\n- **Focus** \u2014 all non-Never apps allowed; switching profiles on a kid phone still needs parent PIN / ask.\n- **Kid settings** \u2014 Look, Home, and This phone sections with plain blurbs.\n- **Share weekly summary** \u2014 share sheet allowed briefly so it doesn\u2019t snap shut; app names in the report.\n- **Dashboard** \u2014 compact Refresh / Sign out, cleaner kid rename, usage + tips in More, app labels instead of package codes.\n\n_Install on the kid phone. Hard-refresh the dashboard after deploy._",
   "assetId": 0
 }
