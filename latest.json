@@ -1,9 +1,9 @@
 {
-  "version": "2.8.0",
-  "versionCode": 119,
-  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.8.0/steady-2.8.0.apk",
-  "sha256": "ad481fea472734d5ed7376e8a70c124b9c27fce0cfef9c706c0aa189f2158b6a",
-  "sizeBytes": 64487941,
-  "notes": "## 2.8.0\n\n## What's new\n\n- **Drag & drop Home** \u2014 long-press and drag apps; drop one on another to make a folder. Long-press menu: Open, Dock, App info.\n- **Any-app widgets** \u2014 add Android widgets from Clock, Weather, Music, and more onto Steady Home.\n- **Home settings** \u2014 fonts, theme, icon size, widgets, system apps \u2014 from \u22ee without a parent PIN.\n- **System apps list** \u2014 toggle to show all packages (Daydream / AOD helpers) plus a Daydream settings shortcut.\n- **Real Home launches** \u2014 opening an app moves Steady Home under it (like Samsung / Pixel Home), not like switching apps.\n\n_Hard-refresh the dashboard after deploy. Install on kid phones for the Home rewrite._",
+  "version": "2.8.1",
+  "versionCode": 120,
+  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.8.1/steady-2.8.1.apk",
+  "sha256": "ecabc4bc37bfe1164efd3987663e4ab3b672d8a4c1fb772cf9715cf41b1a4800",
+  "sizeBytes": 64489197,
+  "notes": "## 2.8.1\n\n## What's new\n\n- **Home gestures** \u2014 tap opens; long-press shows Open / Dock / App info / widgets from that app. Edit mode: drag freely and drop on another app for a folder. Back exits edit (does not leave Steady).\n- **Clean Home** \u2014 Ask Fun, site request, intention, and status live under \u22ee. No more clutter strip or \u201cadd widget\u201d spam on the empty home.\n- **Smaller dock** \u2014 tighter icons, less chrome.\n- **App info** \u2014 no longer crashes / bounce-loops (brief Settings unlock; stays in App info).\n- **System apps** \u2014 never \u201cresting\u201d (including System UI). System packages default to Always/System except hard blocks.\n\n_Install on the kid phone for the Home fixes._",
   "assetId": 0
 }
