@@ -371,6 +371,11 @@
             sess.familyCode = record.familyCode;
             sess.familySecret = record.familySecret;
             saveSession(sess);
+            try {
+              window.dispatchEvent(
+                new CustomEvent("steady-account-merged", { detail: record })
+              );
+            } catch (_) {}
           }
         } catch (_) {}
       })
