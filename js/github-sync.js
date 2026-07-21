@@ -22,10 +22,12 @@
     }
 
     headers(extra) {
-      // Keep headers minimal — extra headers force CORS preflight that often fails in browsers.
+      // GitHub CORS allow-list does NOT include Accept (or Cache-Control/Pragma).
+      // Sending Accept: application/vnd.github+json makes browsers preflight with
+      // Access-Control-Request-Headers: accept,… → preflight "succeeds" 204 but
+      // missing Accept in Allow-Headers → browser blocks as TypeError Failed to fetch.
       return Object.assign(
         {
-          Accept: "application/vnd.github+json",
           Authorization: `Bearer ${this.token}`,
           "X-GitHub-Api-Version": "2022-11-28",
         },
