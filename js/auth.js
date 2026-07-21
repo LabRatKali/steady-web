@@ -366,8 +366,19 @@
       if (id) keys.push((await sha256Hex(id.toLowerCase())).slice(0, 32));
     }
     const unique = Array.from(new Set(keys));
+    let wrote = 0;
+    let lastErr = null;
     for (const key of unique) {
-      await gh.putEncoded(`accounts/${key}.json.enc`, record, "steady account");
+      try {
+        await gh.putEncoded(`accounts/${key}.json.enc`, record, "steady account");
+        wrote++;
+      } catch (e) {
+        lastErr = e;
+      }
+    }
+    if (!wrote && lastErr) {
+      // Still allow local sign-in — family code is derived offline; sync can catch up.
+      console.warn("Steady account sync deferred:", lastErr);
     }
   }
 
@@ -482,7 +493,11 @@
             const payload = parseJwt(resp.credential);
             await finishGoogleSession(payload, onSignedIn, returnUrl || "");
           } catch (e) {
-            alert(String(e.message || e));
+            const raw = String((e && e.message) || e || "Sign-in failed");
+            const friendly = /failed to fetch|network error|Could not reach GitHub/i.test(raw)
+              ? "Could not finish sign-in (network). Disable ad-block for labratkali.github.io, check Wi‑Fi, then try Google again."
+              : raw;
+            alert(friendly);
           }
         },
       });
