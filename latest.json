@@ -1,9 +1,9 @@
 {
-  "version": "2.9.1",
-  "versionCode": 126,
-  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.9.1/steady-2.9.1.apk",
-  "sha256": "8f19da3027d62fd4d73e5243a16d223b2f5a7410156920859d13422ad018cd42",
-  "sizeBytes": 64610933,
-  "notes": "## 2.9.1\n\n## What's new\n\n- **Faster kid Refresh** \u2014 Home refresh pulls parent rules first (cache-busted), applies mode right away, and shows what changed (e.g. Learning). Presence upload no longer blocks the sync.\n- **Forced mode sticks** \u2014 Website Learn / Work / Focus push is no longer overwritten by the day schedule.\n- **Website mode buttons** \u2014 Tapping a mode pushes to the kid immediately (no extra Save & push).\n- **Website colors** \u2014 Restored the previous green Steady palette.\n\n_Update the kid phone, then push a mode from the site and tap Refresh \u2014 you should see it land._",
+  "version": "2.10.0",
+  "versionCode": 127,
+  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.10.0/steady-2.10.0.apk",
+  "sha256": "ea8551b1f474f5082f34f8659a537074af1be12e0e9d1e322362eb70e8303f49",
+  "sizeBytes": 64637061,
+  "notes": "## 2.10.0\n\n## What's new\n\n- **Smart Performance** \u2014 Auto-detects low-RAM phones. Strong phones unlock icon packs + wallpaper blur; weak phones stay Steady-native and light.\n- **Icon packs** \u2014 Install any ADW/GO/Nova-style pack; pick it in Home settings (Premium / Auto on strong devices).\n- **Icon shapes** \u2014 Rounded, circle, squircle, teardrop, square on every tile.\n- **Hybrid Home backdrop** \u2014 Steady sky by default; optional phone wallpaper + blur (off on low RAM).\n\n_Home \u2192 \u22ee \u2192 Home settings \u2192 Performance / Icons._",
   "assetId": 0
 }
