@@ -1,9 +1,9 @@
 {
-  "version": "2.6.1",
-  "versionCode": 116,
-  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.6.1/steady-2.6.1.apk",
-  "sha256": "e4c1d180262e57b1fdfb56e39f93d046ab1c97ace62e3c9bb51a2c6cc794f349",
-  "sizeBytes": 64357225,
-  "notes": "## 2.6.1\n\n## What's new\n\n- **Setup welcome** \u2014 cleaner first screen: \u201cGet your time back,\u201d two clear choices (child / self), less clutter.\n- **Email codes only** \u2014 Send code shows \u201cSending\u2026\u201d then \u201ccheck your email.\u201d Steady no longer prints the code on the phone or website.\n- **No parent-phone fingerprint** \u2014 Android fingerprint/face for a parent phone is removed. Use Ask from parent (website) or Steady Face in-app.\n\n_Hard-refresh the dashboard after deploy. Install on new setups especially._",
+  "version": "2.7.0",
+  "versionCode": 117,
+  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.7.0/steady-2.7.0.apk",
+  "sha256": "382a823597e9ebd7a669aff8ec353dbe8b7c2b3c1a95d6bdbd8feec7bc26aeab",
+  "sizeBytes": 64427845,
+  "notes": "## 2.7.0\n\n## What's new\n\n- **Steady Home** \u2014 swipe between pages, create app folders, dock + rearrange, and home widgets (to-dos / intention).\n- **Recents** \u2014 Android Recents from the \u22ee menu and lock/rest screen; Samsung gesture Recents no longer gets bounced.\n- **Lock screen Back** \u2014 Back returns to Steady Home; Recents button opens overview.\n- **WhatsApp Status / Channels** \u2014 stronger leave-Updates path (tap Chats, Back, re-check) so Status doesn\u2019t stick.\n- **Hide Steady notifications** \u2014 quieter enforcement / filter status when the parent toggle is on.\n- **Rename phone** \u2014 website GitHub sync retries on 409 SHA conflicts.\n- **Website** \u2014 removed \u201cboth on one phone / weaker\u201d marketing; parent remote is the dashboard. Signed-in dashboard polish.\n\n_Hard-refresh the dashboard after deploy. Install on kid phones for Home + WhatsApp + Recents fixes._",
   "assetId": 0
 }
