@@ -1,9 +1,9 @@
 {
-  "version": "2.14.0",
-  "versionCode": 133,
-  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.14.0/steady-2.14.0.apk",
-  "sha256": "d37e6c045630c335cc01aac2bd4f60d7e82db5ce21f7135ac72d44d5724750b3",
-  "sizeBytes": 64707257,
-  "notes": "## What's new\n\n- **Instant QS User / Guest kick:** tapping the User button in the notification shade collapses and locks immediately (separate fast lane from Settings).\n- **Harder Users settings:** Settings \u2192 Users / accounts / Add user bounce hard, not soft Back.\n- **QS Edit blocked:** Edit tiles / customize Quick Settings is blocked on kid phones.\n- **Steady Quick Settings tile:** add the Steady tile next to Wi\u2011Fi / Flashlight \u2014 shows Focus/Fun and opens Steady.\n- **Notification settings** paths tightened (app notifications / channels / access).\n- Update **both** phones. After install: swipe down \u2192 edit tiles \u2192 add **Steady**.\n\n### Strongest lockdown\n\nKid phone as **Device Owner** still blocks adding users / switching users at the OS level. Accessibility is the fast kick when DO is not set.",
+  "version": "2.15.0",
+  "versionCode": 134,
+  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.15.0/steady-2.15.0.apk",
+  "sha256": "d1dc8ff5b4f697a1655799e8e3aed010a9711da68dbfe5149dabb9279a0c4de4",
+  "sizeBytes": 64723641,
+  "notes": "## What's new\n\nResearch-backed lockdown against the usual kid MDM / parental-control bypasses:\n\n- **Safe Mode fixed:** power menu / Safe Mode now get an instant shade-dismiss kick (the old SystemUI bounce did nothing).\n- **Hard Settings locks:** Developer Options, Date & time (clock skip), VPN / Private DNS, About/build number, airplane / hotspot, screen pinning, Private Space \u2014 hard bounce, not soft Back.\n- **Device Owner:** date/time, tether, USB file transfer, airplane, Private Space restrictions.\n- **Blocked escape apps:** Smart Switch, Find My Mobile, Secure Folder, Dual Messenger / clone apps.\n- **Kid Day off** keeps Steady as Home (stock launcher only for Self focus).\n- Update **both** phones. For strongest lockdown, set the kid phone as **Device Owner**.",
   "assetId": 0
 }
