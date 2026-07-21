@@ -1,9 +1,9 @@
 {
-  "version": "2.8.1",
-  "versionCode": 120,
-  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.8.1/steady-2.8.1.apk",
-  "sha256": "ecabc4bc37bfe1164efd3987663e4ab3b672d8a4c1fb772cf9715cf41b1a4800",
-  "sizeBytes": 64489197,
-  "notes": "## 2.8.1\n\n## What's new\n\n- **Home gestures** \u2014 tap opens; long-press shows Open / Dock / App info / widgets from that app. Edit mode: drag freely and drop on another app for a folder. Back exits edit (does not leave Steady).\n- **Clean Home** \u2014 Ask Fun, site request, intention, and status live under \u22ee. No more clutter strip or \u201cadd widget\u201d spam on the empty home.\n- **Smaller dock** \u2014 tighter icons, less chrome.\n- **App info** \u2014 no longer crashes / bounce-loops (brief Settings unlock; stays in App info).\n- **System apps** \u2014 never \u201cresting\u201d (including System UI). System packages default to Always/System except hard blocks.\n\n_Install on the kid phone for the Home fixes._",
+  "version": "2.8.2",
+  "versionCode": 121,
+  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.8.2/steady-2.8.2.apk",
+  "sha256": "79970d68c1cfef057083e3d0ce01dceebfb11c266df5754f0ee8b756e42cca9a",
+  "sizeBytes": 64526737,
+  "notes": "## 2.8.2\n\n## What's new\n\n- **Widget bind dialog** \u2014 fixed the glitch where \u201cAllow access to widget content\u201d was bounced by Steady protection (dialog mentioned Steady). You can read and confirm it; Steady Home no longer drops out mid-prompt. (Android still requires this one-time allow \u2014 cannot be silently skipped.)\n- **Widgets look right** \u2014 proper height sizing (no more squish), reorder + remove in Edit layout, gray + blocked taps when the app is resting.\n- **Clock / date** \u2014 Home settings: show/hide clock & date, seconds, large/compact clock, full/short date; reorder in edit mode.\n- **Parent remote** \u2014 **Forget phone** removes a linked kid from the dashboard list (does not factory-reset the device).\n\n_Install on kid phones for widget fixes; refresh the parent site for Forget phone._",
   "assetId": 0
 }
