@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css?v=29" />
-  <link rel="stylesheet" href="dashboard.css?v=15" />
+  <link rel="stylesheet" href="dashboard.css?v=16" />
   <script>
     (function () {
       try {
@@ -183,6 +183,18 @@
                 <button class="btn ghost" type="button" data-routine="focus-hour">Focus hour</button>
               </div>
               <p id="routine-state" class="muted"></p>
+            </article>
+
+            <article class="dash-card span-2" id="panel-instant">
+              <h2>Instant actions</h2>
+              <p class="panel-lede">Family Link / Qustodio style — lock Fun, pause the web filter, or clear a forced mode. Each action pushes immediately.</p>
+              <div class="row-btns" id="instant-actions">
+                <button class="btn primary" type="button" data-instant="lock-now">Lock Fun now</button>
+                <button class="btn ghost" type="button" data-instant="pause-net">Pause internet</button>
+                <button class="btn ghost" type="button" data-instant="resume-net">Resume internet</button>
+                <button class="btn ghost" type="button" data-instant="clear-force">Clear forced mode</button>
+              </div>
+              <p id="instant-state" class="muted"></p>
             </article>
 
             <article class="dash-card" id="panel-modes">
@@ -429,6 +441,6 @@
   <script src="js/crypto-lite.js?v=3"></script>
   <script src="js/github-sync.js?v=10"></script>
   <script src="js/auth.js?v=9"></script>
-  <script src="js/dashboard.js?v=21"></script>
+  <script src="js/dashboard.js?v=22"></script>
 </body>
 </html>
