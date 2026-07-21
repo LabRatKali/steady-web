@@ -806,7 +806,7 @@
       policy.childDeviceId = client.childId;
       await client.publishPolicy(policy);
       setDirty(false);
-      flashOk("Full profile pushed — kid should tap Refresh");
+      flashOk("Full profile pushed — kid Refresh applies it now (or within ~15s)");
     } catch (e) {
       flashErr(String(e.message || e));
     }
@@ -1076,12 +1076,18 @@
     btn.addEventListener("click", () => setPause(Number(btn.dataset.pause)));
   });
   document.querySelectorAll("[data-force-mode]").forEach((btn) => {
-    btn.addEventListener("click", () => {
+    btn.addEventListener("click", async () => {
       const mode = btn.dataset.forceMode || "";
       mutatePolicyLocal((p) => {
         p.forceMode = mode;
       });
-      flashOk(mode ? `Mode → ${mode} — tap Save & push` : "Forced mode cleared — tap Save & push");
+      try {
+        flashBusy(mode ? `Pushing ${mode}…` : "Clearing forced mode…");
+        await pushPolicyToKid();
+        flashOk(mode ? `Mode → ${mode} pushed to kid` : "Forced mode cleared · pushed");
+      } catch (e) {
+        flashErr(String(e.message || e));
+      }
     });
   });
   $("btn-end-pause").addEventListener("click", () => setPause(0));
