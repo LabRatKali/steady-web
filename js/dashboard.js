@@ -338,11 +338,42 @@
         familyCode: client.pairCode || "",
         role: prev.role || "CHILD",
         label,
+        name: label,
       });
-      flashOk(`Saved as “${label}”`);
+      flashOk("Name saved");
       await loadKidPhones();
     } catch (e) {
-      flashErr(String(e.message || e));
+      flashErr(e && e.message ? e.message : "Couldn’t save name");
+    }
+  }
+
+  async function forgetKidPhone() {
+    if (!client || !client.childId) {
+      flashErr("Choose a kid phone first");
+      return;
+    }
+    const id = client.childId;
+    const phones = window.__steadyPhones || [];
+    const ph = phones.find(
+      (p) => (p.deviceId || p.childDeviceId || p.id) === id
+    );
+    const label = (ph && (ph.label || ph.name)) || id.slice(0, 8);
+    const ok = window.confirm(
+      `Forget “${label}” from parent remote?\n\nThis removes it from your linked phones list here. It does not factory-reset the phone — open Steady on that device to leave the family if needed.`
+    );
+    if (!ok) return;
+    try {
+      flashBusy("Forgetting phone…");
+      await client.forgetFamilyPhone(id);
+      if ($("child-live")) $("child-live").value = "";
+      if ($("child-label")) $("child-label").value = "";
+      if ($("child-select")) $("child-select").value = "";
+      client.childId = "";
+      flashOk("Phone forgotten from parent remote");
+      await loadKidPhones();
+      refresh();
+    } catch (e) {
+      flashErr(e && e.message ? e.message : "Couldn’t forget phone");
     }
   }
 
@@ -1037,6 +1068,9 @@
   }
   if ($("btn-rename-kid")) {
     $("btn-rename-kid").addEventListener("click", () => renameKidPhone());
+  }
+  if ($("btn-forget-kid")) {
+    $("btn-forget-kid").addEventListener("click", () => forgetKidPhone());
   }
   document.querySelectorAll("[data-pause]").forEach((btn) => {
     btn.addEventListener("click", () => setPause(Number(btn.dataset.pause)));
