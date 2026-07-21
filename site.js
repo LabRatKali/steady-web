@@ -3,7 +3,7 @@ async function loadLatest() {
   const apkLink = document.getElementById("apk-link");
   if (!versionLine || !apkLink) return;
 
-  const FALLBACK_VERSION = "v2.10.2";
+  const FALLBACK_VERSION = "v2.11.0";
   const template =
     versionLine.dataset.template || "Latest release: %s";
   const formatVersion = (ver) => template.replace("%s", ver);
