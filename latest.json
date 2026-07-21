@@ -1,9 +1,9 @@
 {
-  "version": "2.13.0",
-  "versionCode": 132,
-  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.13.0/steady-2.13.0.apk",
-  "sha256": "cf52325b3dc8de381a18aae68d95633c3ba381f05da63b176b8fd183e11f6418",
-  "sizeBytes": 64704777,
-  "notes": "## 2.13.0\n\n## What's new\n\n- Sync and parent remote improvements.\n- Update **both** the parent phone and the kid phone together.\n- Tap Refresh on Home after installing so family link catches up.\n\n_Tip: add `release_notes/2.13.0.md` before the next ship for a full changelog in the app._\n",
+  "version": "2.14.0",
+  "versionCode": 133,
+  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.14.0/steady-2.14.0.apk",
+  "sha256": "d37e6c045630c335cc01aac2bd4f60d7e82db5ce21f7135ac72d44d5724750b3",
+  "sizeBytes": 64707257,
+  "notes": "## What's new\n\n- **Instant QS User / Guest kick:** tapping the User button in the notification shade collapses and locks immediately (separate fast lane from Settings).\n- **Harder Users settings:** Settings \u2192 Users / accounts / Add user bounce hard, not soft Back.\n- **QS Edit blocked:** Edit tiles / customize Quick Settings is blocked on kid phones.\n- **Steady Quick Settings tile:** add the Steady tile next to Wi\u2011Fi / Flashlight \u2014 shows Focus/Fun and opens Steady.\n- **Notification settings** paths tightened (app notifications / channels / access).\n- Update **both** phones. After install: swipe down \u2192 edit tiles \u2192 add **Steady**.\n\n### Strongest lockdown\n\nKid phone as **Device Owner** still blocks adding users / switching users at the OS level. Accessibility is the fast kick when DO is not set.",
   "assetId": 0
 }
