@@ -606,6 +606,42 @@
     }
   }
 
+  async function applyInstant(name) {
+    if (!client || !client.childId) {
+      flashErr("Choose a kid phone first");
+      return;
+    }
+    const labels = {
+      "lock-now": "Lock Fun now",
+      "pause-net": "Pause internet",
+      "resume-net": "Resume internet",
+      "clear-force": "Clear forced mode",
+    };
+    mutatePolicyLocal((p) => {
+      if (name === "lock-now") {
+        p.forceMode = "FOCUS";
+        p.familyPauseUntil = 0;
+        p.softDisableUntil = 0;
+      } else if (name === "pause-net") {
+        p.filterEnabled = false;
+      } else if (name === "resume-net") {
+        p.filterEnabled = true;
+      } else if (name === "clear-force") {
+        p.forceMode = "";
+      }
+    });
+    try {
+      flashBusy("Pushing " + (labels[name] || "action") + "…");
+      await pushPolicyToKid();
+      const st = $("instant-state");
+      if (st) st.textContent = (labels[name] || "Action") + " pushed";
+      flashOk((labels[name] || "Action") + " pushed");
+      updateGlance();
+    } catch (e) {
+      flashErr(String(e.message || e));
+    }
+  }
+
   function renderTodos(payload) {
     const box = $("todos-list");
     if (!box) return;
@@ -1217,6 +1253,9 @@
   });
   document.querySelectorAll("[data-routine]").forEach((btn) => {
     btn.addEventListener("click", () => applyRoutine(btn.dataset.routine || ""));
+  });
+  document.querySelectorAll("[data-instant]").forEach((btn) => {
+    btn.addEventListener("click", () => applyInstant(btn.dataset.instant || ""));
   });
   $("btn-end-pause").addEventListener("click", () => setPause(0));
 
