@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css?v=29" />
-  <link rel="stylesheet" href="dashboard.css?v=14" />
+  <link rel="stylesheet" href="dashboard.css?v=15" />
   <script>
     (function () {
       try {
@@ -151,6 +151,13 @@
       <div class="dash-panels">
         <div class="dash-panel is-active" data-panel="asks" role="tabpanel">
           <div class="dash-grid dash-grid-remote">
+            <article class="dash-card span-2" id="panel-glance">
+              <h2>Today at a glance</h2>
+              <p class="panel-lede">Quick status for this kid — like Family Link / Qustodio summaries, without needing a separate report email.</p>
+              <ul id="glance-list" class="glance-list muted">
+                <li>Pick a linked phone to see pending asks and pause state.</li>
+              </ul>
+            </article>
             <article class="dash-card span-2" id="panel-approvals">
               <h2>Pending asks</h2>
               <p class="panel-lede">Your child asked for Fun, an app, a website, or a profile change. For time asks, pick minutes. For profile / settings asks, tap Allow or Don’t allow. Dismiss clears the ask forever.</p>
@@ -166,6 +173,18 @@
 
         <div class="dash-panel" data-panel="controls" role="tabpanel" hidden>
           <div class="dash-grid dash-grid-remote">
+            <article class="dash-card span-2" id="panel-routines">
+              <h2>Routines</h2>
+              <p class="panel-lede">One-tap profiles inspired by Qustodio schedules and Opal focus sessions. Each pushes to the kid phone right away.</p>
+              <div class="row-btns" id="routine-presets">
+                <button class="btn ghost" type="button" data-routine="school-night">School night</button>
+                <button class="btn ghost" type="button" data-routine="weekend">Weekend</button>
+                <button class="btn ghost" type="button" data-routine="bedtime">Bedtime now</button>
+                <button class="btn ghost" type="button" data-routine="focus-hour">Focus hour</button>
+              </div>
+              <p id="routine-state" class="muted"></p>
+            </article>
+
             <article class="dash-card" id="panel-modes">
               <h2>Modes &amp; guards</h2>
               <p class="panel-lede">Each switch is one rule for the kid phone. Example: School hours locks Fun during school. Install approval means new apps need your OK. Flip what you want, then tap Save &amp; push at the bottom.</p>
@@ -410,6 +429,6 @@
   <script src="js/crypto-lite.js?v=3"></script>
   <script src="js/github-sync.js?v=10"></script>
   <script src="js/auth.js?v=9"></script>
-  <script src="js/dashboard.js?v=20"></script>
+  <script src="js/dashboard.js?v=21"></script>
 </body>
 </html>
