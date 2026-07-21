@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css?v=25" />
-  <link rel="stylesheet" href="dashboard.css?v=11" />
+  <link rel="stylesheet" href="dashboard.css?v=12" />
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body class="dash-body">
@@ -86,32 +86,33 @@
 
     <section id="app" class="dash-app" hidden>
       <div class="dash-toolbar">
-        <div>
+        <div class="dash-toolbar-copy">
           <h1>Parent remote</h1>
           <p id="session-meta" class="muted"></p>
         </div>
-        <div class="dash-actions">
-          <button class="btn ghost" type="button" id="btn-refresh">Refresh</button>
-          <button class="btn ghost" type="button" id="btn-logout">Sign out</button>
+        <div class="dash-actions dash-actions-compact">
+          <button class="btn-icon" type="button" id="btn-refresh" title="Refresh">↻</button>
+          <button class="btn-icon" type="button" id="btn-logout" title="Sign out">Sign out</button>
         </div>
       </div>
 
       <div class="dash-card kid-bar">
-        <label class="child-pick">Kid phone
-          <select id="child-select" aria-label="Choose kid phone">
-            <option value="">Choose a linked phone…</option>
-          </select>
-        </label>
-        <div class="kid-rename-row">
-          <label class="child-pick kid-rename-grow">Name for this phone
-            <input id="child-label" type="text" placeholder="e.g. Maya’s phone" maxlength="40" autocomplete="off" />
+        <div class="kid-bar-main">
+          <label class="child-pick kid-select-grow">Which phone?
+            <select id="child-select" aria-label="Choose kid phone">
+              <option value="">Choose a linked phone…</option>
+            </select>
           </label>
-          <button class="btn ghost" type="button" id="btn-rename-kid" title="Save name to GitHub">✎ Save name</button>
+          <div class="kid-rename-inline">
+            <input id="child-label" type="text" placeholder="Name (e.g. Maya)" maxlength="40" autocomplete="off" aria-label="Name for this phone" />
+            <button class="btn-icon" type="button" id="btn-rename-kid" title="Save name">✎</button>
+          </div>
         </div>
-        <p class="muted kid-hint">Pick a phone under your Steady account — you don’t need to memorize the device ID. Names save to GitHub. Device ID shows after the name for support.</p>
-        <label class="child-pick">Device ID (auto-filled)
+        <p class="muted kid-hint">Pick a phone under your account. Names save for next time. Device ID is only for support.</p>
+        <details class="kid-id-details">
+          <summary>Show device ID</summary>
           <input id="child-live" type="text" placeholder="Filled when you pick a phone" autocomplete="off" readonly />
-        </label>
+        </details>
       </div>
       <p id="status" class="dash-status" role="status"></p>
 
@@ -129,7 +130,7 @@
           <div class="dash-grid dash-grid-remote">
             <article class="dash-card span-2" id="panel-approvals">
               <h2>Pending asks</h2>
-              <p class="panel-lede">Your child asked for Fun time, an app, or a website. Tap a time (5 minutes, 1 hour…) to allow it, Deny to say no, or Dismiss to clear the ask forever so it does not come back. Then ask the child to tap Refresh on Steady Home.</p>
+              <p class="panel-lede">Your child asked for Fun, an app, a website, or a profile change. For time asks, pick minutes. For profile / settings asks, tap Allow or Don’t allow. Dismiss clears the ask forever.</p>
               <div id="approvals-list" class="dash-list"></div>
             </article>
             <article class="dash-card span-2" id="panel-installs">
@@ -293,6 +294,11 @@
 
         <div class="dash-panel" data-panel="more" role="tabpanel" hidden>
           <div class="dash-grid dash-grid-remote">
+            <article class="dash-card span-2" id="panel-usage">
+              <h2>Usage report</h2>
+              <p class="panel-lede">What the kid used today — real app names, not package codes. Refresh to load the latest from the phone.</p>
+              <div id="usage-box" class="muted">Refresh to load usage.</div>
+            </article>
             <article class="dash-card" id="panel-sites">
               <h2>Website approvals</h2>
               <p class="panel-lede">Websites the kid may open even when Fun is locked (DNS allow list). Add a site, then the kid taps Refresh.</p>
@@ -306,6 +312,16 @@
               <h2>Location</h2>
               <p class="panel-lede">Where the kid phone last checked in. Turn on live location under Controls if you want ongoing pins.</p>
               <div id="location-box" class="muted">Refresh to load.</div>
+            </article>
+            <article class="dash-card" id="panel-tips">
+              <h2>Ideas for parents</h2>
+              <p class="panel-lede">Small habits that keep Steady simple for everyone.</p>
+              <ul class="tip-list">
+                <li>Name each kid phone so you never hunt for a device ID.</li>
+                <li>Use Day off for travel days — apps stay colorful and open.</li>
+                <li>Approve asks from this Pending asks tab; the phone picks them up in about 15 seconds or when the kid taps Refresh.</li>
+                <li>Focus on the kid phone opens almost everything; switching Focus still needs your PIN or an ask here.</li>
+              </ul>
             </article>
           </div>
         </div>
@@ -337,6 +353,6 @@
   <script src="js/crypto-lite.js?v=2"></script>
   <script src="js/github-sync.js?v=5"></script>
   <script src="js/auth.js?v=6"></script>
-  <script src="js/dashboard.js?v=13"></script>
+  <script src="js/dashboard.js?v=14"></script>
 </body>
 </html>
