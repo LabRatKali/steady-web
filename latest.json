@@ -1,9 +1,9 @@
 {
-  "version": "2.8.2",
-  "versionCode": 121,
-  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.8.2/steady-2.8.2.apk",
-  "sha256": "79970d68c1cfef057083e3d0ce01dceebfb11c266df5754f0ee8b756e42cca9a",
+  "version": "2.8.3",
+  "versionCode": 122,
+  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.8.3/steady-2.8.3.apk",
+  "sha256": "77cf3e827c669c354cc8420580ef0a92e1fea600b2e7d82bfee6fee6af3ebe47",
   "sizeBytes": 64526737,
-  "notes": "## 2.8.2\n\n## What's new\n\n- **Widget bind dialog** \u2014 fixed the glitch where \u201cAllow access to widget content\u201d was bounced by Steady protection (dialog mentioned Steady). You can read and confirm it; Steady Home no longer drops out mid-prompt. (Android still requires this one-time allow \u2014 cannot be silently skipped.)\n- **Widgets look right** \u2014 proper height sizing (no more squish), reorder + remove in Edit layout, gray + blocked taps when the app is resting.\n- **Clock / date** \u2014 Home settings: show/hide clock & date, seconds, large/compact clock, full/short date; reorder in edit mode.\n- **Parent remote** \u2014 **Forget phone** removes a linked kid from the dashboard list (does not factory-reset the device).\n\n_Install on kid phones for widget fixes; refresh the parent site for Forget phone._",
+  "notes": "## 2.8.3\n\n## What's new\n\n- **Outside-launcher loophole fixed** \u2014 Resting Fun apps (including many preinstalled \u201csystem\u201d apps like YouTube) are suspended / blocked again when you leave Steady Home. Only real OS shells (System UI, etc.) stay always-on.\n- **Recategorize heal** \u2014 Undoes the 2.8.1 over-broad \u201call system = Always\u201d heal so Fun can rest properly.\n\n_Requires Device Owner for system-wide gray/suspend; Accessibility still bounces blocked apps without it. Install on the kid / self-focus phone._",
   "assetId": 0
 }
