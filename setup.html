@@ -65,8 +65,7 @@
       <ul class="plain">
         <li><strong>For me</strong> — self-focus, day schedules, optional friend Approve</li>
         <li><strong>Child</strong> — locks and Ask for Entertainment</li>
-        <li><strong>Parent / friend</strong> — Approve inbox + family code</li>
-        <li><strong>Both</strong> — one phone does both (weaker; keep the PIN secret)</li>
+        <li><strong>Parents</strong> — manage kids from the <a href="dashboard.html">Family dashboard</a> website (no parent phone app required). Optional: a friend can Approve from a second phone.</li>
       </ul>
     </section>
 
@@ -87,21 +86,21 @@
       <ol>
         <li>Choose <strong>child</strong> and set unlock checks (1–3 steps).</li>
         <li>Follow the protection wizard on the phone — no computer needed for normal use.</li>
-        <li>Pair with a parent phone using a family code.</li>
+        <li>Link the phone to your family (same Google as the dashboard, or a family code).</li>
         <li>Optional advanced uninstall lock (computer only):</li>
       </ol>
       <pre><code>adb shell dpm set-device-owner app.steady.android/app.steady.deviceowner.SteadyDeviceAdminReceiver</code></pre>
     </section>
 
     <section>
-      <h2>5. Parent phone (the remote)</h2>
+      <h2>5. Parent — Family dashboard (the remote)</h2>
       <ol>
-        <li>Choose parent / accountability friend.</li>
-        <li>Create a family: best path is <strong>Sign in with Google</strong> on the <a href="dashboard.html">web dashboard</a> and the same Google on the kid phone. Or use email one-time code / classic family code.</li>
-        <li>From Parent home <em>or</em> the <a href="dashboard.html">web dashboard</a>: Refresh, Approve asks, pause, send rules.</li>
+        <li>Parents use the <a href="dashboard.html">Family dashboard</a> website — not a parent phone app.</li>
+        <li>Create a family: best path is <strong>Sign in with Google</strong> on the dashboard and the same Google on the kid phone. Or use email one-time code / classic family code.</li>
+        <li>From the dashboard: Refresh, Approve asks, pause, send rules.</li>
         <li>Family pause — open kid apps for dinner, then End pause.</li>
-        <li>Parent settings — budgets, bedtime, location, kid apps Always/Never — then Send rules (or they sync when you change them).</li>
-        <li>Enable live location on the parent side; the kid phone follows — no need to flip it on the kid.</li>
+        <li>Budgets, bedtime, location, kid apps Always/Never — then Send rules (or they sync when you change them).</li>
+        <li>Enable live location on the dashboard; the kid phone follows — no need to flip it on the kid.</li>
       </ol>
     </section>
 
@@ -109,7 +108,7 @@
       <h2>5b. Web dashboard (GitHub only)</h2>
       <ol>
         <li>Create a fine-grained GitHub PAT with Contents Read/Write on <code>steady-sync</code> only.</li>
-        <li>Open <a href="dashboard.html">dashboard.html</a> — enter PAT, family code, family secret (for signed Approves), and kid device ID (from Parent home).</li>
+        <li>Open <a href="dashboard.html">dashboard.html</a> — enter PAT, family code, family secret (for signed Approves), and kid device ID (shown after the kid phone is linked).</li>
         <li>Approve asks, pause, edit budgets, manage to-dos — the kid phone polls the same files.</li>
       </ol>
     </section>
