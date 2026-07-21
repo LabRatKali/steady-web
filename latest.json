@@ -2,7 +2,7 @@
   "version": "2.9.1",
   "versionCode": 126,
   "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.9.1/steady-2.9.1.apk",
-  "sha256": "138649208e9e4044d5159d28a2f3bfa88185c05982093889863a4927a9a15caa",
+  "sha256": "8f19da3027d62fd4d73e5243a16d223b2f5a7410156920859d13422ad018cd42",
   "sizeBytes": 64610933,
   "notes": "## 2.9.1\n\n## What's new\n\n- **Faster kid Refresh** \u2014 Home refresh pulls parent rules first (cache-busted), applies mode right away, and shows what changed (e.g. Learning). Presence upload no longer blocks the sync.\n- **Forced mode sticks** \u2014 Website Learn / Work / Focus push is no longer overwritten by the day schedule.\n- **Website mode buttons** \u2014 Tapping a mode pushes to the kid immediately (no extra Save & push).\n- **Website colors** \u2014 Restored the previous green Steady palette.\n\n_Update the kid phone, then push a mode from the site and tap Refresh \u2014 you should see it land._",
   "assetId": 0
