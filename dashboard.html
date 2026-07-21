@@ -4,14 +4,22 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="Steady parent remote — approve asks, pause, budgets, kid apps." />
-  <meta name="theme-color" content="#0c1b15" />
+  <meta name="theme-color" content="#07141a" />
   <meta name="referrer" content="strict-origin-when-cross-origin" />
   <title>Steady · Parent remote</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=25" />
-  <link rel="stylesheet" href="dashboard.css?v=13" />
+  <link href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,500;7..72,650;7..72,700&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css?v=29" />
+  <link rel="stylesheet" href="dashboard.css?v=14" />
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("steady.theme");
+        if (t === "light") document.documentElement.setAttribute("data-theme", "light");
+      } catch (_) {}
+    })();
+  </script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body class="dash-body">
@@ -35,6 +43,7 @@
       <a href="index.html">Home</a>
       <a href="setup.html">Setup</a>
       <a class="nav-cta" href="index.html#download">Download</a>
+      <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Toggle light mode" title="Toggle light / dark">Theme</button>
       <a id="nav-signin-link" class="nav-signin" href="dashboard.html">Sign in</a>
       <span id="nav-auth" class="nav-auth" hidden>
         <span id="nav-user" class="nav-user muted"></span>
@@ -134,6 +143,7 @@
         <button type="button" class="dash-tab" data-tab="budgets" role="tab" aria-selected="false">Budgets</button>
         <button type="button" class="dash-tab" data-tab="apps" role="tab" aria-selected="false">Apps</button>
         <button type="button" class="dash-tab" data-tab="todos" role="tab" aria-selected="false">To-dos</button>
+        <button type="button" class="dash-tab" data-tab="self" role="tab" aria-selected="false">Self</button>
         <button type="button" class="dash-tab" data-tab="more" role="tab" aria-selected="false">More</button>
       </nav>
 
@@ -304,6 +314,38 @@
           </div>
         </div>
 
+        <div class="dash-panel" data-panel="self" role="tabpanel" hidden>
+          <div class="dash-grid dash-grid-remote">
+            <article class="dash-card span-2 self-insights" id="panel-self">
+              <h2>Self insights</h2>
+              <p class="panel-lede">
+                Calm placeholders for your own digital wellbeing — streak and focus boosts.
+                Values load from this browser when present (<code>steady.self.*</code>); otherwise they stay ready for the next sync.
+              </p>
+              <div class="self-metrics" id="self-metrics">
+                <div class="self-metric">
+                  <p class="self-metric-label">Steady streak</p>
+                  <p class="self-metric-value" id="self-streak">—</p>
+                  <p class="self-metric-hint muted" id="self-streak-hint">Days you kept the plan</p>
+                </div>
+                <div class="self-metric">
+                  <p class="self-metric-label">Focus boosts</p>
+                  <p class="self-metric-value" id="self-boost">—</p>
+                  <p class="self-metric-hint muted" id="self-boost-hint">Quick Focus sprints this week</p>
+                </div>
+                <div class="self-metric self-metric-wide">
+                  <p class="self-metric-label">Today’s intention</p>
+                  <p class="self-metric-value self-intention" id="self-intention">Set on Steady Home</p>
+                  <p class="self-metric-hint muted" id="self-intention-hint">Shows when this browser has a saved intention</p>
+                </div>
+              </div>
+              <p class="muted self-note" id="self-note">
+                Parent remote stays on the other tabs. Self insights never change kid phone rules.
+              </p>
+            </article>
+          </div>
+        </div>
+
         <div class="dash-panel" data-panel="more" role="tabpanel" hidden>
           <div class="dash-grid dash-grid-remote">
             <article class="dash-card span-2" id="panel-usage">
@@ -365,6 +407,6 @@
   <script src="js/crypto-lite.js?v=2"></script>
   <script src="js/github-sync.js?v=5"></script>
   <script src="js/auth.js?v=6"></script>
-  <script src="js/dashboard.js?v=15"></script>
+  <script src="js/dashboard.js?v=16"></script>
 </body>
 </html>
