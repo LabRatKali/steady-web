@@ -35,32 +35,49 @@
 
     async api(path, opts) {
       const options = opts || {};
-      const bust = options.cacheBust ? `?t=${Date.now()}` : "";
       const { cacheBust, headers: extraHeaders, ...fetchOpts } = options;
-      const res = await fetch(`${API}/repos/${this.repo}/contents/${path}${bust}`, {
-        ...fetchOpts,
-        headers: this.headers(
-          Object.assign(
-            {
-              "Cache-Control": "no-cache",
-              Pragma: "no-cache",
-            },
-            extraHeaders || {}
-          )
-        ),
-      });
-      const text = await res.text();
-      let json = null;
-      try {
-        json = text ? JSON.parse(text) : null;
-      } catch (_) {
-        json = null;
+      // Prefer Cache-Control over ?t= query — GitHub Contents + some browsers choke on bust query.
+      const url = `${API}/repos/${this.repo}/contents/${path}`;
+      let lastErr = null;
+      for (let attempt = 0; attempt < 4; attempt++) {
+        try {
+          const res = await fetch(url, {
+            ...fetchOpts,
+            cache: cacheBust ? "no-store" : fetchOpts.cache,
+            headers: this.headers(
+              Object.assign(
+                {
+                  "Cache-Control": "no-cache",
+                  Pragma: "no-cache",
+                },
+                extraHeaders || {}
+              )
+            ),
+          });
+          const text = await res.text();
+          let json = null;
+          try {
+            json = text ? JSON.parse(text) : null;
+          } catch (_) {
+            json = null;
+          }
+          return { ok: res.ok, status: res.status, json, text };
+        } catch (e) {
+          lastErr = e;
+          // TypeError: Failed to fetch — transient network / DNS / blocker
+          await new Promise((r) => setTimeout(r, 200 * (attempt + 1) * (attempt + 1)));
+        }
       }
-      return { ok: res.ok, status: res.status, json, text };
+      const msg = lastErr && lastErr.message ? lastErr.message : "network error";
+      throw new Error(
+        "Could not reach GitHub sync (" +
+          msg +
+          "). Check connection, disable ad-block for this site, then try again."
+      );
     }
 
     async listDir(path) {
-      const { ok, status, json } = await this.api(path, { method: "GET" });
+      const { ok, status, json } = await this.api(path, { method: "GET", cacheBust: true });
       if (status === 404) return [];
       if (!ok) throw new Error(`List failed (${status})`);
       if (!Array.isArray(json)) return [];
@@ -82,28 +99,38 @@
       let lastErr = null;
       for (let attempt = 0; attempt < 5; attempt++) {
         let sha = null;
-        const existing = await this.api(path, { method: "GET" });
-        if (existing.ok && existing.json && existing.json.sha) {
-          sha = existing.json.sha;
+        try {
+          const existing = await this.api(path, { method: "GET", cacheBust: true });
+          if (existing.ok && existing.json && existing.json.sha) {
+            sha = existing.json.sha;
+          }
+        } catch (e) {
+          lastErr = e;
+          await new Promise((r) => setTimeout(r, 150 * (attempt + 1)));
+          continue;
         }
         const body = {
           message: message || "Steady web dashboard",
           content: btoa(encoded),
         };
         if (sha) body.sha = sha;
-        const { ok, status, text } = await this.api(path, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
-        });
-        if (ok || status === 422) return;
-        // 409 = stale SHA / concurrent write — refresh SHA and retry
-        if (status === 409 || status === 404) {
-          lastErr = new Error(`Put failed (${status}): ${String(text).slice(0, 180)}`);
-          await new Promise((r) => setTimeout(r, 120 * (attempt + 1)));
-          continue;
+        try {
+          const { ok, status, text } = await this.api(path, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+          });
+          if (ok || status === 422) return;
+          if (status === 409 || status === 404) {
+            lastErr = new Error(`Put failed (${status}): ${String(text).slice(0, 180)}`);
+            await new Promise((r) => setTimeout(r, 120 * (attempt + 1)));
+            continue;
+          }
+          throw new Error(`Put failed (${status}): ${String(text).slice(0, 180)}`);
+        } catch (e) {
+          lastErr = e;
+          await new Promise((r) => setTimeout(r, 200 * (attempt + 1)));
         }
-        throw new Error(`Put failed (${status}): ${String(text).slice(0, 180)}`);
       }
       throw lastErr || new Error("Put failed after retries");
     }
