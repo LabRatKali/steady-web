@@ -459,6 +459,7 @@
     if (!box) return;
     if (!pendingApprovals.length) {
       box.innerHTML = '<p class="muted">No pending asks.</p>';
+      updateGlance();
       return;
     }
     box.innerHTML = "";
@@ -525,6 +526,84 @@
       div.appendChild(btns);
       box.appendChild(div);
     });
+    updateGlance();
+  }
+
+  function updateGlance() {
+    const box = $("glance-list");
+    if (!box) return;
+    const child = (client && client.childId) || "";
+    if (!child) {
+      box.innerHTML =
+        "<li>Pick a linked phone to see pending asks and pause state.</li>";
+      return;
+    }
+    const phones = window.__steadyPhones || [];
+    const ph = phones.find(
+      (p) => (p.deviceId || p.childDeviceId || p.id) === child
+    );
+    const label = (ph && (ph.label || ph.name)) || child.slice(0, 8) + "…";
+    const asks = (pendingApprovals || []).length;
+    const pauseUntil = policy && policy.familyPauseUntil ? Number(policy.familyPauseUntil) : 0;
+    const paused = pauseUntil > Date.now();
+    const force = (policy && policy.forceMode) || "";
+    const bedtime = !!(policy && policy.bedtimeEnabled);
+    const school = !!(policy && policy.schoolModeEnabled);
+    box.innerHTML = [
+      `<li><strong>${escapeHtml(label)}</strong> selected</li>`,
+      `<li>${asks} pending ask${asks === 1 ? "" : "s"}</li>`,
+      `<li>${paused ? "Day off / pause is active" : "No household pause"}</li>`,
+      `<li>${force ? "Forced mode: " + escapeHtml(force) : "No forced mode"}</li>`,
+      `<li>${school ? "School hours on" : "School hours off"} · ${bedtime ? "Bedtime on" : "Bedtime off"}</li>`,
+    ].join("");
+  }
+
+  async function applyRoutine(name) {
+    if (!client || !client.childId) {
+      flashErr("Choose a kid phone first");
+      return;
+    }
+    const labels = {
+      "school-night": "School night",
+      weekend: "Weekend",
+      bedtime: "Bedtime now",
+      "focus-hour": "Focus hour",
+    };
+    mutatePolicyLocal((p) => {
+      if (name === "school-night") {
+        p.schoolModeEnabled = true;
+        p.bedtimeEnabled = true;
+        p.bedtimeStartHour = p.bedtimeStartHour || 21;
+        p.bedtimeEndHour = p.bedtimeEndHour || 7;
+        p.entertainmentMinutes = Math.min(Number(p.entertainmentMinutes) || 5, 5);
+        p.forceMode = "FOCUS";
+        p.familyPauseUntil = 0;
+      } else if (name === "weekend") {
+        p.schoolModeEnabled = false;
+        p.forceMode = "";
+        p.entertainmentMinutes = Math.max(Number(p.entertainmentMinutes) || 5, 45);
+        p.weekendBonusMinutes = Math.max(Number(p.weekendBonusMinutes) || 0, 30);
+      } else if (name === "bedtime") {
+        p.bedtimeEnabled = true;
+        p.forceMode = "FOCUS";
+        p.familyPauseUntil = 0;
+        p.softDisableUntil = 0;
+      } else if (name === "focus-hour") {
+        p.forceMode = "FOCUS";
+        p.familyPauseUntil = 0;
+        p.softDisableUntil = 0;
+      }
+    });
+    try {
+      flashBusy("Pushing " + (labels[name] || "routine") + "…");
+      await pushPolicyToKid();
+      const st = $("routine-state");
+      if (st) st.textContent = (labels[name] || "Routine") + " pushed to kid";
+      flashOk((labels[name] || "Routine") + " pushed");
+      updateGlance();
+    } catch (e) {
+      flashErr(String(e.message || e));
+    }
   }
 
   function renderTodos(payload) {
@@ -922,6 +1001,7 @@
       if (!options.quiet) {
         flashOk(policyDirty ? "Asks updated · unsaved edits kept" : "Up to date");
       }
+      updateGlance();
     } catch (e) {
       flashErr(String(e.message || e));
     }
@@ -1129,10 +1209,14 @@
         flashBusy(mode ? `Pushing ${mode}…` : "Clearing forced mode…");
         await pushPolicyToKid();
         flashOk(mode ? `Mode → ${mode} pushed to kid` : "Forced mode cleared · pushed");
+        updateGlance();
       } catch (e) {
         flashErr(String(e.message || e));
       }
     });
+  });
+  document.querySelectorAll("[data-routine]").forEach((btn) => {
+    btn.addEventListener("click", () => applyRoutine(btn.dataset.routine || ""));
   });
   $("btn-end-pause").addEventListener("click", () => setPause(0));
 
