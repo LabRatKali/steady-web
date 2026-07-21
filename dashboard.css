@@ -422,6 +422,18 @@
   gap: 0.7rem;
 }
 
+.glance-list {
+  margin: 0.35rem 0 0;
+  padding-left: 1.15rem;
+  display: grid;
+  gap: 0.4rem;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+.glance-list strong {
+  color: var(--text, #e8f2ec);
+}
+
 .dash-list.tall {
   max-height: 320px;
   overflow: auto;
