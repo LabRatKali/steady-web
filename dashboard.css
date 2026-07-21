@@ -24,12 +24,11 @@
 }
 
 .dash-card {
-  background: linear-gradient(165deg, rgba(18, 42, 34, 0.55), rgba(8, 20, 15, 0.42));
-  border: 1px solid rgba(124, 184, 154, 0.14);
-  border-radius: 20px;
-  padding: 1.4rem 1.45rem 1.55rem;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 1.35rem 1.4rem 1.5rem;
   margin-bottom: 0;
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
 }
 
 .dash-card h1,
@@ -1037,7 +1036,7 @@
 
 /* —— Light theme (persisted via data-theme) —— */
 html[data-theme="light"] {
-  --bg-deep: #eef5f6;
+  --bg-deep: #eef4ef;
   --bg: #f4fafb;
   --fg: #102028;
   --muted: #4f6870;
