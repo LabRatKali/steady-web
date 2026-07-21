@@ -940,7 +940,15 @@
     loginError("");
     const email = $("otp-email").value.trim();
     const btn = ev.target.querySelector('button[type="submit"]');
-    if (btn) btn.disabled = true;
+    const disp = $("otp-display");
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = "Sending code…";
+    }
+    if (disp) {
+      disp.hidden = false;
+      disp.textContent = "Sending code to your email…";
+    }
     try {
       const code = SteadyAuth.randomOtp();
       const magic = SteadyAuth.randomMagicToken();
@@ -956,21 +964,27 @@
         }
       }
       $("otp-verify").hidden = false;
-      const disp = $("otp-display");
-      disp.hidden = false;
-      if (sent.emailed) {
-        disp.textContent =
-          "Check your email for a magic link or 6-digit code (about 10 minutes). Check spam too.";
-      } else {
-        disp.innerHTML =
-          "Your sign-in code is <strong style=\"letter-spacing:0.2em\">" +
-          code +
-          "</strong> — type it below to continue.";
+      if (disp) {
+        disp.hidden = false;
+        if (sent.emailed) {
+          disp.textContent =
+            "Code sent — check your email for a magic link or 6-digit code (about 10 minutes). Check spam too. Steady never shows the code on this page.";
+        } else {
+          disp.textContent =
+            "Couldn’t email the code right now. Check the address and try again — Steady does not show codes on screen. You must receive them by email.";
+        }
       }
     } catch (e) {
       loginError(String(e.message || e));
+      if (disp) disp.hidden = true;
     } finally {
-      if (btn) btn.disabled = false;
+      if (btn) {
+        btn.disabled = false;
+        const signup =
+          document.querySelector(".auth-tab.is-active")?.getAttribute("data-tab") ===
+          "signup";
+        btn.textContent = signup ? "Send sign-up code" : "Send sign-in code";
+      }
     }
   });
 
