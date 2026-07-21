@@ -97,6 +97,31 @@
       throw lastErr || new Error("Put failed after retries");
     }
 
+    async deletePath(path) {
+      let lastErr = null;
+      for (let attempt = 0; attempt < 4; attempt++) {
+        const existing = await this.api(path, { method: "GET" });
+        if (existing.status === 404) return;
+        if (!existing.ok || !existing.json || !existing.json.sha) {
+          lastErr = new Error(`Delete lookup failed (${existing.status})`);
+          await new Promise((r) => setTimeout(r, 100 * (attempt + 1)));
+          continue;
+        }
+        const { ok, status, text } = await this.api(path, {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            message: "forget family phone from Steady web",
+            sha: existing.json.sha,
+          }),
+        });
+        if (ok || status === 404) return;
+        lastErr = new Error(`Delete failed (${status}): ${String(text).slice(0, 180)}`);
+        await new Promise((r) => setTimeout(r, 120 * (attempt + 1)));
+      }
+      throw lastErr || new Error("Delete failed after retries");
+    }
+
     policyPath(childId) {
       return `families/${this.folder}/policy/${childId}.json.enc`;
     }
@@ -280,6 +305,51 @@
         Object.assign({}, profile, { updatedAt: Date.now() }),
         "rename kid phone"
       );
+    }
+
+    /**
+     * Forget / disconnect a kid phone from the parent remote list.
+     * Removes phone profile + common per-kid remote files. Does not wipe the phone itself.
+     */
+    async forgetFamilyPhone(deviceId) {
+      const id = String(deviceId || "").trim();
+      if (!id) throw new Error("Missing device id");
+      const paths = [
+        this.phonesPath(id),
+        this.policyPath(id),
+        this.todosPath(id),
+        this.appsPath(id),
+        `families/${this.folder}/location/${id}.json.enc`,
+        `family/location/${id}.json.enc`,
+      ];
+      for (const path of paths) {
+        try {
+          await this.deletePath(path);
+        } catch (_) {}
+      }
+      // Drop from pair enrollment CSV if present.
+      try {
+        const pairPath = `family/pairs/${this.folder}.json.enc`;
+        const got = await this.getDecoded(pairPath);
+        if (got.exists && got.data) {
+          const raw = String(got.data.childDeviceIds || "");
+          const next = raw
+            .split(/[,;\s]+/)
+            .map((s) => s.trim())
+            .filter((s) => s && s !== id)
+            .join(",");
+          if (next !== raw) {
+            await this.putEncoded(
+              pairPath,
+              Object.assign({}, got.data, {
+                childDeviceIds: next,
+                updatedAt: Date.now(),
+              }),
+              "forget kid from pair"
+            );
+          }
+        }
+      } catch (_) {}
     }
   }
 
