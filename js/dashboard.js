@@ -363,6 +363,57 @@
     }
   }
 
+  function friendlyAppName(pkg) {
+    if (!pkg) return "App";
+    const last = String(pkg).split(".").pop() || pkg;
+    return last.charAt(0).toUpperCase() + last.slice(1);
+  }
+
+  function catDisplay(cat) {
+    switch (String(cat || "").toUpperCase()) {
+      case "ALWAYS_ALLOWED":
+        return "Always";
+      case "FOCUS":
+      case "FOCUS_ONLY":
+        return "Focus";
+      case "WORK":
+        return "Work";
+      case "LEARNING":
+        return "Learn";
+      case "ENTERTAINMENT":
+        return "Fun";
+      case "BLOCKED":
+        return "Never";
+      default:
+        return cat || "Unsorted";
+    }
+  }
+
+  function renderUsageFromApps(payload) {
+    const box = $("usage-box");
+    if (!box) return;
+    const apps = ((payload && payload.apps) || [])
+      .slice()
+      .sort((a, b) => String(a.label || "").localeCompare(String(b.label || "")));
+    if (!apps.length) {
+      box.innerHTML =
+        '<p class="muted">No app list yet — open Steady on the kid phone so apps sync. Full minute-by-minute usage stays on the phone under Usage.</p>';
+      return;
+    }
+    const top = apps.slice(0, 24);
+    box.innerHTML =
+      '<ul class="usage-list">' +
+      top
+        .map((app) => {
+          const name = escapeHtml(app.label || friendlyAppName(app.packageName));
+          const bucket = escapeHtml(catDisplay(app.category));
+          return `<li><strong>${name}</strong> <span class="muted">${bucket}</span></li>`;
+        })
+        .join("") +
+      "</ul>" +
+      '<p class="muted">Showing synced app names (not package codes). Open Usage on the kid phone for today’s minutes.</p>';
+  }
+
   function renderApprovals(list) {
     pendingApprovals = Array.isArray(list) ? list.slice() : [];
     const box = $("approvals-list");
@@ -377,25 +428,46 @@
       div.className = "dash-item";
       div.dataset.reqId = req.id || "";
       const kind = kindLabel(req.kind);
+      const kindUp = String(req.kind || "FUN").toUpperCase();
+      const needsMinutes =
+        kindUp === "FUN" ||
+        kindUp === "APP" ||
+        kindUp === "SITE" ||
+        kindUp === "ENTERTAINMENT";
+      const meta = needsMinutes
+        ? `${kind} · asked for ${req.requestedMinutes || "?"} min`
+        : kind;
       div.innerHTML = `<strong>${escapeHtml(req.message || req.kind || "Ask")}</strong>
-        <span class="muted">${escapeHtml(kind)} · ${req.requestedMinutes || "?"} min</span>`;
+        <span class="muted">${escapeHtml(meta)}</span>`;
       const btns = document.createElement("div");
       btns.className = "approve-btns";
-      DURATIONS.forEach((d) => {
-        const b = document.createElement("button");
-        b.type = "button";
-        b.className = "btn ghost";
-        b.textContent = d.label;
-        b.addEventListener("click", (ev) => {
-          ev.preventDefault();
-          onDecide(req, true, d.mins, b);
+      if (needsMinutes) {
+        DURATIONS.forEach((d) => {
+          const b = document.createElement("button");
+          b.type = "button";
+          b.className = "btn ghost";
+          b.textContent = d.label;
+          b.addEventListener("click", (ev) => {
+            ev.preventDefault();
+            onDecide(req, true, d.mins, b);
+          });
+          btns.appendChild(b);
         });
-        btns.appendChild(b);
-      });
+      } else {
+        const allow = document.createElement("button");
+        allow.type = "button";
+        allow.className = "btn primary";
+        allow.textContent = "Allow";
+        allow.addEventListener("click", (ev) => {
+          ev.preventDefault();
+          onDecide(req, true, req.requestedMinutes || 0, allow);
+        });
+        btns.appendChild(allow);
+      }
       const deny = document.createElement("button");
       deny.type = "button";
       deny.className = "btn ghost";
-      deny.textContent = "Deny";
+      deny.textContent = needsMinutes ? "Deny" : "Don’t allow";
       deny.addEventListener("click", (ev) => {
         ev.preventDefault();
         onDecide(req, false, 0, deny);
@@ -558,8 +630,8 @@
       const div = document.createElement("div");
       div.className = "dash-item";
       const cat = map[pkg] || app.category || "";
-      div.innerHTML = `<strong>${escapeHtml(app.label || pkg)}</strong>
-        <span class="muted">${escapeHtml(pkg)} · ${escapeHtml(cat)}</span>`;
+      div.innerHTML = `<strong>${escapeHtml(app.label || friendlyAppName(pkg))}</strong>
+        <span class="muted">${escapeHtml(catDisplay(cat))}</span>`;
       const row = document.createElement("div");
       row.className = "approve-btns";
       [
@@ -780,6 +852,7 @@
       const apps = await client.fetchApps(child);
       window.__steadyAppsPayload = apps.data || { apps: [] };
       renderApps(window.__steadyAppsPayload, policy.appOverridesJson);
+      renderUsageFromApps(window.__steadyAppsPayload);
       const loc = await client.fetchLiveLocation(child);
       const locBox = $("location-box");
       if (locBox) {
