@@ -1166,8 +1166,119 @@
         p.classList.toggle("is-active", on);
         p.hidden = !on;
       });
+      if (name === "self") renderSelfInsights();
     });
   });
+
+  function readSelfStore(key) {
+    try {
+      const raw = localStorage.getItem(key);
+      if (raw == null || raw === "") return null;
+      return raw;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function renderSelfInsights() {
+    const streakEl = $("self-streak");
+    const boostEl = $("self-boost");
+    const intentionEl = $("self-intention");
+    const streakHint = $("self-streak-hint");
+    const boostHint = $("self-boost-hint");
+    const intentionHint = $("self-intention-hint");
+    const note = $("self-note");
+    if (!streakEl && !boostEl) return;
+
+    const streak =
+      readSelfStore("steady.self.streak") ||
+      readSelfStore("steady.streak") ||
+      readSelfStore("steady.web.self.streak");
+    const boost =
+      readSelfStore("steady.self.boost") ||
+      readSelfStore("steady.self.focusBoosts") ||
+      readSelfStore("steady.web.self.boost");
+    const intention =
+      readSelfStore("steady.self.intention") ||
+      readSelfStore("steady.intention") ||
+      readSelfStore("steady.web.self.intention");
+
+    let found = false;
+    if (streakEl) {
+      if (streak != null && /^\d+$/.test(String(streak).trim())) {
+        const n = Number(streak);
+        streakEl.textContent = n === 1 ? "1 day" : `${n} days`;
+        found = true;
+        if (streakHint) streakHint.textContent = "From this browser’s saved streak";
+      } else {
+        streakEl.textContent = "—";
+        if (streakHint) streakHint.textContent = "Placeholder · days you kept the plan";
+      }
+    }
+    if (boostEl) {
+      if (boost != null && /^\d+$/.test(String(boost).trim())) {
+        const n = Number(boost);
+        boostEl.textContent = n === 1 ? "1 sprint" : `${n} sprints`;
+        found = true;
+        if (boostHint) boostHint.textContent = "From this browser’s saved focus boosts";
+      } else {
+        boostEl.textContent = "—";
+        if (boostHint) boostHint.textContent = "Placeholder · Quick Focus sprints this week";
+      }
+    }
+    if (intentionEl) {
+      const text = (intention || "").trim();
+      if (text) {
+        intentionEl.textContent = text;
+        found = true;
+        if (intentionHint) intentionHint.textContent = "Saved intention on this device";
+      } else {
+        intentionEl.textContent = "Set on Steady Home";
+        if (intentionHint) {
+          intentionHint.textContent = "Shows when this browser has a saved intention";
+        }
+      }
+    }
+    if (note) {
+      note.textContent = found
+        ? "Showing values from this browser. Parent remote stays on the other tabs — Self insights never change kid phone rules."
+        : "No Self data in this browser yet — placeholders stay ready. Parent remote stays on the other tabs.";
+    }
+  }
+
+  function wireThemeToggle() {
+    const btn = $("theme-toggle");
+    const THEME_KEY = "steady.theme";
+    const apply = (theme) => {
+      const light = theme === "light";
+      if (light) document.documentElement.setAttribute("data-theme", "light");
+      else document.documentElement.removeAttribute("data-theme");
+      try {
+        localStorage.setItem(THEME_KEY, light ? "light" : "dark");
+      } catch (_) {}
+      if (btn) {
+        btn.textContent = light ? "Dark" : "Light";
+        btn.setAttribute("aria-label", light ? "Switch to dark mode" : "Switch to light mode");
+        btn.title = light ? "Switch to dark mode" : "Switch to light mode";
+      }
+      const meta = document.querySelector('meta[name="theme-color"]');
+      if (meta) meta.setAttribute("content", light ? "#eef5f6" : "#07141a");
+    };
+    let current = "dark";
+    try {
+      current = localStorage.getItem(THEME_KEY) === "light" ? "light" : "dark";
+    } catch (_) {}
+    apply(current);
+    if (btn) {
+      btn.addEventListener("click", () => {
+        current = current === "light" ? "dark" : "light";
+        apply(current);
+      });
+    }
+  }
+
+  wireThemeToggle();
+  renderSelfInsights();
 
   // Remove old duplicate policy-form / softBreak handlers below if any — handled above.
 
