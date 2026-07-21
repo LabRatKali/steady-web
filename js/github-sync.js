@@ -42,8 +42,8 @@
       for (let attempt = 0; attempt < 4; attempt++) {
         try {
           const res = await fetch(url, {
-            ...fetchOpts,
-            cache: cacheBust ? "no-store" : fetchOpts.cache,
+            method: fetchOpts.method || "GET",
+            body: fetchOpts.body,
             headers: this.headers(
               Object.assign(
                 {
