@@ -34,9 +34,20 @@
     }
 
     async api(path, opts) {
-      const res = await fetch(`${API}/repos/${this.repo}/contents/${path}`, {
-        ...opts,
-        headers: this.headers(opts && opts.headers),
+      const options = opts || {};
+      const bust = options.cacheBust ? `?t=${Date.now()}` : "";
+      const { cacheBust, headers: extraHeaders, ...fetchOpts } = options;
+      const res = await fetch(`${API}/repos/${this.repo}/contents/${path}${bust}`, {
+        ...fetchOpts,
+        headers: this.headers(
+          Object.assign(
+            {
+              "Cache-Control": "no-cache",
+              Pragma: "no-cache",
+            },
+            extraHeaders || {}
+          )
+        ),
       });
       const text = await res.text();
       let json = null;
@@ -57,7 +68,7 @@
     }
 
     async getDecoded(path) {
-      const { ok, status, json } = await this.api(path, { method: "GET" });
+      const { ok, status, json } = await this.api(path, { method: "GET", cacheBust: true });
       if (status === 404) return { exists: false, sha: null, data: null };
       if (!ok) throw new Error(`Get failed (${status}): ${path}`);
       const b64 = String(json.content || "").replace(/\n/g, "");
