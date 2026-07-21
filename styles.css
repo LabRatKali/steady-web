@@ -649,6 +649,29 @@ main {
     linear-gradient(160deg, rgba(58, 168, 154, 0.1), rgba(255, 255, 255, 0.02));
 }
 
+.compare-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  margin-top: 1.4rem;
+}
+.compare-grid article {
+  padding: 1.1rem 1.15rem;
+  border: 1px solid rgba(126, 207, 196, 0.18);
+  border-radius: 1.1rem;
+  background: rgba(8, 22, 17, 0.35);
+}
+.compare-grid h3 {
+  margin: 0 0 0.45rem;
+  font-family: var(--display);
+  font-size: 1.15rem;
+}
+.compare-grid p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
 .aside-label {
   margin: 0;
   color: var(--mist);
