@@ -1,9 +1,9 @@
 {
-  "version": "2.11.0",
-  "versionCode": 130,
-  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.11.0/steady-2.11.0.apk",
-  "sha256": "c52a5c3f87c0eb4abe876de24ffffd8b983d81f712dfbe3fcb0eaf7e6a325734",
-  "sizeBytes": 64680489,
-  "notes": "## 2.11.0\n\n## What's new\n\nResearch-backed focus + parent remote upgrades (one sec, ScreenZen/Jolt, Qustodio/Opal patterns):\n\n- **Resisted opens** \u2014 Choosing Stay on the mindful pause counts as a win; Home shows \u201cSkipped Fun N\u00d7 today.\u201d\n- **Intention chips** \u2014 Habit / Bored / Message / Need it before Fun; optional Quick Focus alternative.\n- **Boost cool-down** \u2014 Turning Boost off requires an 8-second wait (stops impulse bypass).\n- **Daily Fun open cap** \u2014 Optional limit while Boost is on (5 / 8 / 12 / 20 / unlimited).\n- **Website routines** \u2014 School night, Weekend, Bedtime now, Focus hour (one-tap push).\n- **Today at a glance** \u2014 Pending asks, pause, forced mode, school/bedtime status on the Asks tab.\n",
+  "version": "2.12.0",
+  "versionCode": 131,
+  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.12.0/steady-2.12.0.apk",
+  "sha256": "d2b0062242da6eb7ec2a072eb2fc3f90bdedd2c6294dee45ee8dbe20c73195ee",
+  "sizeBytes": 64704773,
+  "notes": "## 2.12.0\n\n## What's new \u2014 championship pass (deep competitor research)\n\nSteady now targets #1 for **Self focus** and **parent remote** by absorbing the best patterns from one sec, ScreenZen, Opal, Family Link, and Qustodio \u2014 without Bark-style surveillance.\n\n### Self (anti-addiction)\n- **Doomscroll brake** \u2014 timed Fun sessions + cooldown (ScreenZen / one sec re-intervention)\n- **Deep Focus** \u2014 Opal-style Quick Focus that needs a cool-down to end early\n- **Type challenge** \u2014 optional Boost pause style (one sec)\n- **Focus Score** \u2014 0\u2013100 daily score from skips, Fun opens, and streak\n\n### Parent website\n- **Instant actions** \u2014 Lock Fun now, Pause/Resume internet, Clear forced mode (Family Link / Qustodio)\n- **Why Steady** landing section \u2014 clear competitive positioning\n\n_Settings \u2192 Anti-Addiction Boost for session length + pause style. Home \u22ee \u2192 Deep Focus 25 min._",
   "assetId": 0
 }
