@@ -1,9 +1,9 @@
 {
-  "version": "2.20.0",
-  "versionCode": 142,
-  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.20.0/steady-2.20.0.apk",
-  "sha256": "b4e6347afc2c7ead49370a4ecee264bd2f330a43147f604586d06fabe10e6b24",
-  "sizeBytes": 68686299,
-  "notes": "# Steady 2.20.0\n\n## League shop + AdMob\n- **Watch ad for shop points** in Steady League (parent must enable)\n- Parent controls: on/off, points per ad (3/5/8), daily ad cap (20\u201380)\n- Shop prices rebalanced so ads are the grind (e.g. 10 min Fun = 50 pts \u2248 10 ads)\n- Clean-day bonus capped low so it doesn\u2019t skip the ad grind\n- Child-directed AdMob config for younger age bands (G-rated max content)\n- DNS VPN allowlists Google Ads / AdMob hosts so rewarded ads load through Steady filter\n\n## Setup for revenue\n- Add `keys/admob.json` with your AdMob App ID + Rewarded unit ID (until then, Google test ads)\n\n## Website\n- Dashboard toggles for League ads\n- League + privacy pages updated",
+  "version": "2.20.1",
+  "versionCode": 143,
+  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.20.1/steady-2.20.1.apk",
+  "sha256": "bc1fa5fb56bb92347b1c536e3c361566f205e20f9a20ed8a7e9791e20598cf53",
+  "sizeBytes": 68686303,
+  "notes": "# Steady 2.20.1\n\n- Production AdMob App ID + Rewarded unit wired for League shop ads\n- Same League ads / shop behavior as 2.20.0",
   "assetId": 0
 }
