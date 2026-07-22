@@ -934,6 +934,39 @@ h3 {
   display: none !important;
 }
 
+.sponsor-card {
+  text-align: left;
+  padding: 0.85rem 0.95rem;
+  border-radius: 12px;
+  background: rgba(226, 203, 166, 0.08);
+  border: 1px solid rgba(226, 203, 166, 0.22);
+}
+
+.sponsor-card strong {
+  display: block;
+  font-family: var(--display);
+  color: var(--sand);
+  font-size: 1.05rem;
+  margin-bottom: 0.35rem;
+}
+
+.sponsor-card p {
+  margin: 0.35rem 0 0;
+  color: var(--mist);
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.sponsor-card .sponsor-hint {
+  font-size: 0.8rem;
+  opacity: 0.9;
+}
+
+.sponsor-card code {
+  font-size: 0.78em;
+  color: var(--accent-2);
+}
+
 .download-ready[hidden],
 .download-gate[hidden] {
   display: none !important;
