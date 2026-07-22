@@ -1,9 +1,9 @@
 {
-  "version": "2.19.0",
-  "versionCode": 140,
-  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.19.0/steady-2.19.0.apk",
-  "sha256": "0b6a05f42c2dc60fdcbf319fd3cb4228a619879a7eceb02deebdf344432d0b34",
-  "sizeBytes": 65116168,
-  "notes": "# Steady 2.19.0\n\n## Home\n- **Steady League** and **Usage** now sit in the app grid like real apps (middle of page 1) \u2014 not only in the \u22ef menu\n- **Wallpaper chooser**: phone wallpaper, custom photo, or Steady sky \u2014 with a soft forest wash so icons stay readable\n- Custom photos save on-device; blur still available on strong phones\n\n## Steady League\n- Clear **score breakdown** in the app: exactly what Focus / Work / Learn / streak / resisted opens / Fun add or subtract\n- Reward-point math shown the same way\n- Track formulas explained (Focus, Essentials, Sprint)\n- Website League page mirrors the same point system\n\n## Notes\n- Same protection model as 2.18.x \u2014 Accessibility, Always-On VPN, and locks unchanged",
+  "version": "2.19.1",
+  "versionCode": 141,
+  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.19.1/steady-2.19.1.apk",
+  "sha256": "943c6d00d5d02daa6c855cf7359f2f0c54793c308fa87e6efc028deeccda2378",
+  "sizeBytes": 65116604,
+  "notes": "# Steady 2.19.1\n\n## Notifications\n- **QuietWatch / Web filter status hidden by default** \u2014 no more persistent Steady service noise\n- Website \u201cHide Steady notifications\u201d defaults **on**; phone no longer overwrites a mute with \u201cshow\u201d\n- Silent notification channels for enforcement + DNS filter; refresh when policy changes\n\n## Apps\n- New **System** category: mark an app as untouchable \u2014 always works, never locked or grayed\n- Available in Categories on the phone and on the parent website (System button)\n- Kid app inventory now includes **system / OS packages** so the website lists everything\n\n## Notes\n- Android still requires a foreground-service notification for VPN/protection; with hide on it uses a blank, importance-none channel so it stays out of the shade on stock Android",
   "assetId": 0
 }
