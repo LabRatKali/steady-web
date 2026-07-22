@@ -1,9 +1,9 @@
 {
-  "version": "2.15.1",
-  "versionCode": 135,
-  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.15.1/steady-2.15.1.apk",
-  "sha256": "543f7d7bf3f87ae4b08196941392e740d589763f9c998a7c0dd6287530b74eea",
-  "sizeBytes": 64723641,
-  "notes": "## What's new\n\n- **Back no longer drops to stock Home:** Steady Home swallows the nav Back button (like a real launcher). Finishing Steady pulls it back for kid phones.\n- Soft Settings gate uses **one** Back only \u2014 double-Back was exiting Steady into Samsung/Pixel Home.\n- Update both phones.",
+  "version": "2.16.0",
+  "versionCode": 136,
+  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.16.0/steady-2.16.0.apk",
+  "sha256": "e23f41c6aeccacde1880da8ba95652c025de79d360071582f4b7e4dda7ca8ddd",
+  "sizeBytes": 64795996,
+  "notes": "## What's new\n\n- **Steady League** \u2014 opt-in public competition for the cleanest phone day (Opal-style leaderboard + Forest-style streaks).\n- \u22ef menu \u2192 **Steady League**: create a handle, go public, sync your clean score.\n- Score rewards Focus / Work / Learn + streaks + resisted opens; Fun minutes cost points.\n- Badges: First light, 3-day, Week clean, Month anchor, Iron will, Essentials day, Deep Focus.\n- Public board on the web: [Steady League](https://labratkali.github.io/steady-web/league.html) \u2014 anyone can view; only you can edit your profile.\n- Private by default. No messages, location, or app lists on the public card.",
   "assetId": 0
 }
