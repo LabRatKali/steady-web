@@ -1,9 +1,9 @@
 {
-  "version": "2.18.1",
-  "versionCode": 139,
-  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.18.1/steady-2.18.1.apk",
-  "sha256": "92ddcf6dfb5e8efafa51041cd26614591c662061fbccbbfafb62bb683cf8ee1b",
-  "sizeBytes": 65077572,
-  "notes": "## What's new\n\n- **Much faster** cold start \u2014 splash no longer waits 1s; Home opens from cached setup/role instantly.\n- Lighter Home: dropped SoftCard/dock GPU shadows; icon decode capped and cache no longer wiped on config.\n- Background sync throttled (locks still strong) \u2014 accrual stays snappy; GitHub polls less often.\n- Category rescan only forces once per version; Accessibility content events slightly less chatty.\n- Protection, Always-On VPN, and Accessibility locks unchanged.\n",
+  "version": "2.19.0",
+  "versionCode": 140,
+  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.19.0/steady-2.19.0.apk",
+  "sha256": "0b6a05f42c2dc60fdcbf319fd3cb4228a619879a7eceb02deebdf344432d0b34",
+  "sizeBytes": 65116168,
+  "notes": "# Steady 2.19.0\n\n## Home\n- **Steady League** and **Usage** now sit in the app grid like real apps (middle of page 1) \u2014 not only in the \u22ef menu\n- **Wallpaper chooser**: phone wallpaper, custom photo, or Steady sky \u2014 with a soft forest wash so icons stay readable\n- Custom photos save on-device; blur still available on strong phones\n\n## Steady League\n- Clear **score breakdown** in the app: exactly what Focus / Work / Learn / streak / resisted opens / Fun add or subtract\n- Reward-point math shown the same way\n- Track formulas explained (Focus, Essentials, Sprint)\n- Website League page mirrors the same point system\n\n## Notes\n- Same protection model as 2.18.x \u2014 Accessibility, Always-On VPN, and locks unchanged",
   "assetId": 0
 }
