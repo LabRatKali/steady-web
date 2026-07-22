@@ -174,7 +174,7 @@
     setToggle("tog-dating", p.blockCatDating !== false);
     setToggle("tog-gaming", !!p.blockCatGaming);
     setToggle("tog-bedtime", !!p.bedtimeEnabled);
-    setToggle("tog-hide-notifs", !!p.hideServiceNotifications);
+    setToggle("tog-hide-notifs", p.hideServiceNotifications !== false);
     const until = p.familyPauseUntil || 0;
     const pauseEl = $("pause-state");
     if (pauseEl) {
@@ -414,6 +414,8 @@
     switch (String(cat || "").toUpperCase()) {
       case "ALWAYS_ALLOWED":
         return "Always";
+      case "SYSTEM":
+        return "System";
       case "FOCUS":
       case "FOCUS_ONLY":
         return "Focus";
@@ -423,6 +425,10 @@
         return "Learn";
       case "ENTERTAINMENT":
         return "Fun";
+      case "HYBRID":
+        return "Hybrid";
+      case "TOOLS":
+        return "Tools";
       case "BLOCKED":
         return "Never";
       default:
@@ -808,22 +814,30 @@
       const div = document.createElement("div");
       div.className = "dash-item";
       const cat = map[pkg] || app.category || "";
+      const sysMark = app.isSystem ? " · OS" : "";
       div.innerHTML = `<strong>${escapeHtml(app.label || friendlyAppName(pkg))}</strong>
-        <span class="muted">${escapeHtml(catDisplay(cat))}</span>`;
+        <span class="muted">${escapeHtml(catDisplay(cat))}${sysMark}</span>
+        <span class="muted" style="font-size:0.75rem">${escapeHtml(pkg)}</span>`;
       const row = document.createElement("div");
       row.className = "approve-btns";
       [
         { cat: "ALWAYS_ALLOWED", label: "Always" },
+        { cat: "SYSTEM", label: "System" },
         { cat: "FOCUS_ONLY", label: "Focus" },
         { cat: "WORK", label: "Work" },
         { cat: "LEARNING", label: "Learn" },
         { cat: "ENTERTAINMENT", label: "Fun" },
+        { cat: "TOOLS", label: "Tools" },
         { cat: "BLOCKED", label: "Never" },
       ].forEach((opt) => {
         const b = document.createElement("button");
         b.type = "button";
         b.className = "btn ghost" + (cat === opt.cat ? " primary" : "");
         b.textContent = opt.label;
+        b.title =
+          opt.cat === "SYSTEM"
+            ? "System — always works, never locked or grayed"
+            : opt.label;
         b.addEventListener("click", () => setAppOverride(pkg, opt.cat));
         row.appendChild(b);
       });
