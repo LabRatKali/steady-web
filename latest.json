@@ -1,9 +1,9 @@
 {
-  "version": "2.18.0",
-  "versionCode": 138,
-  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.18.0/steady-2.18.0.apk",
-  "sha256": "06ed8aa1448ee3f78f7871ef9bce52bb06e9fe868dea4f7d7815d8cbd8e7a13e",
-  "sizeBytes": 65093956,
-  "notes": "## What's new\n\n- **Steady League 2.0** \u2014 competitions: Cleanest day, Focus race, Essentials only, One-day sprint.\n- Public **profile photo**, more badges, and a **reward shop** (ask parent for Full / Half / Token grants).\n- Beautiful new League web board with tabs, avatars, and rewards explainer.\n- **Always-on VPN** \u2014 Steady DNS stays connected (Device Owner lockdown + auto-reconnect on revoke/boot). No kid disconnect path.\n- Website allows apply **~5s** (faster poll + instant DNS list reload).",
+  "version": "2.18.1",
+  "versionCode": 139,
+  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.18.1/steady-2.18.1.apk",
+  "sha256": "92ddcf6dfb5e8efafa51041cd26614591c662061fbccbbfafb62bb683cf8ee1b",
+  "sizeBytes": 65077572,
+  "notes": "## What's new\n\n- **Much faster** cold start \u2014 splash no longer waits 1s; Home opens from cached setup/role instantly.\n- Lighter Home: dropped SoftCard/dock GPU shadows; icon decode capped and cache no longer wiped on config.\n- Background sync throttled (locks still strong) \u2014 accrual stays snappy; GitHub polls less often.\n- Category rescan only forces once per version; Accessibility content events slightly less chatty.\n- Protection, Always-On VPN, and Accessibility locks unchanged.\n",
   "assetId": 0
 }
