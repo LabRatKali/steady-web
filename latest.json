@@ -1,9 +1,9 @@
 {
-  "version": "2.17.0",
-  "versionCode": 137,
-  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.17.0/steady-2.17.0.apk",
-  "sha256": "7acc73b06d0408ab947e6c78a53a162905521837853a1654042357c78ecf077c",
-  "sizeBytes": 64812380,
-  "notes": "## What's new\n\n- **Full keypad / D-pad support** \u2014 hybrid touch + physical-button phones can navigate Steady with the bottom keys.\n- Home app grid, dock, folders, and widgets take focus with a clear ring; Center / Enter opens.\n- **Menu** opens the \u22ef menu; **Call** opens Phone; **End / Backspace** closes menus or exits edit.\n- Digits **1\u20139** launch icons on the current Home page; **\\*** / **#** / **0** flip pages.\n- Settings rows, League, and other Material screens use the same focus-friendly controls.",
+  "version": "2.18.0",
+  "versionCode": 138,
+  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.18.0/steady-2.18.0.apk",
+  "sha256": "06ed8aa1448ee3f78f7871ef9bce52bb06e9fe868dea4f7d7815d8cbd8e7a13e",
+  "sizeBytes": 65093956,
+  "notes": "## What's new\n\n- **Steady League 2.0** \u2014 competitions: Cleanest day, Focus race, Essentials only, One-day sprint.\n- Public **profile photo**, more badges, and a **reward shop** (ask parent for Full / Half / Token grants).\n- Beautiful new League web board with tabs, avatars, and rewards explainer.\n- **Always-on VPN** \u2014 Steady DNS stays connected (Device Owner lockdown + auto-reconnect on revoke/boot). No kid disconnect path.\n- Website allows apply **~5s** (faster poll + instant DNS list reload).",
   "assetId": 0
 }
