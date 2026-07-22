@@ -1,9 +1,9 @@
 {
-  "version": "2.20.1",
-  "versionCode": 143,
-  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.20.1/steady-2.20.1.apk",
-  "sha256": "bc1fa5fb56bb92347b1c536e3c361566f205e20f9a20ed8a7e9791e20598cf53",
-  "sizeBytes": 68686303,
-  "notes": "# Steady 2.20.1\n\n- Production AdMob App ID + Rewarded unit wired for League shop ads\n- Same League ads / shop behavior as 2.20.0",
+  "version": "2.20.2",
+  "versionCode": 144,
+  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.20.2/steady-2.20.2.apk",
+  "sha256": "dedb4ead65134ad00f4874f71fbf01f3f1d9de57615ce07a6825e05c7146739c",
+  "sizeBytes": 68688935,
+  "notes": "# Steady 2.20.2\n\n- League shop always shows **Watch ad** / Turn on ads (no League profile required)\n- Clearer prizes: shortfall (\u201cNeed X pts\u201d), Set as goal, Watch ads for this\n- Watching an ad auto-enables League ads if they were off\n- Signed-in parent remote loads AdSense for your publisher account",
   "assetId": 0
 }
