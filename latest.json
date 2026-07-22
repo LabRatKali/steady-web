@@ -1,9 +1,9 @@
 {
-  "version": "2.20.2",
-  "versionCode": 144,
-  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.20.2/steady-2.20.2.apk",
-  "sha256": "dedb4ead65134ad00f4874f71fbf01f3f1d9de57615ce07a6825e05c7146739c",
+  "version": "2.20.3",
+  "versionCode": 145,
+  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.20.3/steady-2.20.3.apk",
+  "sha256": "8f4e31ac6d6b70d206e8d5dc1937c34a40eee2b37ffd1e01214afb72b0992162",
   "sizeBytes": 68688935,
-  "notes": "# Steady 2.20.2\n\n- League shop always shows **Watch ad** / Turn on ads (no League profile required)\n- Clearer prizes: shortfall (\u201cNeed X pts\u201d), Set as goal, Watch ads for this\n- Watching an ad auto-enables League ads if they were off\n- Signed-in parent remote loads AdSense for your publisher account",
+  "notes": "# Steady 2.20.3\n\n- **System UI / Focus fix** \u2014 never shows \u201cSystem UI isn\u2019t available in Focus\u201d; OS chrome is never locked or suspended\n- League ads wait for a real load (up to ~15s) instead of instantly saying \u201cnot ready\u201d\n- Website download: short sponsor gate (\u201chelp Steady stay alive\u201d) before the APK unlocks\n- Published `app-ads.txt` for better AdMob fill",
   "assetId": 0
 }
