@@ -393,6 +393,8 @@
         return "Website";
       case "MODE":
         return "Mode";
+      case "REWARD":
+        return "League reward";
       case "GATE":
       case "SETTINGS":
       case "CATEGORIES":
@@ -469,19 +471,41 @@
       div.dataset.reqId = req.id || "";
       const kind = kindLabel(req.kind);
       const kindUp = String(req.kind || "FUN").toUpperCase();
+      const isReward = kindUp === "REWARD";
       const needsMinutes =
         kindUp === "FUN" ||
         kindUp === "APP" ||
         kindUp === "SITE" ||
         kindUp === "ENTERTAINMENT";
-      const meta = needsMinutes
-        ? `${kind} · asked for ${req.requestedMinutes || "?"} min`
-        : kind;
+      const meta = isReward
+        ? `${kind} · ask Full / Half / Token · ${req.requestedMinutes || "?"} min full`
+        : needsMinutes
+          ? `${kind} · asked for ${req.requestedMinutes || "?"} min`
+          : kind;
       div.innerHTML = `<strong>${escapeHtml(req.message || req.kind || "Ask")}</strong>
         <span class="muted">${escapeHtml(meta)}</span>`;
       const btns = document.createElement("div");
       btns.className = "approve-btns";
-      if (needsMinutes) {
+      if (isReward) {
+        const full = Math.max(0, Number(req.requestedMinutes) || 0);
+        const half = Math.max(1, Math.floor(full / 2));
+        const token = Math.max(1, Math.min(5, Math.floor(full / 4) || 3));
+        [
+          { label: full > 0 ? `Full ${full}m` : "Full", mins: full || req.requestedMinutes || 0 },
+          { label: full > 0 ? `Half ${half}m` : "Half", mins: half },
+          { label: full > 0 ? `Token ${token}m` : "Token", mins: token },
+        ].forEach((d) => {
+          const b = document.createElement("button");
+          b.type = "button";
+          b.className = "btn ghost";
+          b.textContent = d.label;
+          b.addEventListener("click", (ev) => {
+            ev.preventDefault();
+            onDecide(req, true, d.mins, b);
+          });
+          btns.appendChild(b);
+        });
+      } else if (needsMinutes) {
         DURATIONS.forEach((d) => {
           const b = document.createElement("button");
           b.type = "button";
