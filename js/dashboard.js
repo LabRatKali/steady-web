@@ -92,6 +92,16 @@
     if (navAuth) navAuth.hidden = !on;
     const navSign = $("nav-signin-link");
     if (navSign) navSign.hidden = !!on;
+    // Signed-in AdSense units → your AdMob/AdSense publisher (keys/admob.json)
+    document.querySelectorAll("[data-steady-ad]").forEach((el) => {
+      el.hidden = !on;
+      el.setAttribute("aria-hidden", on ? "false" : "true");
+    });
+    if (on && window.SteadyAdsWeb && typeof SteadyAdsWeb.showSignedInAds === "function") {
+      try {
+        SteadyAdsWeb.showSignedInAds();
+      } catch (_) {}
+    }
   }
 
   function escapeHtml(s) {
