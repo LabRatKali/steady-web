@@ -861,6 +861,88 @@ footer a:hover { color: var(--teal-soft); }
   .how-grid { grid-template-columns: 1fr; }
 }
 
+/* —— Scoring math —— */
+.scoring .score-card {
+  margin: 1.1rem 0 0;
+  padding: 1.15rem 1.25rem 1.25rem;
+  border-radius: 18px;
+  background: var(--panel-strong);
+  border: 1px solid var(--line);
+  backdrop-filter: blur(10px);
+}
+
+.scoring .score-card h3 {
+  margin: 0 0 0.75rem;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 1.2rem;
+  color: var(--sand);
+}
+
+.score-lines {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.score-lines li {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.95rem;
+}
+
+.score-lines li:last-child { border-bottom: none; }
+
+.score-lines li span:last-child {
+  color: var(--teal-soft);
+  font-weight: 600;
+  white-space: nowrap;
+  text-align: right;
+}
+
+.score-lines li.penalty span:last-child { color: #e8a0a0; }
+
+.score-note {
+  margin: 0.85rem 0 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.how-grid.compact {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.how-grid.compact li {
+  padding: 0.65rem 0.75rem;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.how-grid.compact h3 {
+  margin: 0 0 0.25rem;
+  font-size: 1rem;
+  color: var(--mist);
+}
+
+.how-grid.compact p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+@media (min-width: 720px) {
+  .how-grid.compact {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .orb,
   .row,
