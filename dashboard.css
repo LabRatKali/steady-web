@@ -23,6 +23,24 @@
   padding: 1.35rem 1.25rem 5.5rem;
 }
 
+.dash-ad-slot {
+  min-height: 0;
+  margin: 0 0 1rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 14px;
+  border: 1px dashed var(--line);
+  background: color-mix(in srgb, var(--panel) 88%, transparent);
+  overflow: hidden;
+}
+
+.dash-ad-slot:not([hidden]) {
+  min-height: 2.5rem;
+}
+
+.dash-ad-slot[hidden] {
+  display: none !important;
+}
+
 .dash-card {
   background: var(--panel);
   border: 1px solid var(--line);
