@@ -3,6 +3,8 @@ window.STEADY_RUNTIME = {
   "repo": "LabRatKali/steady-sync",
   "tokenObfHex": "0619044606163a11050d71505f27343e5c2b7b2f0118463d681f2d015955366d083153225e03546230070624487a1a373f2850314b122f06462d071e173b4b20323a1f271b102309327e2f3f57265a263d6a350728180241323212020c",
   "googleClientId": "1016955147858-s0fl8bvl5f20705doj7qhpio3211jadq.apps.googleusercontent.com",
+  "adsensePublisherId": "ca-pub-5735602888942464",
+  "adsenseSlotId": "",
   "mailer": {
     "provider": "resend",
     "apiKeyObfHex": "13152f6a1636310f2f2e5c3e571244173d5c7f2e561126475a1c0003273435461b2d1c24",
