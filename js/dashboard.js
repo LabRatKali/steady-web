@@ -175,6 +175,11 @@
     setToggle("tog-gaming", !!p.blockCatGaming);
     setToggle("tog-bedtime", !!p.bedtimeEnabled);
     setToggle("tog-hide-notifs", p.hideServiceNotifications !== false);
+    setToggle("tog-league-ads", !!p.leagueAdsEnabled);
+    const ptsEl = $("league-ad-points");
+    if (ptsEl) ptsEl.value = String(p.leagueAdPointsPerWatch || 5);
+    const capEl = $("league-ad-cap");
+    if (capEl) capEl.value = String(p.leagueAdDailyCap || 40);
     const until = p.familyPauseUntil || 0;
     const pauseEl = $("pause-state");
     if (pauseEl) {
@@ -997,6 +1002,11 @@
     policy.blockCatDating = !!($("tog-dating") && $("tog-dating").checked);
     policy.blockCatGaming = !!($("tog-gaming") && $("tog-gaming").checked);
     policy.hideServiceNotifications = !!($("tog-hide-notifs") && $("tog-hide-notifs").checked);
+    policy.leagueAdsEnabled = !!($("tog-league-ads") && $("tog-league-ads").checked);
+    const ptsSel = $("league-ad-points");
+    policy.leagueAdPointsPerWatch = Number(ptsSel && ptsSel.value) || 5;
+    const capSel = $("league-ad-cap");
+    policy.leagueAdDailyCap = Number(capSel && capSel.value) || 40;
   }
 
   async function refresh(opts) {
