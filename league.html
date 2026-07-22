@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="league.css?v=2" />
+  <link rel="stylesheet" href="league.css?v=3" />
 </head>
 <body>
   <a class="skip-link" href="#board">Skip to board</a>
@@ -155,6 +155,50 @@
       </ul>
     </section>
 
+    <section class="section scoring" aria-labelledby="scoring-heading">
+      <p class="eyebrow">The math</p>
+      <h2 id="scoring-heading">How points work</h2>
+      <p class="section-lead">Your Clean-day score is built from today’s usage. Nothing is random — every point has a source.</p>
+      <div class="score-card">
+        <h3>Clean-day score</h3>
+        <ul class="score-lines">
+          <li><span>Focus / Work / Learn</span><span>+2 per minute</span></li>
+          <li><span>Streak</span><span>+14 per day (cap 60)</span></li>
+          <li><span>Resisted Fun opens</span><span>+6 each (cap 20)</span></li>
+          <li><span>Clean-day bonus</span><span>+40 if 0 Fun and 20+ clean min</span></li>
+          <li class="penalty"><span>Fun time</span><span>−4 per minute</span></li>
+        </ul>
+        <p class="score-note">Floor 0 · ceiling 9,999. Same formula in the app and on this board.</p>
+      </div>
+      <div class="score-card">
+        <h3>Reward points (shop)</h3>
+        <ul class="score-lines">
+          <li><span>Focus</span><span>minutes ÷ 5</span></li>
+          <li><span>Work / Learn</span><span>minutes ÷ 8</span></li>
+          <li><span>Resisted Fun</span><span>+1 each</span></li>
+          <li><span>Streak</span><span>+1 per day (cap 14)</span></li>
+          <li><span>Clean bonus</span><span>+20 if 0 Fun and 30+ clean min</span></li>
+        </ul>
+      </div>
+      <div class="score-card tracks-math">
+        <h3>Other tracks</h3>
+        <ul class="how-grid compact">
+          <li>
+            <h3>Focus race</h3>
+            <p>Focus min × 3 + resisted × 4 + 80 if Deep Focus is on.</p>
+          </li>
+          <li>
+            <h3>Essentials</h3>
+            <p>Zero Fun: productive × 3 + resisted × 8 + 100. Any Fun: productive − Fun×10.</p>
+          </li>
+          <li>
+            <h3>Sprint</h3>
+            <p>Today only: (Focus+Work+Learn)×4 + resisted×10 − Fun×8. No streak.</p>
+          </li>
+        </ul>
+      </div>
+    </section>
+
     <section class="section privacy" aria-labelledby="privacy-heading">
       <p class="eyebrow">Your call</p>
       <h2 id="privacy-heading">Privacy</h2>
@@ -163,7 +207,7 @@
         <strong>aggregated stats</strong> you choose — score, streak, clean minutes, Fun penalty, badges.
         No messages, no location, no app list, no stalking.
       </p>
-      <p class="privacy-fine">Manage visibility in the Steady app: ⋯ → Steady League.</p>
+      <p class="privacy-fine">Open Steady League from the Home app icon (middle of your grid) or ⋯ → Steady League.</p>
     </section>
   </main>
 
@@ -173,6 +217,6 @@
     <a href="privacy.html">Privacy</a>
   </footer>
 
-  <script src="league.js?v=2"></script>
+  <script src="league.js?v=3"></script>
 </body>
 </html>
