@@ -1,9 +1,9 @@
 {
-  "version": "2.19.1",
-  "versionCode": 141,
-  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.19.1/steady-2.19.1.apk",
-  "sha256": "943c6d00d5d02daa6c855cf7359f2f0c54793c308fa87e6efc028deeccda2378",
-  "sizeBytes": 65116604,
-  "notes": "# Steady 2.19.1\n\n## Notifications\n- **QuietWatch / Web filter status hidden by default** \u2014 no more persistent Steady service noise\n- Website \u201cHide Steady notifications\u201d defaults **on**; phone no longer overwrites a mute with \u201cshow\u201d\n- Silent notification channels for enforcement + DNS filter; refresh when policy changes\n\n## Apps\n- New **System** category: mark an app as untouchable \u2014 always works, never locked or grayed\n- Available in Categories on the phone and on the parent website (System button)\n- Kid app inventory now includes **system / OS packages** so the website lists everything\n\n## Notes\n- Android still requires a foreground-service notification for VPN/protection; with hide on it uses a blank, importance-none channel so it stays out of the shade on stock Android",
+  "version": "2.20.0",
+  "versionCode": 142,
+  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.20.0/steady-2.20.0.apk",
+  "sha256": "b4e6347afc2c7ead49370a4ecee264bd2f330a43147f604586d06fabe10e6b24",
+  "sizeBytes": 68686299,
+  "notes": "# Steady 2.20.0\n\n## League shop + AdMob\n- **Watch ad for shop points** in Steady League (parent must enable)\n- Parent controls: on/off, points per ad (3/5/8), daily ad cap (20\u201380)\n- Shop prices rebalanced so ads are the grind (e.g. 10 min Fun = 50 pts \u2248 10 ads)\n- Clean-day bonus capped low so it doesn\u2019t skip the ad grind\n- Child-directed AdMob config for younger age bands (G-rated max content)\n- DNS VPN allowlists Google Ads / AdMob hosts so rewarded ads load through Steady filter\n\n## Setup for revenue\n- Add `keys/admob.json` with your AdMob App ID + Rewarded unit ID (until then, Google test ads)\n\n## Website\n- Dashboard toggles for League ads\n- League + privacy pages updated",
   "assetId": 0
 }
