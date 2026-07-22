@@ -3,7 +3,7 @@ async function loadLatest() {
   const apkLink = document.getElementById("apk-link");
   if (!versionLine || !apkLink) return;
 
-  const FALLBACK_VERSION = "v2.12.0";
+  const FALLBACK_VERSION = "v2.20.3";
   const template =
     versionLine.dataset.template || "Latest release: %s";
   const formatVersion = (ver) => template.replace("%s", ver);
@@ -211,6 +211,7 @@ wireNav();
 wirePathTabs();
 wireFitQuiz();
 wireStickyCta();
+wireDownloadGate();
 
 function wireFitQuiz() {
   const root = document.getElementById("fit-quiz");
@@ -289,4 +290,69 @@ function wireStickyCta() {
     { threshold: 0.2 }
   );
   observer.observe(download);
+}
+
+function wireDownloadGate() {
+  const gate = document.getElementById("download-gate");
+  const ready = document.getElementById("download-ready");
+  const btn = document.getElementById("btn-unlock-download");
+  const status = document.getElementById("download-gate-status");
+  const adHost = document.querySelector("[data-steady-download-ad]");
+  if (!gate || !ready) return;
+
+  const unlockUi = () => {
+    gate.hidden = true;
+    gate.setAttribute("hidden", "");
+    ready.hidden = false;
+    ready.removeAttribute("hidden");
+    if (status) status.textContent = "";
+  };
+
+  try {
+    if (sessionStorage.getItem("steady.downloadUnlocked") === "1") {
+      unlockUi();
+      return;
+    }
+  } catch (_) {}
+
+  if (!btn) {
+    unlockUi();
+    return;
+  }
+
+  btn.addEventListener("click", () => {
+    btn.disabled = true;
+    if (adHost) {
+      adHost.hidden = false;
+      adHost.removeAttribute("hidden");
+    }
+    if (window.SteadyAdsWeb && typeof SteadyAdsWeb.runDownloadSupportGate === "function") {
+      SteadyAdsWeb.runDownloadSupportGate({
+        statusEl: status,
+        adHost,
+        seconds: 10,
+        onUnlocked: unlockUi,
+      });
+    } else {
+      let left = 8;
+      const tick = () => {
+        if (status) {
+          status.textContent =
+            left > 0
+              ? `Thanks for supporting Steady — unlock in ${left}s.`
+              : "Unlocked — download below.";
+        }
+        if (left <= 0) {
+          try {
+            sessionStorage.setItem("steady.downloadUnlocked", "1");
+          } catch (_) {}
+          unlockUi();
+          return;
+        }
+        left -= 1;
+        window.setTimeout(tick, 1000);
+      };
+      tick();
+    }
+  });
 }
