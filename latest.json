@@ -1,9 +1,9 @@
 {
-  "version": "2.20.3",
-  "versionCode": 145,
-  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.20.3/steady-2.20.3.apk",
-  "sha256": "8f4e31ac6d6b70d206e8d5dc1937c34a40eee2b37ffd1e01214afb72b0992162",
+  "version": "2.20.4",
+  "versionCode": 146,
+  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.20.4/steady-2.20.4.apk",
+  "sha256": "7024bb28d4688ce4e92280bbafd5a2639a7373e67e336318f9f2ca24f7acc58a",
   "sizeBytes": 68688935,
-  "notes": "# Steady 2.20.3\n\n- **System UI / Focus fix** \u2014 never shows \u201cSystem UI isn\u2019t available in Focus\u201d; OS chrome is never locked or suspended\n- League ads wait for a real load (up to ~15s) instead of instantly saying \u201cnot ready\u201d\n- Website download: short sponsor gate (\u201chelp Steady stay alive\u201d) before the APK unlocks\n- Published `app-ads.txt` for better AdMob fill",
+  "notes": "# Steady 2.20.4\n\n- **Ads fill fix (app):** Age 13+ League rewarded ads no longer use full COPPA child-directed mode (that pool had almost no rewarded video). Clearer errors for network vs no inventory; one automatic retry with teen-safe ratings\n- **DNS:** Extra Google AdMob / IMA video hosts always allowed through Steady VPN\n- **Website:** `ads.txt` published; download gate no longer shows a broken \u201cenable labratkali\u2026\u201d error \u2014 sponsor card + Auto ads client; add `adsenseSlotId` for a real banner\n- Diagnostics: `python scripts/check_ads_setup.py`",
   "assetId": 0
 }
