@@ -50,7 +50,7 @@
     <section>
       <h2>Short version</h2>
       <ul class="plain">
-        <li><strong>No selling your data.</strong> Optional rewarded ads in Steady League (parent must turn them on) use Google AdMob with child-directed settings for younger age bands — not a Steady advertising profile.</li>
+        <li><strong>No selling your data.</strong> Optional rewarded ads in Steady League (parent opt-in / phone can turn on) use Google AdMob with child-directed settings for younger age bands. Signed-in parent remote may show AdSense units on your publisher account — not a Steady advertising profile.</li>
         <li>Most settings, PIN/password hashes, app timers, and Steady Face stay <strong>on the phone</strong>.</li>
         <li>Family features (pairing, rules, Approvals, to-dos) sync only when you set them up — through a private GitHub sync repo, not a Steady-owned “cloud account” product.</li>
         <li>Optional crash reports can upload error text to that same sync path so bugs can be fixed.</li>
@@ -142,7 +142,8 @@
       <h2>What we don’t do</h2>
       <ul class="plain">
         <li>No selling personal data to data brokers.</li>
-        <li>Optional <strong>Google AdMob rewarded ads</strong> only when a parent enables “League ads for shop points.” Ads use Google’s child-directed / under-age-of-consent flags and G-rated max content for younger Steady age bands. Ad requests go to Google; Steady does not sell ad profiles.</li>
+        <li>Optional <strong>Google AdMob rewarded ads</strong> in Steady League when ads are enabled (parent remote or on-device). Ads use Google’s child-directed / under-age-of-consent flags and G-rated max content for younger Steady age bands. Ad requests go to Google; Steady does not sell ad profiles.</li>
+        <li>Optional <strong>Google AdSense</strong> units on the signed-in parent remote (same Google publisher as AdMob when configured). Shown only after you sign in.</li>
         <li>No Firebase Analytics / Crashlytics-style product analytics package in the app dependencies.</li>
         <li>We don’t upload your Steady Face template or raw camera stream for family sync.</li>
         <li>We don’t upload Accessibility event streams or Usage Stats histories as a feed for third parties.</li>
@@ -167,6 +168,7 @@
         The public site is hosted for downloads and setup help. The “Leave an idea” box opens
         your own email app — it does not upload the text to a Steady web form server.
         The download page may ask GitHub’s public API for the latest release name so the version line stays current.
+        After you sign in to the parent remote, AdSense may load using your configured publisher ID so ad revenue goes to your Google Ads / AdMob account.
       </p>
     </section>
 
