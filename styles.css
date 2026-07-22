@@ -896,6 +896,53 @@ h3 {
 
 .download-panel .actions { justify-content: center; }
 
+.download-gate {
+  max-width: 28rem;
+  margin: 1.25rem auto 0.5rem;
+  padding: 1.1rem 1.15rem 1.2rem;
+  border-radius: 1.1rem;
+  border: 1px solid rgba(226, 203, 166, 0.28);
+  background: rgba(0, 0, 0, 0.22);
+  text-align: center;
+}
+
+.download-gate-lead {
+  margin: 0 0 0.85rem;
+  color: var(--mist);
+  font-size: 0.98rem;
+  line-height: 1.45;
+}
+
+.download-gate-lead strong {
+  color: var(--sand);
+  display: block;
+  margin-bottom: 0.25rem;
+  font-family: var(--display);
+  font-size: 1.15rem;
+}
+
+.download-ad {
+  min-height: 90px;
+  margin: 0.75rem 0 1rem;
+  padding: 0.5rem;
+  border-radius: 12px;
+  border: 1px dashed var(--line);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.download-ad[hidden] {
+  display: none !important;
+}
+
+.download-ready[hidden],
+.download-gate[hidden] {
+  display: none !important;
+}
+
+.download-ready .actions {
+  margin-top: 0.5rem;
+}
+
 .fine {
   color: var(--muted);
   font-size: 0.92rem;
