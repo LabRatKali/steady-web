@@ -249,6 +249,27 @@
                   <span><strong>Hide Steady notifications</strong><small>Quiet watch / filter status — on by default</small></span>
                   <input type="checkbox" id="tog-hide-notifs" data-policy="hideServiceNotifications" checked />
                 </label>
+                <label class="toggle-row">
+                  <span><strong>League ads for shop points</strong><small>Kid watches rewarded ads in Steady League</small></span>
+                  <input type="checkbox" id="tog-league-ads" data-policy="leagueAdsEnabled" />
+                </label>
+                <label class="field-row">
+                  <span>Points per ad</span>
+                  <select id="league-ad-points">
+                    <option value="3">3 pts</option>
+                    <option value="5" selected>5 pts</option>
+                    <option value="8">8 pts</option>
+                  </select>
+                </label>
+                <label class="field-row">
+                  <span>Max ads per day</span>
+                  <select id="league-ad-cap">
+                    <option value="20">20</option>
+                    <option value="40" selected>40</option>
+                    <option value="60">60</option>
+                    <option value="80">80</option>
+                  </select>
+                </label>
               </div>
             </article>
 
