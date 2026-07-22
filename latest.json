@@ -1,9 +1,9 @@
 {
-  "version": "2.16.0",
-  "versionCode": 136,
-  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.16.0/steady-2.16.0.apk",
-  "sha256": "e23f41c6aeccacde1880da8ba95652c025de79d360071582f4b7e4dda7ca8ddd",
-  "sizeBytes": 64795996,
-  "notes": "## What's new\n\n- **Steady League** \u2014 opt-in public competition for the cleanest phone day (Opal-style leaderboard + Forest-style streaks).\n- \u22ef menu \u2192 **Steady League**: create a handle, go public, sync your clean score.\n- Score rewards Focus / Work / Learn + streaks + resisted opens; Fun minutes cost points.\n- Badges: First light, 3-day, Week clean, Month anchor, Iron will, Essentials day, Deep Focus.\n- Public board on the web: [Steady League](https://labratkali.github.io/steady-web/league.html) \u2014 anyone can view; only you can edit your profile.\n- Private by default. No messages, location, or app lists on the public card.",
+  "version": "2.17.0",
+  "versionCode": 137,
+  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.17.0/steady-2.17.0.apk",
+  "sha256": "7acc73b06d0408ab947e6c78a53a162905521837853a1654042357c78ecf077c",
+  "sizeBytes": 64812380,
+  "notes": "## What's new\n\n- **Full keypad / D-pad support** \u2014 hybrid touch + physical-button phones can navigate Steady with the bottom keys.\n- Home app grid, dock, folders, and widgets take focus with a clear ring; Center / Enter opens.\n- **Menu** opens the \u22ef menu; **Call** opens Phone; **End / Backspace** closes menus or exits edit.\n- Digits **1\u20139** launch icons on the current Home page; **\\*** / **#** / **0** flip pages.\n- Settings rows, League, and other Material screens use the same focus-friendly controls.",
   "assetId": 0
 }
