@@ -207,9 +207,15 @@
     }
 
     if (rewardHtml()) {
-      injectRewardToBody(rewardHtml());
+      const stage =
+        document.getElementById("steady-ad-stage") ||
+        document.getElementById("steady-reward-slot") ||
+        document.querySelector("[data-steady-reward-slot]");
+      if (stage) injectHtml(stage, rewardHtml());
+      else injectRewardToBody(rewardHtml());
     } else if (bannerHtml() && !scriptUrl()) {
       const host =
+        document.getElementById("steady-ad-stage") ||
         document.getElementById("steady-reward-slot") ||
         document.querySelector("[data-steady-reward-slot]");
       if (host) injectHtml(host, bannerHtml());
