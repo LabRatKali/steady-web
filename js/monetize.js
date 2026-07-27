@@ -274,59 +274,32 @@
     const html = bannerHtml();
     if (html) {
       injectHtml(host, html);
-      // Soft retry once if the slot stays empty (common no-fill).
       window.setTimeout(() => {
         if (!host.isConnected) return;
-        const hasFrame = host.querySelector("iframe, ins, [id^='container-']");
-        if (!hasFrame && html) {
+        const hasMedia = host.querySelector("iframe, img, ins, [id^='container-'] > *");
+        if (!hasMedia && html) {
           delete host.dataset.mounted;
           injectHtml(host, html);
           host.dataset.mounted = "1";
         }
-      }, 2500);
+      }, 2800);
       return;
     }
+    // No placeholder card — leave slot empty rather than fake “Help Steady” chrome.
     host.innerHTML = "";
   }
 
   /**
-   * Download section: show sponsors quietly, unlock after a hidden wait.
-   * Every page load remounts ads (no cookie clear needed).
+   * Legacy helper — download gate now lives in site.js (per-refresh lock).
+   * Still remounts banners when called.
    */
   function runDownloadSupportGate(options) {
     const opts = options || {};
-    const statusEl = opts.statusEl || null;
     const adHost = opts.adHost || document.querySelector("[data-steady-ad]");
-    const seconds = Math.max(4, Number(opts.seconds) || 6);
-    const storageKey = opts.storageKey || "steady.downloadUnlocked";
+    if (adHost) mountBanner(adHost, { force: true });
     const onUnlocked = typeof opts.onUnlocked === "function" ? opts.onUnlocked : () => {};
-    const keepAds = opts.keepAds !== false;
-
-    if (adHost) {
-      mountBanner(adHost, { force: true });
-    }
-
-    let already = false;
-    try {
-      already = sessionStorage.getItem(storageKey) === "1";
-    } catch (_) {}
-
-    // Never show a countdown — unlock quietly.
-    if (statusEl) statusEl.textContent = "";
-
-    if (already) {
-      onUnlocked();
-      if (keepAds && adHost) mountBanner(adHost, { force: true });
-      return;
-    }
-
-    window.setTimeout(() => {
-      try {
-        sessionStorage.setItem(storageKey, "1");
-      } catch (_) {}
-      onUnlocked();
-      if (keepAds && adHost) mountBanner(adHost, { force: true });
-    }, seconds * 1000);
+    const seconds = Math.max(4, Number(opts.seconds) || 8);
+    window.setTimeout(onUnlocked, seconds * 1000);
   }
 
   function showSignedInAds() {
