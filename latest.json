@@ -2,8 +2,8 @@
   "version": "2.21.7",
   "versionCode": 154,
   "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.21.7/steady-2.21.7.apk",
-  "sha256": "6b3dbe0db44ce3de589885ac3c68ecfc88ee6d23464f3a90d930e908ee31d118",
-  "sizeBytes": 66256264,
+  "sha256": "9814cf38c0459c6a7fb87ade15059cd5085d4c7d30ad3f19d3a0694ada2977aa",
+  "sizeBytes": 48147882,
   "notes": "# Steady 2.21.7\n\n- In-app sponsors are display-only: they can show, but taps cannot open the browser, Play Store, or popups\n- Removed network-name scrubbing JS; load timeout + error handling so the sponsor screen cannot hang forever\n- League sponsors stay off by default; when off, the shop UI is calm (no dead Watch-ad buttons)\n- Website trust/FAQ copy matches reality (optional sponsors, no product-analytics SDK)\n- Release builds use R8 minify + resource shrinking for a lighter, faster APK",
   "assetId": 0
 }
