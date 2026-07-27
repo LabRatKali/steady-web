@@ -2,50 +2,155 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Steady · Sponsor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Manrope:wght@500;700&display=swap" rel="stylesheet" />
   <style>
-    :root { color-scheme: dark; }
+    :root {
+      color-scheme: dark;
+      --bg: #0c1b15;
+      --card: rgba(255, 255, 255, 0.045);
+      --line: rgba(244, 248, 245, 0.12);
+      --ink: #f4f8f5;
+      --mist: #a8b9b0;
+      --teal: #3dcf8a;
+      --sand: #e2cba6;
+      --err: #e8a0a0;
+    }
+    * { box-sizing: border-box; }
     body {
-      margin: 0; min-height: 100vh; display: grid; place-items: center;
+      margin: 0;
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: grid;
+      place-items: center;
       font-family: Manrope, system-ui, sans-serif;
-      background: #0c1b15; color: #f4f8f5; padding: 1.25rem;
+      background:
+        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(61, 207, 138, 0.18), transparent 55%),
+        var(--bg);
+      color: var(--ink);
+      padding: 1.25rem;
     }
     .card {
-      max-width: 26rem; width: 100%;
-      border: 1px solid rgba(244,248,245,0.12);
-      border-radius: 1rem; padding: 1.25rem 1.35rem;
-      background: rgba(255,255,255,0.04);
+      max-width: 22rem;
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 1.15rem;
+      padding: 1.35rem 1.4rem 1.25rem;
+      background: var(--card);
+      backdrop-filter: blur(8px);
+      text-align: center;
     }
-    h1 { font-family: Fraunces, Georgia, serif; font-size: 1.35rem; margin: 0 0 0.5rem; }
-    p { color: #a8b9b0; line-height: 1.45; margin: 0.4rem 0; }
+    h1 {
+      font-family: Fraunces, Georgia, serif;
+      font-size: 1.45rem;
+      font-weight: 600;
+      margin: 0 0 0.4rem;
+      letter-spacing: -0.02em;
+    }
+    .lede {
+      color: var(--mist);
+      line-height: 1.45;
+      margin: 0 0 1.1rem;
+      font-size: 0.95rem;
+    }
+    .progress-track {
+      height: 6px;
+      border-radius: 999px;
+      background: rgba(244, 248, 245, 0.08);
+      overflow: hidden;
+      margin: 0 0 0.85rem;
+    }
+    .progress-track > span {
+      display: block;
+      height: 100%;
+      width: 0%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #2a9b6a, var(--teal));
+      transition: width 0.35s ease;
+    }
+    #steady-watch-tick {
+      margin: 0;
+      min-height: 1.4em;
+      color: var(--sand);
+      font-weight: 700;
+      font-size: 1.05rem;
+    }
+    #status {
+      margin: 0.55rem 0 0;
+      min-height: 1.25em;
+      font-size: 0.9rem;
+      color: var(--mist);
+    }
+    #status.ok { color: #8ee0b8; }
+    #status.err { color: var(--err); }
+    .actions {
+      display: grid;
+      gap: 0.45rem;
+      margin-top: 1.15rem;
+    }
     button {
-      margin-top: 1rem; width: 100%; border: 0; border-radius: 999px;
-      padding: 0.85rem 1rem; font-weight: 700; cursor: pointer;
-      background: #3dcf8a; color: #042316;
+      width: 100%;
+      border: 0;
+      border-radius: 999px;
+      padding: 0.9rem 1rem;
+      font-weight: 700;
+      font-size: 0.98rem;
+      font-family: inherit;
+      cursor: pointer;
     }
-    button:disabled { opacity: 0.55; cursor: wait; }
-    .err { color: #e8a0a0; }
-    .ok { color: #8ee0b8; }
+    #btn {
+      background: var(--teal);
+      color: #042316;
+    }
+    #btn:disabled { opacity: 0.5; cursor: wait; }
+    #btn[hidden], #steady-watch-done[hidden] { display: none !important; }
+    #steady-watch-done {
+      background: var(--teal);
+      color: #042316;
+    }
+    #steady-watch-done:disabled {
+      opacity: 0.45;
+      cursor: wait;
+      background: rgba(61, 207, 138, 0.35);
+      color: rgba(244, 248, 245, 0.7);
+    }
+    #btn-skip {
+      background: transparent;
+      color: var(--mist);
+      font-weight: 600;
+      padding: 0.55rem;
+    }
+    #steady-reward-slot { display: none; }
   </style>
   <script src="js/runtime-config.js"></script>
 </head>
 <body>
   <div class="card">
     <h1>Help Steady stay alive</h1>
-    <p id="lede">Watch a short sponsor (Adsterra / Monetag / Hilltop — crypto payouts, not Google). Then you earn League shop points.</p>
+    <p class="lede" id="lede">A short sponsor keeps Steady free. Then you earn League shop points.</p>
+    <div class="progress-track" aria-hidden="true"><span id="steady-watch-progress"></span></div>
+    <p id="steady-watch-tick" hidden>Ready when you are.</p>
     <div id="steady-reward-slot" data-steady-reward-slot></div>
-    <p id="status" class="ok"></p>
-    <button type="button" id="btn">Watch sponsor</button>
-    <button type="button" id="btn-skip" style="background:transparent;color:#a8b9b0;margin-top:0.5rem">Cancel</button>
+    <p id="status"></p>
+    <div class="actions">
+      <button type="button" id="btn">Watch sponsor</button>
+      <button type="button" id="steady-watch-done" hidden disabled>Continue</button>
+      <button type="button" id="btn-skip">Cancel</button>
+    </div>
   </div>
-  <script src="js/monetize.js?v=3"></script>
+  <script src="js/monetize.js?v=4"></script>
   <script>
     (function () {
       const status = document.getElementById("status");
       const btn = document.getElementById("btn");
       const skip = document.getElementById("btn-skip");
+      const tick = document.getElementById("steady-watch-tick");
+      const done = document.getElementById("steady-watch-done");
       const M = window.SteadyMonetizeWeb;
+      const fromApp = !!(window.SteadyNative);
 
       function native(fn, arg) {
         try {
@@ -60,6 +165,9 @@
       function earned() {
         status.textContent = "Thanks — reward unlocked.";
         status.className = "ok";
+        tick.hidden = true;
+        done.hidden = true;
+        btn.hidden = true;
         if (!native("rewardEarned")) {
           location.href = "steady://rewarded";
         }
@@ -68,44 +176,54 @@
       function failed(msg) {
         status.textContent = msg || "Sponsor unavailable.";
         status.className = "err";
-        if (!native("rewardFailed", msg || "Sponsor unavailable")) {
-          /* stay on page so user can retry */
-        }
+        btn.hidden = false;
+        btn.disabled = false;
+        btn.textContent = "Try again";
+        done.hidden = true;
+        tick.hidden = true;
       }
 
       skip.addEventListener("click", () => {
         if (!native("rewardCancelled")) location.href = "steady://cancel";
       });
 
-      btn.addEventListener("click", async () => {
+      async function run() {
         btn.disabled = true;
-        status.textContent = "Loading sponsor…";
-        status.className = "ok";
+        btn.hidden = true;
+        tick.hidden = false;
+        tick.textContent = "Loading sponsor…";
+        status.textContent = "";
+        status.className = "";
+        if (!fromApp) {
+          done.hidden = false;
+          done.disabled = true;
+        }
         try {
-          const ok = await M.showRewarded();
+          const ok = await M.showRewarded({
+            autoComplete: fromApp,
+            statusEl: status,
+            tickEl: tick,
+            doneBtn: fromApp ? null : done,
+            progressEl: document.getElementById("steady-watch-progress"),
+          });
           if (ok) earned();
           else failed("No sponsor right now — try again in a minute.");
         } catch (e) {
           failed(String(e && e.message ? e.message : e));
-        } finally {
-          btn.disabled = false;
         }
-      });
+      }
+
+      btn.addEventListener("click", run);
 
       if (!M || !M.isAppConfigured()) {
-        status.textContent =
-          "Publisher keys not on this site yet. Add keys/monetize.json and republish (docs/MONETIZE_SETUP.md).";
+        status.textContent = "Sponsors aren’t set up on this site yet.";
         status.className = "err";
         btn.disabled = true;
         return;
       }
 
-      // In-app WebView: start sponsor automatically so League Watch ad needs one less tap.
-      const fromApp = !!(window.SteadyNative);
       const auto = /(?:\?|&)auto=1(?:&|$)/.test(location.search) || fromApp;
-      if (auto) {
-        setTimeout(() => btn.click(), 400);
-      }
+      if (auto) setTimeout(run, 280);
     })();
   </script>
 </body>
