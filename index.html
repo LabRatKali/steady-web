@@ -339,16 +339,17 @@
         <div id="download-gate" class="download-gate">
           <p class="download-gate-lead">
             <strong>Help Steady stay alive.</strong>
-            A short sponsor break keeps this download free.
+            A short sponsor keeps this download free.
           </p>
-          <div class="download-ad" data-steady-ad data-steady-download-ad hidden></div>
+          <div class="download-ad" data-steady-ad data-steady-download-ad aria-hidden="false"></div>
           <button class="btn primary" type="button" id="btn-unlock-download">
-            Watch sponsor · unlock download
+            Continue to download
           </button>
-          <p class="fine" id="download-gate-status"></p>
+          <p class="fine" id="download-gate-status" hidden></p>
         </div>
 
         <div id="download-ready" class="download-ready" hidden>
+          <div class="download-ad download-ad--after" data-steady-ad data-steady-support-ad aria-hidden="false"></div>
           <div class="actions">
             <a class="btn primary" id="apk-link" href="https://github.com/LabRatKali/steady-web/releases/latest/download/steady-latest.apk">Download APK</a>
             <a class="btn ghost" href="setup.html">Setup guide</a>
@@ -551,7 +552,7 @@
   </div>
 
   <script src="js/runtime-config.js?v=8"></script>
-  <script src="js/monetize.js?v=4"></script>
+  <script src="js/monetize.js?v=5"></script>
   <script src="site.js?v=19"></script>
 </body>
 </html>
