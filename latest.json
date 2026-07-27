@@ -1,9 +1,9 @@
 {
-  "version": "2.21.5",
-  "versionCode": 152,
-  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.21.5/steady-2.21.5.apk",
-  "sha256": "0c331076757c3f24abdf76bf211bc09ba399312b6c3a30918abea963a7ee2007",
+  "version": "2.21.6",
+  "versionCode": 153,
+  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.21.6/steady-2.21.6.apk",
+  "sha256": "b67ad8387976ad7d25e0e547467076f38cd532833d539537170a64c9d7622c3b",
   "sizeBytes": 66237968,
-  "notes": "## Steady 2.21.5\n\n- Fix blank white Home after rapid Home / Recents / Back (debounced reclaim + dark window)\n- Watch ad is a real in-app sponsor screen (no white flash, no network jargon)\n- Sponsor page shows visible banners so you can actually see ads load\n- Home wallpaper decode moved off the UI thread; menus clear on pause",
+  "notes": "## Steady 2.21.6\n\n- Download page quietly shows sponsors on every refresh (no cookie clear, no visible countdown)\n- Expanded DNS always-allow for Google Play / Gmail / Drive / Maps / Photos / FCM essentials\n- Sponsor CDN hosts stay allowed through the filter; entertainment sites (YouTube/TikTok) are not punched open",
   "assetId": 0
 }
