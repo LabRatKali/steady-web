@@ -298,6 +298,7 @@ function wireDownloadGate() {
   const btn = document.getElementById("btn-unlock-download");
   const status = document.getElementById("download-gate-status");
   const adHost = document.querySelector("[data-steady-download-ad]");
+  const supportAd = document.querySelector("[data-steady-support-ad]");
   if (!gate || !ready) return;
 
   const unlockUi = () => {
@@ -306,7 +307,16 @@ function wireDownloadGate() {
     ready.hidden = false;
     ready.removeAttribute("hidden");
     if (status) status.textContent = "";
+    // Fresh sponsor after unlock / on each visit — no cookie clear needed.
+    if (window.SteadyMonetizeWeb && supportAd) {
+      SteadyMonetizeWeb.mountBanner(supportAd, { force: true });
+    }
   };
+
+  // Always remount download-slot ads on this page load (refresh = new request).
+  if (window.SteadyMonetizeWeb && adHost) {
+    SteadyMonetizeWeb.mountBanner(adHost, { force: true });
+  }
 
   try {
     if (sessionStorage.getItem("steady.downloadUnlocked") === "1") {
@@ -315,51 +325,30 @@ function wireDownloadGate() {
     }
   } catch (_) {}
 
-  if (!btn) {
-    unlockUi();
-    return;
-  }
-
-  btn.addEventListener("click", () => {
-    btn.disabled = true;
-    if (adHost) {
-      adHost.hidden = false;
-      adHost.removeAttribute("hidden");
-    }
+  // Quiet auto-unlock — no visible countdown.
+  const startQuietUnlock = () => {
     if (window.SteadyMonetizeWeb && typeof SteadyMonetizeWeb.runDownloadSupportGate === "function") {
       SteadyMonetizeWeb.runDownloadSupportGate({
-        statusEl: status,
+        statusEl: null,
         adHost,
-        seconds: 8,
-        onUnlocked: unlockUi,
-      });
-    } else if (window.SteadyAdsWeb && typeof SteadyAdsWeb.runDownloadSupportGate === "function") {
-      SteadyAdsWeb.runDownloadSupportGate({
-        statusEl: status,
-        adHost,
-        seconds: 8,
+        seconds: 5,
+        keepAds: true,
         onUnlocked: unlockUi,
       });
     } else {
-      let left = 8;
-      const tick = () => {
-        if (status) {
-          status.textContent =
-            left > 0
-              ? `Thanks for supporting Steady — unlock in ${left}s.`
-              : "Unlocked — download below.";
-        }
-        if (left <= 0) {
-          try {
-            sessionStorage.setItem("steady.downloadUnlocked", "1");
-          } catch (_) {}
-          unlockUi();
-          return;
-        }
-        left -= 1;
-        window.setTimeout(tick, 1000);
-      };
-      tick();
+      window.setTimeout(unlockUi, 5000);
     }
-  });
+  };
+
+  if (btn) {
+    btn.addEventListener("click", () => {
+      btn.disabled = true;
+      unlockUi();
+      try {
+        sessionStorage.setItem("steady.downloadUnlocked", "1");
+      } catch (_) {}
+    });
+  }
+
+  startQuietUnlock();
 }
