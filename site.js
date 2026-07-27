@@ -3,7 +3,7 @@ async function loadLatest() {
   const apkLink = document.getElementById("apk-link");
   if (!versionLine || !apkLink) return;
 
-  const FALLBACK_VERSION = "v2.20.4";
+  const FALLBACK_VERSION = "v2.21.0";
   const template =
     versionLine.dataset.template || "Latest release: %s";
   const formatVersion = (ver) => template.replace("%s", ver);
@@ -326,11 +326,18 @@ function wireDownloadGate() {
       adHost.hidden = false;
       adHost.removeAttribute("hidden");
     }
-    if (window.SteadyAdsWeb && typeof SteadyAdsWeb.runDownloadSupportGate === "function") {
+    if (window.SteadyMonetizeWeb && typeof SteadyMonetizeWeb.runDownloadSupportGate === "function") {
+      SteadyMonetizeWeb.runDownloadSupportGate({
+        statusEl: status,
+        adHost,
+        seconds: 8,
+        onUnlocked: unlockUi,
+      });
+    } else if (window.SteadyAdsWeb && typeof SteadyAdsWeb.runDownloadSupportGate === "function") {
       SteadyAdsWeb.runDownloadSupportGate({
         statusEl: status,
         adHost,
-        seconds: 10,
+        seconds: 8,
         onUnlocked: unlockUi,
       });
     } else {
