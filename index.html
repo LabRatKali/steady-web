@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=32" />
+  <link rel="stylesheet" href="styles.css?v=33" />
 </head>
 <body>
   <a class="skip-link" href="#download">Skip to download</a>
@@ -336,36 +336,30 @@
           family to-dos, school hours.
         </p>
 
-        <div id="download-gate" class="download-gate">
-          <p class="download-gate-lead">
-            <strong>Help Steady stay alive.</strong>
-            A short sponsor keeps this download free.
-          </p>
-          <div class="download-ad" data-steady-ad data-steady-download-ad aria-hidden="false"></div>
-          <button class="btn primary" type="button" id="btn-unlock-download">
-            Continue to download
-          </button>
-          <p class="fine" id="download-gate-status" hidden></p>
+        <div id="download-support" class="download-support">
+          <div
+            class="download-ad download-ad--slim"
+            data-steady-ad
+            data-steady-download-ad
+            id="download-ad-slot"
+          ></div>
+          <a
+            class="btn primary is-locked"
+            id="apk-link"
+            href="#"
+            aria-disabled="true"
+            data-apk-url="https://github.com/LabRatKali/steady-web/releases/latest/download/steady-latest.apk"
+          >Download APK</a>
+          <p class="fine download-lock-note" id="download-gate-status"></p>
         </div>
 
-        <div id="download-ready" class="download-ready" hidden>
-          <div class="download-ad download-ad--after" data-steady-ad data-steady-support-ad aria-hidden="false"></div>
-          <div class="actions">
-            <a class="btn primary" id="apk-link" href="https://github.com/LabRatKali/steady-web/releases/latest/download/steady-latest.apk">Download APK</a>
-            <a class="btn ghost" href="setup.html">Setup guide</a>
-            <a class="btn ghost" href="privacy.html">Privacy</a>
-          </div>
-        </div>
-
-        <p class="fine" id="version-line" data-template="Latest release: %s">Latest release: v2.21.0</p>
+        <p class="fine" id="version-line" data-template="Latest release: %s">Latest release: v2.21.6</p>
         <p class="fine sideload-note">
           Android will show a security warning because this isn’t from the Play Store —
           that’s expected for a direct APK. Allow install from this browser when asked.
         </p>
         <p class="fine">Read the <a href="privacy.html">privacy policy</a> before installing on a child’s phone.</p>
       </div>
-    </section>
-
     </section>
 
     <section id="why-steady" class="block reveal">
@@ -551,8 +545,8 @@
     <a class="btn primary" href="#download">Get the APK</a>
   </div>
 
-  <script src="js/runtime-config.js?v=8"></script>
-  <script src="js/monetize.js?v=5"></script>
-  <script src="site.js?v=19"></script>
+  <script src="js/runtime-config.js?v=9"></script>
+  <script src="js/monetize.js?v=6"></script>
+  <script src="site.js?v=20"></script>
 </body>
 </html>
