@@ -122,8 +122,10 @@
       document.getElementById("steady-reward-slot") ||
       document.querySelector("[data-steady-reward-slot]");
 
-    if (rewardHtml() && host) {
-      injectHtml(host, rewardHtml());
+    // Social Bar / interstitial scripts prefer document body (Adsterra guidance).
+    const rewardTarget = host || document.body;
+    if (rewardHtml()) {
+      injectHtml(rewardTarget, rewardHtml());
     } else if (bannerHtml() && host && !scriptUrl()) {
       injectHtml(host, bannerHtml());
     }
