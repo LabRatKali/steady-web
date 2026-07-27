@@ -1,9 +1,9 @@
 {
-  "version": "2.21.3",
-  "versionCode": 150,
-  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.21.3/steady-2.21.3.apk",
-  "sha256": "dc4672662d43cd16f3556bb7f98a66e5125edf2eca8012eaa34d96ccc6b71d9f",
+  "version": "2.21.4",
+  "versionCode": 151,
+  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.21.4/steady-2.21.4.apk",
+  "sha256": "2ac25b9f6fc8fab5b1935ceff547cd079964c917b6e3448f5f0bd3ccf4d0d6dd",
   "sizeBytes": 66237768,
-  "notes": "## Steady 2.21.3\n\n- Cleaner Watch-ad screen (one progress flow, no messy double buttons)\n- User-facing copy no longer mentions ad networks or payment tech\n- League Watch ad respects parent opt-in (kids can\u2019t self-enable)\n- WebView cleaned up after each sponsor session",
+  "notes": "## Steady 2.21.4\n\n- Watch-ad page uses a fresh sponsor URL so Workers cache can\u2019t show the old messy copy\n- Same clean sponsor flow and plain language as 2.21.3",
   "assetId": 0
 }
