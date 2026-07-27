@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Steady · Sponsor</title>
+  <style>
+    :root { color-scheme: dark; }
+    body {
+      margin: 0; min-height: 100vh; display: grid; place-items: center;
+      font-family: Manrope, system-ui, sans-serif;
+      background: #0c1b15; color: #f4f8f5; padding: 1.25rem;
+    }
+    .card {
+      max-width: 26rem; width: 100%;
+      border: 1px solid rgba(244,248,245,0.12);
+      border-radius: 1rem; padding: 1.25rem 1.35rem;
+      background: rgba(255,255,255,0.04);
+    }
+    h1 { font-family: Fraunces, Georgia, serif; font-size: 1.35rem; margin: 0 0 0.5rem; }
+    p { color: #a8b9b0; line-height: 1.45; margin: 0.4rem 0; }
+    button {
+      margin-top: 1rem; width: 100%; border: 0; border-radius: 999px;
+      padding: 0.85rem 1rem; font-weight: 700; cursor: pointer;
+      background: #3dcf8a; color: #042316;
+    }
+    button:disabled { opacity: 0.55; cursor: wait; }
+    .err { color: #e8a0a0; }
+    .ok { color: #8ee0b8; }
+  </style>
+  <script src="js/runtime-config.js"></script>
+</head>
+<body>
+  <div class="card">
+    <h1>Help Steady stay alive</h1>
+    <p id="lede">Watch a short sponsor message. Revenue goes to Steady’s crypto publisher account — not Google Ads.</p>
+    <p id="status" class="ok"></p>
+    <button type="button" id="btn">Watch sponsor</button>
+    <button type="button" id="btn-skip" style="background:transparent;color:#a8b9b0;margin-top:0.5rem">Cancel</button>
+  </div>
+  <script src="js/monetize.js?v=1"></script>
+  <script>
+    (function () {
+      const status = document.getElementById("status");
+      const btn = document.getElementById("btn");
+      const skip = document.getElementById("btn-skip");
+      const M = window.SteadyMonetizeWeb;
+
+      function native(fn, arg) {
+        try {
+          if (window.SteadyNative && typeof window.SteadyNative[fn] === "function") {
+            window.SteadyNative[fn](arg);
+            return true;
+          }
+        } catch (_) {}
+        return false;
+      }
+
+      function earned() {
+        status.textContent = "Thanks — reward unlocked.";
+        status.className = "ok";
+        if (!native("rewardEarned")) {
+          location.href = "steady://rewarded";
+        }
+      }
+
+      function failed(msg) {
+        status.textContent = msg || "Sponsor unavailable.";
+        status.className = "err";
+        if (!native("rewardFailed", msg || "Sponsor unavailable")) {
+          /* stay on page so user can retry */
+        }
+      }
+
+      skip.addEventListener("click", () => {
+        if (!native("rewardCancelled")) location.href = "steady://cancel";
+      });
+
+      btn.addEventListener("click", async () => {
+        btn.disabled = true;
+        status.textContent = "Loading sponsor…";
+        status.className = "ok";
+        try {
+          const ok = await M.showRewarded();
+          if (ok) earned();
+          else failed("No sponsor right now — try again in a minute.");
+        } catch (e) {
+          failed(String(e && e.message ? e.message : e));
+        } finally {
+          btn.disabled = false;
+        }
+      });
+
+      if (!M || !M.isAppConfigured()) {
+        status.textContent =
+          "Publisher keys not on this site yet. Add keys/monetize.json and republish (docs/MONETIZE_SETUP.md).";
+        status.className = "err";
+        btn.disabled = true;
+      }
+    })();
+  </script>
+</body>
+</html>
