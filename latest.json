@@ -1,9 +1,9 @@
 {
-  "version": "2.20.4",
-  "versionCode": 146,
-  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.20.4/steady-2.20.4.apk",
-  "sha256": "7024bb28d4688ce4e92280bbafd5a2639a7373e67e336318f9f2ca24f7acc58a",
-  "sizeBytes": 68688935,
-  "notes": "# Steady 2.20.4\n\n- **Ads fill fix (app):** Age 13+ League rewarded ads no longer use full COPPA child-directed mode (that pool had almost no rewarded video). Clearer errors for network vs no inventory; one automatic retry with teen-safe ratings\n- **DNS:** Extra Google AdMob / IMA video hosts always allowed through Steady VPN\n- **Website:** `ads.txt` published; download gate no longer shows a broken \u201cenable labratkali\u2026\u201d error \u2014 sponsor card + Auto ads client; add `adsenseSlotId` for a real banner\n- Diagnostics: `python scripts/check_ads_setup.py`",
+  "version": "2.21.0",
+  "versionCode": 147,
+  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.21.0/steady-2.21.0.apk",
+  "sha256": "c7f57a34d44464428228d109ddfae3aeecf7e89418da4d59e1f1f64511ef6581",
+  "sizeBytes": 66237848,
+  "notes": "# Steady 2.21.0\n\n- **Removed Google AdMob + AdSense** from the app and website (no more limited-ads / business-verification dead end)\n- League **Watch ad** opens a crypto-network WebView sponsor (`SteadyMonetize` + `reward-ad.html`)\n- Site download / dashboard use `js/monetize.js` from `keys/monetize.json`\n- Setup guide: `docs/MONETIZE_SETUP.md` (AdsBitvex + OxaPay crypto recommended)",
   "assetId": 0
 }
