@@ -1,9 +1,9 @@
 {
-  "version": "2.21.4",
-  "versionCode": 151,
-  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.21.4/steady-2.21.4.apk",
-  "sha256": "2ac25b9f6fc8fab5b1935ceff547cd079964c917b6e3448f5f0bd3ccf4d0d6dd",
-  "sizeBytes": 66237768,
-  "notes": "## Steady 2.21.4\n\n- Watch-ad page uses a fresh sponsor URL so Workers cache can\u2019t show the old messy copy\n- Same clean sponsor flow and plain language as 2.21.3",
+  "version": "2.21.5",
+  "versionCode": 152,
+  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.21.5/steady-2.21.5.apk",
+  "sha256": "0c331076757c3f24abdf76bf211bc09ba399312b6c3a30918abea963a7ee2007",
+  "sizeBytes": 66237968,
+  "notes": "## Steady 2.21.5\n\n- Fix blank white Home after rapid Home / Recents / Back (debounced reclaim + dark window)\n- Watch ad is a real in-app sponsor screen (no white flash, no network jargon)\n- Sponsor page shows visible banners so you can actually see ads load\n- Home wallpaper decode moved off the UI thread; menus clear on pause",
   "assetId": 0
 }
