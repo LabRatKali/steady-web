@@ -3,12 +3,11 @@ async function loadLatest() {
   const apkLink = document.getElementById("apk-link");
   if (!versionLine || !apkLink) return;
 
-  const FALLBACK_VERSION = "v2.21.0";
+  const FALLBACK_VERSION = "v2.21.6";
   const template =
     versionLine.dataset.template || "Latest release: %s";
   const formatVersion = (ver) => template.replace("%s", ver);
 
-  // Show a real version immediately — never leave "loading" stuck on the download button.
   if (/loading/i.test(versionLine.textContent || "")) {
     versionLine.textContent = formatVersion(FALLBACK_VERSION);
   }
@@ -26,8 +25,9 @@ async function loadLatest() {
     const asset = (data.assets || []).find((a) =>
       String(a.name).endsWith(".apk")
     );
+    // Store URL only — do not unlock the link here (sponsor gate owns that).
     if (asset?.browser_download_url) {
-      apkLink.href = asset.browser_download_url;
+      apkLink.dataset.apkUrl = asset.browser_download_url;
     }
     const ver = data.tag_name || data.name || FALLBACK_VERSION;
     versionLine.textContent = formatVersion(ver);
@@ -293,62 +293,60 @@ function wireStickyCta() {
 }
 
 function wireDownloadGate() {
-  const gate = document.getElementById("download-gate");
-  const ready = document.getElementById("download-ready");
-  const btn = document.getElementById("btn-unlock-download");
+  const apkLink = document.getElementById("apk-link");
   const status = document.getElementById("download-gate-status");
   const adHost = document.querySelector("[data-steady-download-ad]");
-  const supportAd = document.querySelector("[data-steady-support-ad]");
-  if (!gate || !ready) return;
+  if (!apkLink) return;
 
-  const unlockUi = () => {
-    gate.hidden = true;
-    gate.setAttribute("hidden", "");
-    ready.hidden = false;
-    ready.removeAttribute("hidden");
-    if (status) status.textContent = "";
-    // Fresh sponsor after unlock / on each visit — no cookie clear needed.
-    if (window.SteadyMonetizeWeb && supportAd) {
-      SteadyMonetizeWeb.mountBanner(supportAd, { force: true });
-    }
+  const FALLBACK_APK =
+    "https://github.com/LabRatKali/steady-web/releases/latest/download/steady-latest.apk";
+  const waitSeconds = 8;
+  let unlocked = false;
+
+  const lockDownload = () => {
+    unlocked = false;
+    apkLink.href = "#";
+    apkLink.setAttribute("aria-disabled", "true");
+    apkLink.classList.add("is-locked");
+    // Clear any leftover session unlock from older builds.
+    try {
+      sessionStorage.removeItem("steady.downloadUnlocked");
+    } catch (_) {}
   };
 
-  // Always remount download-slot ads on this page load (refresh = new request).
+  const unlockDownload = () => {
+    unlocked = true;
+    const url = (apkLink.dataset.apkUrl || FALLBACK_APK).trim() || FALLBACK_APK;
+    apkLink.href = url;
+    apkLink.removeAttribute("aria-disabled");
+    apkLink.classList.remove("is-locked");
+    if (status) status.textContent = "";
+  };
+
+  // Block clicks until unlocked (covers keyboard activation too).
+  apkLink.addEventListener("click", (ev) => {
+    if (!unlocked) {
+      ev.preventDefault();
+      ev.stopPropagation();
+    }
+  });
+
+  lockDownload();
+
+  // Fresh slim sponsor on every page load — no cookie/session skip.
   if (window.SteadyMonetizeWeb && adHost) {
     SteadyMonetizeWeb.mountBanner(adHost, { force: true });
   }
 
-  try {
-    if (sessionStorage.getItem("steady.downloadUnlocked") === "1") {
-      unlockUi();
+  let left = waitSeconds;
+  if (status) status.textContent = "";
+  const tick = () => {
+    left -= 1;
+    if (left <= 0) {
+      unlockDownload();
       return;
     }
-  } catch (_) {}
-
-  // Quiet auto-unlock — no visible countdown.
-  const startQuietUnlock = () => {
-    if (window.SteadyMonetizeWeb && typeof SteadyMonetizeWeb.runDownloadSupportGate === "function") {
-      SteadyMonetizeWeb.runDownloadSupportGate({
-        statusEl: null,
-        adHost,
-        seconds: 5,
-        keepAds: true,
-        onUnlocked: unlockUi,
-      });
-    } else {
-      window.setTimeout(unlockUi, 5000);
-    }
+    window.setTimeout(tick, 1000);
   };
-
-  if (btn) {
-    btn.addEventListener("click", () => {
-      btn.disabled = true;
-      unlockUi();
-      try {
-        sessionStorage.setItem("steady.downloadUnlocked", "1");
-      } catch (_) {}
-    });
-  }
-
-  startQuietUnlock();
+  window.setTimeout(tick, 1000);
 }
