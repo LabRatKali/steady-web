@@ -33,12 +33,13 @@
 <body>
   <div class="card">
     <h1>Help Steady stay alive</h1>
-    <p id="lede">Watch a short sponsor message. Revenue goes to Steady’s crypto publisher account — not Google Ads.</p>
+    <p id="lede">Watch a short sponsor (Adsterra / Monetag / Hilltop — crypto payouts, not Google). Then you earn League shop points.</p>
+    <div id="steady-reward-slot" data-steady-reward-slot></div>
     <p id="status" class="ok"></p>
     <button type="button" id="btn">Watch sponsor</button>
     <button type="button" id="btn-skip" style="background:transparent;color:#a8b9b0;margin-top:0.5rem">Cancel</button>
   </div>
-  <script src="js/monetize.js?v=1"></script>
+  <script src="js/monetize.js?v=2"></script>
   <script>
     (function () {
       const status = document.getElementById("status");
