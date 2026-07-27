@@ -896,52 +896,56 @@ h3 {
 
 .download-panel .actions { justify-content: center; }
 
-.download-gate {
-  max-width: 28rem;
-  margin: 1.25rem auto 0.5rem;
-  padding: 1.1rem 1.15rem 1.2rem;
-  border-radius: 1.1rem;
-  border: 1px solid rgba(226, 203, 166, 0.28);
-  background: rgba(0, 0, 0, 0.22);
-  text-align: center;
-}
-
-.download-gate-lead {
-  margin: 0 0 0.85rem;
-  color: var(--mist);
-  font-size: 0.98rem;
-  line-height: 1.45;
-}
-
-.download-gate-lead strong {
-  color: var(--sand);
-  display: block;
-  margin-bottom: 0.25rem;
-  font-family: var(--display);
-  font-size: 1.15rem;
+.download-support {
+  max-width: 22rem;
+  margin: 1.15rem auto 0.75rem;
+  display: grid;
+  gap: 0.75rem;
+  justify-items: center;
 }
 
 .download-ad {
-  min-height: 260px;
-  margin: 0.75rem 0 1rem;
-  padding: 0.65rem;
-  border-radius: 12px;
-  border: 1px dashed var(--line);
-  background: rgba(255, 255, 255, 0.03);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
+  width: 100%;
+  max-width: 20rem;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  display: block;
   overflow: hidden;
+  line-height: 0;
 }
 
-.download-ad--after {
-  margin-bottom: 1.1rem;
+.download-ad--slim {
+  max-height: 110px;
+  min-height: 72px;
+}
+
+.download-ad iframe,
+.download-ad ins,
+.download-ad [id^="container-"] {
+  max-width: 100% !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
 }
 
 .download-ad[hidden] {
   display: none !important;
+}
+
+#apk-link.is-locked {
+  opacity: 0.55;
+  pointer-events: none;
+  cursor: wait;
+}
+
+.download-lock-note {
+  min-height: 1.2em;
+  margin: 0;
+  color: var(--mist);
+  font-size: 0.88rem;
 }
 
 .sponsor-card {
