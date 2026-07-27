@@ -1,9 +1,9 @@
 {
-  "version": "2.21.6",
-  "versionCode": 153,
-  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.21.6/steady-2.21.6.apk",
-  "sha256": "b67ad8387976ad7d25e0e547467076f38cd532833d539537170a64c9d7622c3b",
-  "sizeBytes": 66237968,
-  "notes": "## Steady 2.21.6\n\n- Download page quietly shows sponsors on every refresh (no cookie clear, no visible countdown)\n- Expanded DNS always-allow for Google Play / Gmail / Drive / Maps / Photos / FCM essentials\n- Sponsor CDN hosts stay allowed through the filter; entertainment sites (YouTube/TikTok) are not punched open",
+  "version": "2.21.7",
+  "versionCode": 154,
+  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.21.7/steady-2.21.7.apk",
+  "sha256": "6b3dbe0db44ce3de589885ac3c68ecfc88ee6d23464f3a90d930e908ee31d118",
+  "sizeBytes": 66256264,
+  "notes": "# Steady 2.21.7\n\n- In-app sponsors are display-only: they can show, but taps cannot open the browser, Play Store, or popups\n- Removed network-name scrubbing JS; load timeout + error handling so the sponsor screen cannot hang forever\n- League sponsors stay off by default; when off, the shop UI is calm (no dead Watch-ad buttons)\n- Website trust/FAQ copy matches reality (optional sponsors, no product-analytics SDK)\n- Release builds use R8 minify + resource shrinking for a lighter, faster APK",
   "assetId": 0
 }
