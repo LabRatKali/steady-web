@@ -1,9 +1,9 @@
 {
-  "version": "2.21.1",
-  "versionCode": 148,
-  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.21.1/steady-2.21.1.apk",
-  "sha256": "5d0194a3bc086198487b07f3892a871953b81e9f820c5a2dd258dd7264411b97",
+  "version": "2.21.2",
+  "versionCode": 149,
+  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.21.2/steady-2.21.2.apk",
+  "sha256": "8c0717e7069bf22def86b3f5181edc1e32f62f04c5510926f309f074af2c6ce4",
   "sizeBytes": 66237848,
-  "notes": "# Steady 2.21.1\n\n- Monetization primary stack switched to **Adsterra** (+ Monetag / HilltopAds) after re-research vs AdsBitvex\n- Multi-provider WebView waterfall; Start.io / AdsGram rejected for your constraints (see docs/MONETIZE_SETUP.md)\n- Still no Google AdMob/AdSense",
+  "notes": "## Steady 2.21.2\n\n- Live Adsterra sponsors on the Workers site (Native + 300\u00d7250) and League Watch ad (Social Bar)\n- Watch-ad WebView auto-starts the sponsor when opened from the app\n- `hostedRewardUrl` points at `https://steady.less-phone.workers.dev/reward-ad.html`",
   "assetId": 0
 }
