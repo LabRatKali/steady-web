@@ -919,8 +919,17 @@ h3 {
 }
 
 .download-ad--slim {
-  max-height: 110px;
-  min-height: 72px;
+  max-height: 100px;
+  min-height: 90px;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Keep the always-on sponsor strip small even when the unit is 300x250. */
+.download-ad--slim > * {
+  transform: scale(0.42);
+  transform-origin: top center;
+  max-width: none !important;
 }
 
 .download-ad iframe,
