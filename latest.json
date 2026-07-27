@@ -1,9 +1,9 @@
 {
-  "version": "2.21.0",
-  "versionCode": 147,
-  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.21.0/steady-2.21.0.apk",
-  "sha256": "c7f57a34d44464428228d109ddfae3aeecf7e89418da4d59e1f1f64511ef6581",
+  "version": "2.21.1",
+  "versionCode": 148,
+  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.21.1/steady-2.21.1.apk",
+  "sha256": "5d0194a3bc086198487b07f3892a871953b81e9f820c5a2dd258dd7264411b97",
   "sizeBytes": 66237848,
-  "notes": "# Steady 2.21.0\n\n- **Removed Google AdMob + AdSense** from the app and website (no more limited-ads / business-verification dead end)\n- League **Watch ad** opens a crypto-network WebView sponsor (`SteadyMonetize` + `reward-ad.html`)\n- Site download / dashboard use `js/monetize.js` from `keys/monetize.json`\n- Setup guide: `docs/MONETIZE_SETUP.md` (AdsBitvex + OxaPay crypto recommended)",
+  "notes": "# Steady 2.21.1\n\n- Monetization primary stack switched to **Adsterra** (+ Monetag / HilltopAds) after re-research vs AdsBitvex\n- Multi-provider WebView waterfall; Start.io / AdsGram rejected for your constraints (see docs/MONETIZE_SETUP.md)\n- Still no Google AdMob/AdSense",
   "assetId": 0
 }
