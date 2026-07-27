@@ -97,6 +97,14 @@
           "Publisher keys not on this site yet. Add keys/monetize.json and republish (docs/MONETIZE_SETUP.md).";
         status.className = "err";
         btn.disabled = true;
+        return;
+      }
+
+      // In-app WebView: start sponsor automatically so League Watch ad needs one less tap.
+      const fromApp = !!(window.SteadyNative);
+      const auto = /(?:\?|&)auto=1(?:&|$)/.test(location.search) || fromApp;
+      if (auto) {
+        setTimeout(() => btn.click(), 400);
       }
     })();
   </script>
