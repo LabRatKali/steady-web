@@ -936,6 +936,10 @@ h3 {
   overflow: hidden;
 }
 
+.download-ad--after {
+  margin-bottom: 1.1rem;
+}
+
 .download-ad[hidden] {
   display: none !important;
 }
