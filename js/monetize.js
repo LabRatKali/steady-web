@@ -218,44 +218,33 @@
       mountBanner(adHost);
     }
 
-    const tryReward = isAppConfigured();
-    let left = tryReward ? Math.max(seconds, 6) : seconds;
-
-    async function start() {
-      if (tryReward) {
-        if (statusEl) statusEl.textContent = "Loading sponsor…";
-        try {
-          const ok = await showRewarded();
-          if (ok) {
-            try {
-              sessionStorage.setItem(storageKey, "1");
-            } catch (_) {}
-            if (statusEl) statusEl.textContent = "Thanks — download unlocked.";
-            onUnlocked();
-            return;
-          }
-        } catch (_) {}
-      }
-      const tick = () => {
-        if (statusEl) {
-          statusEl.textContent =
-            left > 0
-              ? `Thanks for supporting Steady — unlock in ${left}s.`
-              : "Unlocked — download below.";
-        }
-        if (left <= 0) {
-          try {
-            sessionStorage.setItem(storageKey, "1");
-          } catch (_) {}
-          onUnlocked();
-          return;
-        }
-        left -= 1;
-        window.setTimeout(tick, 1000);
-      };
-      tick();
+    // Download page uses website banners only (Native / 300x250).
+    // Do not run Social Bar / rewarded HTML here — that is for League Watch ad.
+    let left = seconds;
+    if (statusEl) {
+      const configured = !!(bannerHtml() || isSiteConfigured());
+      statusEl.textContent = configured
+        ? `Thanks for supporting Steady — unlock in ${left}s.`
+        : `Unlock in ${left}s…`;
     }
-    start();
+    const tick = () => {
+      if (statusEl) {
+        statusEl.textContent =
+          left > 0
+            ? `Thanks for supporting Steady — unlock in ${left}s.`
+            : "Unlocked — download below.";
+      }
+      if (left <= 0) {
+        try {
+          sessionStorage.setItem(storageKey, "1");
+        } catch (_) {}
+        onUnlocked();
+        return;
+      }
+      left -= 1;
+      window.setTimeout(tick, 1000);
+    };
+    tick();
   }
 
   function showSignedInAds() {
