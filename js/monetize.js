@@ -1,6 +1,5 @@
 /**
- * Steady website monetization — crypto-friendly networks (no Google AdMob/AdSense).
- * Waterfall: Monetag rewarded → AdsBitvex → custom steadyShowReward → timed Adsterra/Hilltop HTML.
+ * Steady website monetization.
  * Config: window.STEADY_RUNTIME from keys/monetize.json
  */
 (function () {
@@ -45,30 +44,43 @@
     return !!bannerHtml() || isAppConfigured();
   }
 
+  /** Cache-bust script URLs so each refresh can request a fresh fill. */
+  function withCacheBust(html) {
+    if (!html) return html;
+    const bust = String(Date.now()) + String(Math.floor(Math.random() * 1e6));
+    return html.replace(
+      /(<script[^>]+src=["'])([^"']+)(["'])/gi,
+      function (_, a, src, c) {
+        if (/^(https?:)?\/\//i.test(src) || src.indexOf("/") === 0) {
+          const sep = src.indexOf("?") >= 0 ? "&" : "?";
+          return a + src + sep + "cb=" + bust + c;
+        }
+        return _;
+      }
+    );
+  }
+
   function injectScript(src) {
     return new Promise((resolve, reject) => {
       if (!src) {
         reject(new Error("No monetize script URL"));
         return;
       }
-      if (document.querySelector('script[data-steady-monetize-src="' + src + '"]')) {
-        resolve();
-        return;
-      }
+      const busted = src + (src.indexOf("?") >= 0 ? "&" : "?") + "cb=" + Date.now();
       const s = document.createElement("script");
       s.async = true;
-      s.src = src;
+      s.src = busted;
       s.dataset.steadyMonetizeSrc = src;
       if (appId()) s.dataset.zone = appId();
       s.onload = () => resolve();
-      s.onerror = () => reject(new Error("Could not load sponsor script: " + src));
+      s.onerror = () => reject(new Error("Could not load sponsor script"));
       document.head.appendChild(s);
     });
   }
 
   function injectHtml(host, html) {
     if (!host || !html) return;
-    host.innerHTML = html;
+    host.innerHTML = withCacheBust(html);
     host.querySelectorAll("script").forEach((old) => {
       const s = document.createElement("script");
       if (old.src) s.src = old.src;
@@ -80,7 +92,6 @@
     });
   }
 
-  /** Append reward scripts to document.body (Adsterra Social Bar guidance). */
   function injectRewardToBody(html) {
     if (!html) return;
     const wrap = document.createElement("div");
@@ -89,7 +100,6 @@
     wrap.style.cssText = "position:absolute;width:0;height:0;overflow:hidden;pointer-events:none";
     document.body.appendChild(wrap);
     injectHtml(wrap, html);
-    // Move scripts out so Social Bar can attach overlays to the real body.
     wrap.querySelectorAll("script").forEach((s) => {
       document.body.appendChild(s);
     });
@@ -114,14 +124,11 @@
     return false;
   }
 
-  /**
-   * Clean timed confirm — uses on-page UI when present (reward-ad.html), else a single compact bar.
-   * opts: { autoComplete, onTick(left, total), statusEl, tickEl, doneBtn, progressEl }
-   */
   function timedSponsorConfirm(opts) {
     const o = opts || {};
     const seconds = Math.max(8, Number(RT().monetizeMinWatchSeconds) || 12);
     const autoComplete = o.autoComplete === true;
+    const silent = o.silent === true;
     return new Promise((resolve) => {
       let left = seconds;
       const tickEl = o.tickEl || document.getElementById("steady-watch-tick");
@@ -131,6 +138,7 @@
       let bar = null;
 
       function paint() {
+        if (silent) return;
         const msg = left > 0 ? "Please wait " + left + "s…" : "Almost done…";
         if (tickEl) tickEl.textContent = msg;
         if (statusEl && !tickEl) statusEl.textContent = msg;
@@ -141,7 +149,7 @@
         }
       }
 
-      if (!tickEl && !doneBtn) {
+      if (!silent && !tickEl && !doneBtn) {
         bar = document.createElement("div");
         bar.className = "sponsor-card sponsor-card--timer";
         bar.innerHTML =
@@ -160,9 +168,11 @@
         host.appendChild(bar);
       }
 
-      const liveTick = document.getElementById("steady-watch-tick") || tickEl;
-      const liveDone = document.getElementById("steady-watch-done") || doneBtn;
-      const liveProgress = document.getElementById("steady-watch-progress") || progressEl;
+      const liveTick = silent ? null : document.getElementById("steady-watch-tick") || tickEl;
+      const liveDone = silent ? null : document.getElementById("steady-watch-done") || doneBtn;
+      const liveProgress = silent
+        ? null
+        : document.getElementById("steady-watch-progress") || progressEl;
       paint();
 
       const t = setInterval(() => {
@@ -171,12 +181,13 @@
           liveTick.textContent = left > 0 ? "Please wait " + left + "s…" : "You can continue.";
         }
         if (liveProgress) {
-          liveProgress.style.width = Math.round(((seconds - Math.max(left, 0)) / seconds) * 100) + "%";
+          liveProgress.style.width =
+            Math.round(((seconds - Math.max(left, 0)) / seconds) * 100) + "%";
         }
         if (typeof o.onTick === "function") o.onTick(Math.max(left, 0), seconds);
         if (left <= 0) {
           clearInterval(t);
-          if (autoComplete) {
+          if (autoComplete || silent) {
             if (bar) bar.remove();
             resolve(true);
             return;
@@ -232,6 +243,7 @@
       const fromApp = !!(window.SteadyNative) || opts.autoComplete === true;
       return await timedSponsorConfirm({
         autoComplete: fromApp || opts.autoComplete === true,
+        silent: opts.silent === true,
         statusEl: opts.statusEl,
         tickEl: opts.tickEl,
         doneBtn: opts.doneBtn,
@@ -245,71 +257,80 @@
       return true;
     }
 
-    throw new Error(
-      "Sponsor isn’t available right now. Try again in a minute."
-    );
+    throw new Error("Sponsor isn’t available right now. Try again in a minute.");
   }
 
-  function mountBanner(host) {
-    if (!host || host.dataset.mounted === "1") return;
+  /**
+   * Fresh mount every call (refresh / revisit). Clears prior mount flag.
+   */
+  function mountBanner(host, opts) {
+    if (!host) return;
+    const force = !opts || opts.force !== false;
+    if (force) delete host.dataset.mounted;
+    if (host.dataset.mounted === "1") return;
     host.dataset.mounted = "1";
+    host.hidden = false;
+    host.removeAttribute("hidden");
     const html = bannerHtml();
     if (html) {
       injectHtml(host, html);
+      // Soft retry once if the slot stays empty (common no-fill).
+      window.setTimeout(() => {
+        if (!host.isConnected) return;
+        const hasFrame = host.querySelector("iframe, ins, [id^='container-']");
+        if (!hasFrame && html) {
+          delete host.dataset.mounted;
+          injectHtml(host, html);
+          host.dataset.mounted = "1";
+        }
+      }, 2500);
       return;
     }
-    host.innerHTML =
-      '<div class="sponsor-card"><strong>Sponsor space</strong>' +
-      "<p>Thanks for supporting Steady.</p></div>";
+    host.innerHTML = "";
   }
 
+  /**
+   * Download section: show sponsors quietly, unlock after a hidden wait.
+   * Every page load remounts ads (no cookie clear needed).
+   */
   function runDownloadSupportGate(options) {
     const opts = options || {};
     const statusEl = opts.statusEl || null;
     const adHost = opts.adHost || document.querySelector("[data-steady-ad]");
-    const seconds = Math.max(5, Number(opts.seconds) || 8);
+    const seconds = Math.max(4, Number(opts.seconds) || 6);
     const storageKey = opts.storageKey || "steady.downloadUnlocked";
     const onUnlocked = typeof opts.onUnlocked === "function" ? opts.onUnlocked : () => {};
-
-    try {
-      if (sessionStorage.getItem(storageKey) === "1") {
-        onUnlocked();
-        return;
-      }
-    } catch (_) {}
+    const keepAds = opts.keepAds !== false;
 
     if (adHost) {
-      adHost.hidden = false;
-      adHost.removeAttribute("hidden");
-      mountBanner(adHost);
+      mountBanner(adHost, { force: true });
     }
 
-    let left = seconds;
-    if (statusEl) {
-      statusEl.textContent = `Thanks for supporting Steady — unlock in ${left}s.`;
+    let already = false;
+    try {
+      already = sessionStorage.getItem(storageKey) === "1";
+    } catch (_) {}
+
+    // Never show a countdown — unlock quietly.
+    if (statusEl) statusEl.textContent = "";
+
+    if (already) {
+      onUnlocked();
+      if (keepAds && adHost) mountBanner(adHost, { force: true });
+      return;
     }
-    const tick = () => {
-      if (statusEl) {
-        statusEl.textContent =
-          left > 0
-            ? `Thanks for supporting Steady — unlock in ${left}s.`
-            : "Unlocked — download below.";
-      }
-      if (left <= 0) {
-        try {
-          sessionStorage.setItem(storageKey, "1");
-        } catch (_) {}
-        onUnlocked();
-        return;
-      }
-      left -= 1;
-      window.setTimeout(tick, 1000);
-    };
-    tick();
+
+    window.setTimeout(() => {
+      try {
+        sessionStorage.setItem(storageKey, "1");
+      } catch (_) {}
+      onUnlocked();
+      if (keepAds && adHost) mountBanner(adHost, { force: true });
+    }, seconds * 1000);
   }
 
   function showSignedInAds() {
-    document.querySelectorAll("[data-steady-ad]").forEach(mountBanner);
+    document.querySelectorAll("[data-steady-ad]").forEach((el) => mountBanner(el, { force: true }));
   }
 
   window.SteadyMonetizeWeb = {
