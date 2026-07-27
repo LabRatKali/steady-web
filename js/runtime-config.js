@@ -11,9 +11,9 @@ window.STEADY_RUNTIME = {
   "adsbitvexScriptUrl": "",
   "rewardScriptUrl": "",
   "monetizeRewardWebUrl": "",
-  "monetizeBannerHtml": "",
-  "websiteBannerHtml": "",
-  "monetizeRewardHtml": "",
+  "monetizeBannerHtml": "<script async=\"async\" data-cfasync=\"false\" src=\"https://pl30566397.effectivecpmnetwork.com/aa9f63337d56fa208fd27e208e22774a/invoke.js\"></script>\n<div id=\"container-aa9f63337d56fa208fd27e208e22774a\"></div>\n<script>\n  atOptions = {\n    'key' : 'd737196962ef25449dcb66c5655248f1',\n    'format' : 'iframe',\n    'height' : 250,\n    'width' : 300,\n    'params' : {}\n  };\n</script>\n<script src=\"https://www.highperformanceformat.com/d737196962ef25449dcb66c5655248f1/invoke.js\"></script>",
+  "websiteBannerHtml": "<script async=\"async\" data-cfasync=\"false\" src=\"https://pl30566397.effectivecpmnetwork.com/aa9f63337d56fa208fd27e208e22774a/invoke.js\"></script>\n<div id=\"container-aa9f63337d56fa208fd27e208e22774a\"></div>\n<script>\n  atOptions = {\n    'key' : 'd737196962ef25449dcb66c5655248f1',\n    'format' : 'iframe',\n    'height' : 250,\n    'width' : 300,\n    'params' : {}\n  };\n</script>\n<script src=\"https://www.highperformanceformat.com/d737196962ef25449dcb66c5655248f1/invoke.js\"></script>",
+  "monetizeRewardHtml": "<script src=\"https://pl30566396.effectivecpmnetwork.com/75/7d/b0/757db01b5a07eb68043c6fd140726fed.js\"></script>",
   "monetizeMinWatchSeconds": 12,
   "monetizeAllowDemo": false,
   "mailer": {
