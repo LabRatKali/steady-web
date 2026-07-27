@@ -73,14 +73,31 @@
       const s = document.createElement("script");
       if (old.src) s.src = old.src;
       else s.textContent = old.textContent || "";
+      Array.from(old.attributes || []).forEach((a) => {
+        if (a.name !== "src") s.setAttribute(a.name, a.value);
+      });
       old.replaceWith(s);
     });
   }
 
-  /** Try known rewarded APIs from Monetag / AdsBitvex / custom. */
+  /** Append reward scripts to document.body (Adsterra Social Bar guidance). */
+  function injectRewardToBody(html) {
+    if (!html) return;
+    const wrap = document.createElement("div");
+    wrap.id = "steady-reward-inject";
+    wrap.setAttribute("aria-hidden", "true");
+    wrap.style.cssText = "position:absolute;width:0;height:0;overflow:hidden;pointer-events:none";
+    document.body.appendChild(wrap);
+    injectHtml(wrap, html);
+    // Move scripts out so Social Bar can attach overlays to the real body.
+    wrap.querySelectorAll("script").forEach((s) => {
+      document.body.appendChild(s);
+    });
+  }
+
   async function trySdkReward() {
     const fns = [
-      "show_8862670", // Monetag sometimes generates show_<zone>
+      "show_8862670",
       "showRewarded",
       "showadsbitvex",
       "steadyShowReward",
@@ -91,55 +108,130 @@
       if (typeof fn === "function") {
         const result = await Promise.resolve(fn());
         if (result === true || result === "rewarded" || (result && result.rewarded)) return true;
-        // Some SDKs resolve on close without boolean — treat resolved promise as success
         if (result === undefined || result === null) return true;
       }
-    }
-    // Monetag / Propeller-style: window.yaContextCb push
-    if (typeof window.Ya === "object" || Array.isArray(window.yaContextCb)) {
-      return await new Promise((resolve) => {
-        try {
-          if (typeof window.Ya !== "undefined" && window.Ya.Context && window.Ya.Context.AdvManager) {
-            // Not a clean rewarded API — fall through
-          }
-        } catch (_) {}
-        resolve(false);
-      });
     }
     return false;
   }
 
   /**
-   * Full rewarded attempt for League / download gate.
+   * Clean timed confirm — uses on-page UI when present (reward-ad.html), else a single compact bar.
+   * opts: { autoComplete, onTick(left, total), statusEl, tickEl, doneBtn, progressEl }
    */
-  async function showRewarded() {
+  function timedSponsorConfirm(opts) {
+    const o = opts || {};
+    const seconds = Math.max(8, Number(RT().monetizeMinWatchSeconds) || 12);
+    const autoComplete = o.autoComplete === true;
+    return new Promise((resolve) => {
+      let left = seconds;
+      const tickEl = o.tickEl || document.getElementById("steady-watch-tick");
+      const doneBtn = o.doneBtn || document.getElementById("steady-watch-done");
+      const statusEl = o.statusEl || document.getElementById("status");
+      const progressEl = o.progressEl || document.getElementById("steady-watch-progress");
+      let bar = null;
+
+      function paint() {
+        const msg = left > 0 ? "Please wait " + left + "s…" : "Almost done…";
+        if (tickEl) tickEl.textContent = msg;
+        if (statusEl && !tickEl) statusEl.textContent = msg;
+        if (typeof o.onTick === "function") o.onTick(left, seconds);
+        if (progressEl) {
+          const pct = Math.round(((seconds - left) / seconds) * 100);
+          progressEl.style.width = pct + "%";
+        }
+      }
+
+      if (!tickEl && !doneBtn) {
+        bar = document.createElement("div");
+        bar.className = "sponsor-card sponsor-card--timer";
+        bar.innerHTML =
+          "<strong>Watch the sponsor</strong>" +
+          "<div class='sponsor-progress'><span id='steady-watch-progress'></span></div>" +
+          "<p id='steady-watch-tick'>Please wait " +
+          left +
+          "s…</p>" +
+          (autoComplete
+            ? ""
+            : "<button type='button' id='steady-watch-done' disabled>Continue</button>");
+        const host =
+          document.getElementById("steady-reward-slot") ||
+          document.querySelector("[data-steady-reward-slot]") ||
+          document.body;
+        host.appendChild(bar);
+      }
+
+      const liveTick = document.getElementById("steady-watch-tick") || tickEl;
+      const liveDone = document.getElementById("steady-watch-done") || doneBtn;
+      const liveProgress = document.getElementById("steady-watch-progress") || progressEl;
+      paint();
+
+      const t = setInterval(() => {
+        left -= 1;
+        if (liveTick) {
+          liveTick.textContent = left > 0 ? "Please wait " + left + "s…" : "You can continue.";
+        }
+        if (liveProgress) {
+          liveProgress.style.width = Math.round(((seconds - Math.max(left, 0)) / seconds) * 100) + "%";
+        }
+        if (typeof o.onTick === "function") o.onTick(Math.max(left, 0), seconds);
+        if (left <= 0) {
+          clearInterval(t);
+          if (autoComplete) {
+            if (bar) bar.remove();
+            resolve(true);
+            return;
+          }
+          if (liveDone) liveDone.disabled = false;
+        }
+      }, 1000);
+
+      if (liveDone) {
+        liveDone.addEventListener(
+          "click",
+          () => {
+            clearInterval(t);
+            if (bar) bar.remove();
+            resolve(true);
+          },
+          { once: true }
+        );
+      }
+    });
+  }
+
+  async function showRewarded(options) {
+    const opts = options || {};
     const customUrl = String(RT().monetizeRewardWebUrl || "").trim();
     if (customUrl && !scriptUrl() && !rewardHtml()) {
-      throw new Error("Open Watch ad in the Steady app for this publisher URL setup");
+      throw new Error("Open Watch ad in the Steady app");
     }
 
-    const host =
-      document.getElementById("steady-reward-slot") ||
-      document.querySelector("[data-steady-reward-slot]");
-
-    // Social Bar / interstitial scripts prefer document body (Adsterra guidance).
-    const rewardTarget = host || document.body;
     if (rewardHtml()) {
-      injectHtml(rewardTarget, rewardHtml());
-    } else if (bannerHtml() && host && !scriptUrl()) {
-      injectHtml(host, bannerHtml());
+      injectRewardToBody(rewardHtml());
+    } else if (bannerHtml() && !scriptUrl()) {
+      const host =
+        document.getElementById("steady-reward-slot") ||
+        document.querySelector("[data-steady-reward-slot]");
+      if (host) injectHtml(host, bannerHtml());
     }
 
     if (scriptUrl()) {
       await injectScript(scriptUrl());
-      await new Promise((r) => setTimeout(r, 600));
+      await new Promise((r) => setTimeout(r, 500));
       const ok = await trySdkReward();
       if (ok) return true;
     }
 
-    // Adsterra / Hilltop: HTML units don't always expose a Promise — timed confirm UX
     if (rewardHtml() || bannerHtml() || scriptUrl()) {
-      return await timedSponsorConfirm(host);
+      const fromApp = !!(window.SteadyNative) || opts.autoComplete === true;
+      return await timedSponsorConfirm({
+        autoComplete: fromApp || opts.autoComplete === true,
+        statusEl: opts.statusEl,
+        tickEl: opts.tickEl,
+        doneBtn: opts.doneBtn,
+        progressEl: opts.progressEl,
+        onTick: opts.onTick,
+      });
     }
 
     if (RT().monetizeAllowDemo === true) {
@@ -148,39 +240,8 @@
     }
 
     throw new Error(
-      "No sponsor SDK/HTML configured. Add Adsterra or Monetag codes to keys/monetize.json (docs/MONETIZE_SETUP.md)."
+      "Sponsor isn’t available right now. Try again in a minute."
     );
-  }
-
-  function timedSponsorConfirm(host) {
-    return new Promise((resolve) => {
-      const seconds = Math.max(8, Number(RT().monetizeMinWatchSeconds) || 12);
-      let left = seconds;
-      const bar = document.createElement("div");
-      bar.className = "sponsor-card";
-      bar.innerHTML =
-        "<strong>Watch the sponsor</strong>" +
-        "<p id='steady-watch-tick'>Please wait " +
-        left +
-        "s…</p>" +
-        "<button type='button' id='steady-watch-done' disabled>I finished — continue</button>";
-      if (host) host.appendChild(bar);
-      else document.body.appendChild(bar);
-      const tickEl = bar.querySelector("#steady-watch-tick");
-      const btn = bar.querySelector("#steady-watch-done");
-      const t = setInterval(() => {
-        left -= 1;
-        if (tickEl) tickEl.textContent = left > 0 ? "Please wait " + left + "s…" : "You can continue.";
-        if (left <= 0) {
-          clearInterval(t);
-          if (btn) btn.disabled = false;
-        }
-      }, 1000);
-      btn.addEventListener("click", () => {
-        clearInterval(t);
-        resolve(true);
-      });
-    });
   }
 
   function mountBanner(host) {
@@ -193,8 +254,7 @@
     }
     host.innerHTML =
       '<div class="sponsor-card"><strong>Sponsor space</strong>' +
-      "<p>Primary: <strong>Adsterra</strong> (USDT/BTC). Also supported: Monetag, HilltopAds. " +
-      "Paste banner HTML into <code>keys/monetize.json</code> → see <code>docs/MONETIZE_SETUP.md</code>.</p></div>";
+      "<p>Thanks for supporting Steady.</p></div>";
   }
 
   function runDownloadSupportGate(options) {
@@ -218,14 +278,9 @@
       mountBanner(adHost);
     }
 
-    // Download page uses website banners only (Native / 300x250).
-    // Do not run Social Bar / rewarded HTML here — that is for League Watch ad.
     let left = seconds;
     if (statusEl) {
-      const configured = !!(bannerHtml() || isSiteConfigured());
-      statusEl.textContent = configured
-        ? `Thanks for supporting Steady — unlock in ${left}s.`
-        : `Unlock in ${left}s…`;
+      statusEl.textContent = `Thanks for supporting Steady — unlock in ${left}s.`;
     }
     const tick = () => {
       if (statusEl) {
