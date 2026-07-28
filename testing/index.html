@@ -104,29 +104,22 @@
       grid-column: span 3;
       min-height: 200px;
     }
-    .card.size-300x250 { grid-column: span 3; min-height: 310px; }
-    .card.size-336x280 { grid-column: span 3; min-height: 340px; }
-    .card.size-320x50 { grid-column: span 3; min-height: 120px; }
-    .card.size-468x60 { grid-column: span 4; min-height: 130px; }
-    .card.size-728x90 { grid-column: span 6; min-height: 160px; }
-    .card.size-160x600 { grid-column: span 2; min-height: 640px; }
-    .card.size-native { grid-column: span 4; min-height: 360px; }
-    .card.size-reward { grid-column: span 3; min-height: 220px; }
+    .card.size-300x250 { grid-column: span 3; min-height: 320px; }
+    .card.size-336x280 { grid-column: span 3; min-height: 350px; }
+    .card.size-320x50 { grid-column: span 3; min-height: 130px; }
+    .card.size-320x100 { grid-column: span 3; min-height: 180px; }
+    .card.size-468x60 { grid-column: span 4; min-height: 140px; }
+    .card.size-728x90 { grid-column: span 6; min-height: 170px; }
+    .card.size-160x600 { grid-column: span 2; min-height: 660px; }
+    .card.size-native { grid-column: span 4; min-height: 380px; }
+    .card.size-reward { grid-column: span 3; min-height: 240px; }
     .card.size-smart { grid-column: span 3; min-height: 140px; }
     .card.size-pop { grid-column: span 3; min-height: 140px; }
     @media (max-width: 1100px) {
-      .card, .card.size-300x250, .card.size-336x280, .card.size-320x50,
-      .card.size-468x60, .card.size-728x90, .card.size-160x600,
-      .card.size-native, .card.size-reward, .card.size-smart, .card.size-pop {
-        grid-column: span 6;
-      }
+      .card, .card[class*="size-"] { grid-column: span 6; }
     }
     @media (max-width: 700px) {
-      .card, .card.size-300x250, .card.size-336x280, .card.size-320x50,
-      .card.size-468x60, .card.size-728x90, .card.size-160x600,
-      .card.size-native, .card.size-reward, .card.size-smart, .card.size-pop {
-        grid-column: span 12;
-      }
+      .card, .card[class*="size-"] { grid-column: span 12; }
     }
     .card-head {
       display: flex;
@@ -142,20 +135,18 @@
     .card-body {
       flex: 1;
       display: flex;
-      flex-wrap: wrap;
       align-items: center;
       justify-content: center;
-      gap: 0.5rem;
-      overflow: auto;
-      position: relative;
+      overflow: hidden;
       background: rgba(0, 0, 0, 0.18);
       border-radius: 8px;
-      padding: 0.5rem;
       min-height: 80px;
     }
-    .card-body iframe {
-      max-width: 100% !important;
-      margin: 0 auto !important;
+    .card-body > iframe.adframe {
+      width: 100%;
+      border: 0;
+      background: #0a0f0d;
+      display: block;
     }
     .smartlink {
       display: inline-block;
@@ -169,7 +160,6 @@
     }
     .muted { color: var(--muted); font-size: 12px; text-align: center; padding: 0.5rem; }
   </style>
-  <script src="../js/runtime-config.js"></script>
 </head>
 <body>
   <div class="lab-chrome">
@@ -192,8 +182,8 @@
       <button type="button" id="btn-clear">clear</button>
     </div>
     <p class="note">
-      Direct URL only. Ads mount in-page (no iframes). Multiple banner sizes from your Adsterra key + native + reward + smartlink.
-      If a card stays empty, inventory/fill is low for that size — reload or leave auto on.
+      Hard-refresh if cards look empty (Ctrl+F5). Each banner size loads in its own frame so Adsterra can document.write.
+      Prefer workers.dev (the domain these units are for). Empty cards usually mean no fill yet — leave auto reload on.
     </p>
   </div>
   <div id="grid" aria-live="polite"></div>
@@ -209,7 +199,6 @@
       var POPUNDER_SRC =
         "https://pl30567774.effectivecpmnetwork.com/3c/91/ea/3c91ea5fe0936ca26b9cc5cebf036f9f.js";
 
-      // Several shapes so the lab looks like a real ad wall.
       var BANNER_SIZES = [
         { w: 300, h: 250, label: "300×250" },
         { w: 336, h: 280, label: "336×280" },
@@ -219,6 +208,8 @@
         { w: 160, h: 600, label: "160×600" },
         { w: 300, h: 250, label: "300×250b" },
         { w: 320, h: 100, label: "320×100" },
+        { w: 250, h: 250, label: "250×250" },
+        { w: 300, h: 600, label: "300×600" },
       ];
 
       var grid = document.getElementById("grid");
@@ -226,12 +217,10 @@
       var meta = document.getElementById("meta");
       var tickEl = document.getElementById("tick");
       var popunderLoaded = false;
-      var nativeUsed = false;
       var reloadTimer = null;
       var countdownTimer = null;
       var nextAt = 0;
       var gen = 0;
-      var mountChain = Promise.resolve();
 
       function setStatus(msg, kind) {
         statusEl.textContent = msg || "";
@@ -257,100 +246,82 @@
         return { card: card, body: body };
       }
 
-      function loadScript(src, parent) {
-        return new Promise(function (resolve, reject) {
-          var s = document.createElement("script");
-          s.async = true;
-          s.setAttribute("data-cfasync", "false");
-          s.src = src + (src.indexOf("?") >= 0 ? "&" : "?") + "cb=" + Date.now() + Math.floor(Math.random() * 1e5);
-          s.onload = function () {
-            resolve();
-          };
-          s.onerror = function () {
-            reject(new Error("script fail"));
-          };
-          (parent || document.body).appendChild(s);
-        });
+      function adPage(inner, minH) {
+        return (
+          "<!DOCTYPE html><html><head><meta charset='utf-8'>" +
+          "<meta name='viewport' content='width=device-width,initial-scale=1'>" +
+          "<style>html,body{margin:0;padding:8px;background:#0a0f0d;color:#8fa398;font:12px monospace;display:flex;align-items:center;justify-content:center;min-height:" +
+          (minH || 200) +
+          "px}iframe{margin:0 auto!important}</style></head><body>" +
+          inner +
+          "</body></html>"
+        );
       }
 
-      /** Adsterra banner: set atOptions then invoke.js next to the host. */
-      function mountBanner(host, width, height) {
-        return new Promise(function (resolve) {
-          try {
-            window.atOptions = {
-              key: BANNER_KEY,
-              format: "iframe",
-              height: height,
-              width: width,
-              params: {},
-            };
-            // Some invoke builds also read this alias.
-            window.atOptions = window.atOptions;
-            var holder = document.createElement("div");
-            holder.style.cssText =
-              "width:" + width + "px;max-width:100%;min-height:" + height + "px;margin:0 auto;overflow:hidden;";
-            host.appendChild(holder);
-            var s = document.createElement("script");
-            s.setAttribute("data-cfasync", "false");
-            s.src =
-              "https://www.highperformanceformat.com/" +
-              BANNER_KEY +
-              "/invoke.js?cb=" +
-              Date.now() +
-              Math.floor(Math.random() * 1e5);
-            s.onload = function () {
-              resolve(true);
-            };
-            s.onerror = function () {
-              holder.innerHTML = '<p class="muted">banner script error</p>';
-              resolve(false);
-            };
-            holder.appendChild(s);
-          } catch (e) {
-            host.innerHTML = '<p class="muted">banner error</p>';
-            resolve(false);
-          }
-        });
+      function mountSrcdoc(body, html, height) {
+        var frame = document.createElement("iframe");
+        frame.className = "adframe";
+        frame.setAttribute("title", "ad");
+        frame.setAttribute("loading", "eager");
+        frame.style.height = Math.max(height || 250, 80) + 24 + "px";
+        // No sandbox — Adsterra needs a normal document for document.write / invoke.js
+        frame.srcdoc = html;
+        body.appendChild(frame);
       }
 
-      function mountNative(host) {
-        if (nativeUsed) {
-          host.innerHTML =
-            '<p class="muted">native zone already on page (one container id). Use banners for more cards.</p>';
-          return Promise.resolve(false);
-        }
-        nativeUsed = true;
-        var box = document.createElement("div");
-        box.id = "container-" + NATIVE_ID;
-        box.style.cssText = "min-height:280px;width:100%;";
-        host.appendChild(box);
-        return loadScript(
-          "https://pl30566397.effectivecpmnetwork.com/" + NATIVE_ID + "/invoke.js",
-          host
-        )
-          .then(function () {
-            return true;
-          })
-          .catch(function () {
-            host.innerHTML += '<p class="muted">native script error</p>';
-            return false;
-          });
+      function bannerHtml(w, h) {
+        var cb = Date.now() + "" + Math.floor(Math.random() * 1e6);
+        return adPage(
+          "<script>atOptions={key:'" +
+            BANNER_KEY +
+            "',format:'iframe',height:" +
+            h +
+            ",width:" +
+            w +
+            ",params:{}};<\/script>" +
+            "<script src='https://www.highperformanceformat.com/" +
+            BANNER_KEY +
+            "/invoke.js?cb=" +
+            cb +
+            "'><\/script>",
+          h
+        );
       }
 
-      function mountReward(host) {
-        var tip = document.createElement("p");
-        tip.className = "muted";
-        tip.textContent = "reward / social bar script…";
-        host.appendChild(tip);
-        return loadScript(REWARD_SRC, document.body)
-          .then(function () {
-            tip.textContent = "reward script loaded (UI may appear as overlay/bar)";
-            return true;
-          })
-          .catch(function () {
-            tip.textContent = "reward script error";
-            return false;
-          });
+      function nativeHtml() {
+        var cb = Date.now() + "" + Math.floor(Math.random() * 1e6);
+        return adPage(
+          "<div id='container-" +
+            NATIVE_ID +
+            "'></div>" +
+            "<script async data-cfasync='false' src='https://pl30566397.effectivecpmnetwork.com/" +
+            NATIVE_ID +
+            "/invoke.js?cb=" +
+            cb +
+            "'><\/script>",
+          300
+        );
+      }
+
+      function rewardHtml() {
+        var cb = Date.now() + "" + Math.floor(Math.random() * 1e6);
+        // Reward page also includes a 300x250 so something visible often appears
+        return adPage(
+          "<script>atOptions={key:'" +
+            BANNER_KEY +
+            "',format:'iframe',height:250,width:300,params:{}};<\/script>" +
+            "<script src='https://www.highperformanceformat.com/" +
+            BANNER_KEY +
+            "/invoke.js?cb=" +
+            cb +
+            "'><\/script>" +
+            "<script src='" +
+            REWARD_SRC +
+            "?cb=" +
+            cb +
+            "'><\/script>",
+          260
+        );
       }
 
       function ensurePopunder(on) {
@@ -395,9 +366,8 @@
 
         var bi = 0;
         var nativeCount = 0;
-        var rewardCount = 0;
         var i = 0;
-        while (plan.length < n && i < n * 4) {
+        while (plan.length < n && i < n * 6) {
           var t = types[i % types.length];
           i++;
           if (t === "banner") {
@@ -411,18 +381,15 @@
               h: sz.h,
             });
           } else if (t === "native") {
-            if (nativeCount >= 1) continue;
+            // Multiple natives OK now — each in own srcdoc frame
             nativeCount++;
             plan.push({ kind: "native", sizeClass: "size-native", detail: "banner" });
           } else if (t === "reward") {
-            if (rewardCount >= 2) continue;
-            rewardCount++;
-            plan.push({ kind: "reward", sizeClass: "size-reward", detail: "social" });
+            plan.push({ kind: "reward", sizeClass: "size-reward", detail: "social+banner" });
           } else if (t === "smartlink") {
             plan.push({ kind: "smartlink", sizeClass: "size-smart", detail: "link" });
           }
         }
-        // If native/reward capped early, fill rest with banners/smartlinks
         while (plan.length < n) {
           if (wantBanner) {
             var sz2 = BANNER_SIZES[bi % BANNER_SIZES.length];
@@ -443,14 +410,12 @@
 
       function render() {
         var my = ++gen;
-        nativeUsed = false;
         var n = num("count", 1, 36, 16);
         var wantPop = document.getElementById("t-popunder").checked;
         var plan = buildPlan(n);
 
         grid.innerHTML = "";
         ensurePopunder(wantPop);
-        mountChain = Promise.resolve();
 
         if (!plan.length && !wantPop) {
           setStatus("pick at least one ad type", "err");
@@ -473,33 +438,16 @@
             c.body.appendChild(a);
             return;
           }
-
           if (item.kind === "banner") {
-            // Queue banner mounts so atOptions does not race between cards.
-            mountChain = mountChain.then(function () {
-              if (my !== gen) return;
-              return mountBanner(c.body, item.w, item.h).then(function () {
-                return new Promise(function (r) {
-                  setTimeout(r, 120);
-                });
-              });
-            });
+            mountSrcdoc(c.body, bannerHtml(item.w, item.h), item.h);
             return;
           }
-
           if (item.kind === "native") {
-            mountChain = mountChain.then(function () {
-              if (my !== gen) return;
-              return mountNative(c.body);
-            });
+            mountSrcdoc(c.body, nativeHtml(), 300);
             return;
           }
-
           if (item.kind === "reward") {
-            mountChain = mountChain.then(function () {
-              if (my !== gen) return;
-              return mountReward(c.body);
-            });
+            mountSrcdoc(c.body, rewardHtml(), 260);
           }
         });
 
@@ -511,12 +459,8 @@
           made++;
         }
 
-        mountChain.then(function () {
-          if (my !== gen) return;
-          setStatus(made + " cards mounted · " + new Date().toLocaleTimeString(), "ok");
-        });
-
-        setStatus(made + " cards mounting…", "ok");
+        if (my !== gen) return;
+        setStatus(made + " cards · " + new Date().toLocaleTimeString(), "ok");
         scheduleNext();
       }
 
@@ -555,11 +499,7 @@
 
       function paintMeta() {
         meta.innerHTML =
-          "<strong>" +
-          location.host +
-          "</strong> " +
-          location.pathname +
-          " · adsterra";
+          "<strong>" + location.host + "</strong> " + location.pathname + " · adsterra";
       }
 
       document.getElementById("btn-refresh").addEventListener("click", function () {
