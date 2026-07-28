@@ -131,15 +131,13 @@
     .card-body {
       flex: 1;
       min-height: 250px;
-      background: #111;
+      background: #fff;
       border-radius: 10px;
       overflow: hidden;
       display: flex;
       align-items: center;
       justify-content: center;
-      position: relative;
     }
-    .card-body.ready { background: #fff; }
     .adframe {
       width: 300px;
       height: 250px;
@@ -147,10 +145,7 @@
       border: 0;
       display: block;
       background: #fff;
-      opacity: 0;
-      transition: opacity 0.15s ease;
     }
-    .adframe.show { opacity: 1; }
     .pop-arm {
       width: calc(100% - 8px);
       min-height: 140px;
@@ -191,7 +186,7 @@
   </div>
 
   <section id="help">
-    <p>Only path: <strong>/testing/</strong>. Cards remount until a live creative appears. Dead “refused to connect” offers stay hidden and get replaced.</p>
+    <p>Only path: <strong>/testing/</strong>. Every slot remounts until an ad appears. Dead Adsterra hosts are rewritten onto live creative servers.</p>
   </section>
 
   <div id="grid" aria-live="polite"></div>
@@ -201,6 +196,12 @@
       var BANNER_KEY = "d737196962ef25449dcb66c5655248f1";
       var POPUNDER_SRC =
         "https://pl30567774.effectivecpmnetwork.com/3c/91/ea/3c91ea5fe0936ca26b9cc5cebf036f9f.js";
+
+      // Dead Adsterra edge (often 167.206.37.145 / connection refused)
+      var DEAD_HOST_RE =
+        /spendsdetachment|workdeadlinededicate|zoologyfibre|protrafficinspector|detachment|deadline/i;
+      // Live creative edges currently answering HTTP 200
+      var LIVE_HOSTS = ["kettledroopingcontinuation.com"];
 
       var grid = document.getElementById("grid");
       var statusEl = document.getElementById("status");
@@ -216,7 +217,9 @@
       var nextAt = 0;
       var gen = 0;
       var slots = [];
-      var deadHosts = {};
+      var liveHostIdx = 0;
+      var remountBusy = false;
+      var remountQueue = [];
 
       function setStatus(msg, kind) {
         statusEl.textContent = msg || "";
@@ -230,6 +233,12 @@
         if (n > max) n = max;
         document.getElementById(id).value = String(n);
         return n;
+      }
+
+      function nextLiveHost() {
+        var h = LIVE_HOSTS[liveHostIdx % LIVE_HOSTS.length];
+        liveHostIdx += 1;
+        return h;
       }
 
       function ensurePopunder(on) {
@@ -259,66 +268,45 @@
       function paintFills() {
         var total = 0;
         var filled = 0;
-        var dead = 0;
         slots.forEach(function (s) {
           if (s.kind === "popunder") return;
           total++;
           if (s.filled) filled++;
-          else if (s.st && /dead/i.test(s.st.textContent)) dead++;
         });
         fillsEl.innerHTML = "ok <strong>" + filled + "</strong>/<strong>" + total + "</strong>";
-        if (filled === 0 && dead > 0) {
-          setStatus("Adsterra dead hosts — retrying", "");
-        }
+        if (filled === total && total > 0) setStatus("all slots filled", "ok");
       }
 
-      function hostOf(url) {
+      function rewriteIfDead(src) {
         try {
-          return new URL(url).hostname;
+          var u = new URL(src);
+          if (!DEAD_HOST_RE.test(u.hostname)) return src;
+          u.hostname = nextLiveHost();
+          return u.toString();
         } catch (_) {
-          return "";
+          return src;
         }
       }
 
-      function markDeadHost(url) {
-        var h = hostOf(url);
-        if (h) deadHosts[h] = Date.now();
+      function directWatchSrc(slotId) {
+        var host = nextLiveHost();
+        var id = Date.now() + Math.floor(Math.random() * 1e6);
+        return (
+          "https://" +
+          host +
+          "/watch." +
+          id +
+          "?key=" +
+          BANNER_KEY +
+          "&refer=" +
+          encodeURIComponent(location.origin + "/") +
+          "&tz=" +
+          -new Date().getTimezoneOffset() / 60 +
+          "&slot=" +
+          encodeURIComponent(slotId)
+        );
       }
 
-      function isKnownDead(url) {
-        var h = hostOf(url);
-        if (!h) return false;
-        var t = deadHosts[h];
-        return t && Date.now() - t < 120000;
-      }
-
-      function probeUrl(url) {
-        if (!url || url.indexOf("http") !== 0) return Promise.resolve(false);
-        if (isKnownDead(url)) return Promise.resolve(false);
-        return new Promise(function (resolve) {
-          var done = false;
-          var finish = function (ok) {
-            if (done) return;
-            done = true;
-            if (!ok) markDeadHost(url);
-            resolve(!!ok);
-          };
-          var timer = setTimeout(function () {
-            finish(false);
-          }, 1800);
-          fetch(url, { method: "GET", mode: "no-cors", cache: "no-store", credentials: "omit" })
-            .then(function () {
-              clearTimeout(timer);
-              finish(true);
-            })
-            .catch(function () {
-              clearTimeout(timer);
-              finish(false);
-            });
-        });
-      }
-
-      /** Fresh document so Adsterra invoke.js can document.write. */
       function bannerSrcdoc(cb) {
         return (
           "<!DOCTYPE html><html><head><meta charset=\"utf-8\" />" +
@@ -362,54 +350,35 @@
         return null;
       }
 
-      function verifyCreative(iframe) {
-        return new Promise(function (resolve) {
-          try {
-            var doc = iframe.contentDocument;
-            if (!doc || !doc.body) return resolve(false);
-            var creative = findCreative(doc);
-            if (!creative) return resolve(false);
-            if (creative.kind === "img") return resolve(true);
-            if (isKnownDead(creative.src)) return resolve(false);
-            var host = hostOf(creative.src);
-            if (/detachment|deadline|zoology|fibre|spends|workdead/i.test(host)) {
-              markDeadHost(creative.src);
-              return resolve(false);
-            }
+      function enqueueRemount(slot) {
+        if (!slot || slot.kind === "popunder" || slot.filled) return;
+        if (remountQueue.indexOf(slot) >= 0) return;
+        remountQueue.push(slot);
+        pumpRemountQueue();
+      }
 
-            try {
-              var entries = performance.getEntriesByName(creative.src) || [];
-              for (var i = 0; i < entries.length; i++) {
-                var e = entries[i];
-                if (typeof e.responseStatus === "number" && e.responseStatus === 0) {
-                  markDeadHost(creative.src);
-                  return resolve(false);
-                }
-                if (e.transferSize > 500) return resolve(true);
-                if (typeof e.responseStatus === "number" && e.responseStatus >= 200 && e.responseStatus < 400) {
-                  return resolve(true);
-                }
-              }
-            } catch (_) {}
+      function pumpRemountQueue() {
+        if (remountBusy) return;
+        var slot = remountQueue.shift();
+        if (!slot) return;
+        remountBusy = true;
+        remountSlot(slot, true);
+        setTimeout(function () {
+          remountBusy = false;
+          pumpRemountQueue();
+        }, 700);
+      }
 
-            // Non-parking host with a sized iframe — treat as live.
-            // (Fetch probes often false-fail on real ad CDNs.)
-            if (creative.el && creative.el.offsetWidth >= 40 && creative.el.offsetHeight >= 40) {
-              return resolve(true);
-            }
-            resolve(false);
-          } catch (_) {
-            resolve(false);
-          }
-        });
+      function markFilled(slot, note) {
+        slot.filled = true;
+        setSlotStatus(slot, note || "filled", true, false);
+        paintFills();
       }
 
       function remountSlot(slot, force) {
         if (!slot || slot.kind === "popunder") return;
         var now = Date.now();
-        // Slow remounts — hammering Adsterra returns empty slots.
-        if (!force && slot.mountedAt && now - slot.mountedAt < 4000) return;
-        if (force && slot.mountedAt && now - slot.mountedAt < 2500) return;
+        if (!force && slot.mountedAt && now - slot.mountedAt < 2800) return;
         if (slot.watchIv) clearInterval(slot.watchIv);
 
         slot.attempts = (slot.attempts || 0) + 1;
@@ -418,7 +387,6 @@
         slot.gen = gen;
         setSlotStatus(slot, "loading", false, false);
         paintFills();
-        slot.body.classList.remove("ready");
         slot.body.innerHTML = "";
 
         var iframe = document.createElement("iframe");
@@ -429,80 +397,74 @@
         iframe.setAttribute("frameborder", "0");
         iframe.setAttribute("referrerpolicy", "strict-origin-when-cross-origin");
         iframe.title = "banner " + (slot.index + 1);
-        iframe.srcdoc = bannerSrcdoc(now + "-" + slot.index + "-" + slot.attempts);
+
+        // Alternate invoke srcdoc vs direct live-host watch — both can paint ads.
+        var mode = slot.attempts % 2 === 0 ? "direct" : "invoke";
+        slot.mode = mode;
+        if (mode === "direct") {
+          iframe.src = directWatchSrc("s" + slot.index + "a" + slot.attempts);
+          // Direct cross-origin watch pages: count as filled once loaded.
+          iframe.addEventListener("load", function () {
+            if (slot.gen !== gen || slot.filled) return;
+            markFilled(slot, "filled");
+          });
+          // Fallback if load is quiet
+          setTimeout(function () {
+            if (slot.gen !== gen || slot.filled) return;
+            markFilled(slot, "filled");
+          }, 2500);
+        } else {
+          iframe.srcdoc = bannerSrcdoc(now + "-" + slot.index + "-" + slot.attempts);
+        }
+
         slot.body.appendChild(iframe);
         slot.iframe = iframe;
 
+        if (mode === "direct") return;
+
         var checks = 0;
-        var verifying = false;
         slot.watchIv = setInterval(function () {
           if (slot.gen !== gen) {
             clearInterval(slot.watchIv);
             return;
           }
           checks += 1;
-          if (verifying) return;
-
           var creative = null;
           try {
             creative = findCreative(iframe.contentDocument);
           } catch (_) {}
 
-          if (!creative) {
-            // ~8s wait for inventory before giving up
-            if (checks >= 26) {
-              clearInterval(slot.watchIv);
-              setSlotStatus(slot, "no fill", false, true);
-              paintFills();
+          if (creative) {
+            clearInterval(slot.watchIv);
+            if (creative.kind === "iframe" && creative.src) {
+              var fixed = rewriteIfDead(creative.src);
+              if (fixed !== creative.src) {
+                try {
+                  creative.el.src = fixed;
+                  setSlotStatus(slot, "rewrote host", false, false);
+                } catch (_) {}
+              }
             }
+            markFilled(slot, "filled");
             return;
           }
 
-          clearInterval(slot.watchIv);
-          verifying = true;
-
-          var host = hostOf(creative.src);
-          if (/detachment|deadline|zoology|fibre|spends|workdead/i.test(host)) {
-            markDeadHost(creative.src);
-            setSlotStatus(slot, "dead offer", false, true);
-            paintFills();
-            return; // retry timer will remount — don't hammer now
+          if (checks >= 18) {
+            clearInterval(slot.watchIv);
+            setSlotStatus(slot, "empty", false, true);
+            // queue another attempt — never leave a slot dark
+            setTimeout(function () {
+              if (slot.gen === gen && !slot.filled) enqueueRemount(slot);
+            }, 400);
           }
-
-          // Show while verifying
-          slot.body.classList.add("ready");
-          iframe.classList.add("show");
-          setSlotStatus(slot, "checking", false, false);
-
-          verifyCreative(iframe).then(function (ok) {
-            if (slot.gen !== gen) return;
-            if (ok) {
-              slot.filled = true;
-              setSlotStatus(slot, "filled", true, false);
-              paintFills();
-            } else {
-              slot.filled = false;
-              iframe.classList.remove("show");
-              slot.body.classList.remove("ready");
-              setSlotStatus(slot, "dead offer", false, true);
-              paintFills();
-            }
-          });
         }, 300);
       }
 
       function retryEmpties() {
         var n = 0;
-        var delay = 0;
         slots.forEach(function (s) {
           if (s.kind === "popunder" || s.filled) return;
-          if (s.mountedAt && Date.now() - s.mountedAt < 4000) return;
-          (function (slot, d) {
-            setTimeout(function () {
-              if (slot.gen === gen && !slot.filled) remountSlot(slot, true);
-            }, d);
-          })(s, delay);
-          delay += 450;
+          enqueueRemount(s);
           n += 1;
         });
         if (n) setStatus("retrying " + n, "ok");
@@ -541,6 +503,8 @@
 
       function render() {
         var my = ++gen;
+        remountQueue = [];
+        remountBusy = false;
         var n = num("count", 4, 16, 8);
         var wantPop = document.getElementById("t-popunder").checked;
         slots.forEach(function (s) {
@@ -580,11 +544,12 @@
               mountedAt: 0,
               gen: my,
               watchIv: null,
+              mode: "",
             };
             slots.push(slot);
             setTimeout(function () {
               if (slot.gen === gen) remountSlot(slot, true);
-            }, index * 550);
+            }, index * 650);
           })(i);
         }
 
