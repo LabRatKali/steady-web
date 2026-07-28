@@ -11,7 +11,7 @@
   <script>
     // One-shot escape from stale browser/CDN copies of the old "native" lab.
     (function () {
-      var REV = "14";
+      var REV = "15";
       var q = new URLSearchParams(location.search);
       if (q.get("r") === REV) return;
       q.set("r", REV);
@@ -402,9 +402,9 @@
       var W = 300;
       var H = 250;
       // Proven sweet spot — too much parallel = Adsterra no-fills / sinkhole thrash.
-      var FILL_WAIT_MS = 16000;
-      var CHECK_MS = 250;
-      var BETWEEN_MS = 180;
+      var FILL_WAIT_MS = 18000;
+      var CHECK_MS = 280;
+      var BETWEEN_MS = 250;
       var MAX_CARDS = 120;
 
       var grid = document.getElementById("grid");
@@ -442,11 +442,11 @@
       }
 
       function concurrencyFor(n) {
-        if (n <= 6) return 2;
-        if (n <= 12) return 3;
-        if (n <= 24) return 4;
-        if (n <= 48) return 5;
-        return 6;
+        // Keep inventory healthy — stampeding Adsterra causes forever-loading / no-fill.
+        if (n <= 8) return 2;
+        if (n <= 16) return 3;
+        if (n <= 32) return 4;
+        return 5;
       }
 
       function syncPresets(n) {
@@ -609,7 +609,7 @@
         }
 
         var chain = doc.querySelectorAll(
-          "script[src*='0a/9d'],script[src*='spendsdetachment'],script[src*='zoologyfibre'],script[src*='workdeadline'],script[src*='newestfangs']"
+          "script[src*='0a/9d'],script[src*='spendsdetachment'],script[src*='zoologyfibre'],script[src*='workdeadline'],script[src*='newestfangs'],script[src*='continuation']"
         );
         var anyFrame = doc.querySelector("iframe");
         if (chain.length && anyFrame) {
@@ -962,4 +962,4 @@
   </script>
 </body>
 </html>
-<!-- r14-1785255822 -->
+<!-- r15-1785255988 -->
