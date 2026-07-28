@@ -138,15 +138,14 @@
       align-items: center;
       justify-content: center;
     }
-    .hold {
+    .adframe {
       width: 300px;
       height: 250px;
       max-width: 100%;
-      overflow: hidden;
+      border: 0;
+      display: block;
       background: #fff;
-      position: relative;
     }
-    .hold iframe { display: block !important; margin: 0 auto !important; }
     .pop-arm {
       width: calc(100% - 8px);
       min-height: 140px;
@@ -187,7 +186,7 @@
   </div>
 
   <section id="help">
-    <p>Only path: <strong>/testing/</strong>. Sad-face / "refused to connect" means a dead Adsterra offer - those are NOT counted as filled and get replaced quickly.</p>
+    <p>Only path: <strong>/testing/</strong>. Each card is a fresh 300×250 banner. Empty/dead slots auto-retry; the whole grid reloads on the timer.</p>
   </section>
 
   <div id="grid" aria-live="polite"></div>
@@ -212,7 +211,6 @@
       var nextAt = 0;
       var gen = 0;
       var slots = [];
-      var mountQueue = Promise.resolve();
 
       function setStatus(msg, kind) {
         statusEl.textContent = msg || "";
@@ -263,304 +261,106 @@
         fillsEl.innerHTML = "ok <strong>" + filled + "</strong>/<strong>" + total + "</strong>";
       }
 
-      /** True if Resource Timing shows a failed load for this URL (Chrome sad-face / refused). */
-      function resourceFailed(url) {
-        if (!url || !window.performance || !performance.getEntriesByName) return false;
-        try {
-          var entries = performance.getEntriesByName(url);
-          for (var i = 0; i < entries.length; i++) {
-            var e = entries[i];
-            if (typeof e.responseStatus === "number" && e.responseStatus === 0) return true;
-            // Connection refused / DNS fail often leave zero transfer and tiny duration.
-            if (
-              e.transferSize === 0 &&
-              e.decodedBodySize === 0 &&
-              e.duration > 0 &&
-              e.duration < 80
-            ) {
-              return true;
-            }
-          }
-        } catch (_) {}
-        return false;
+      /** Adsterra invoke.js needs a real document (document.write). srcdoc provides that. */
+      function bannerSrcdoc(cb) {
+        return (
+          "<!DOCTYPE html><html><head><meta charset=\"utf-8\" />" +
+          "<style>html,body{margin:0;padding:0;background:#fff;overflow:hidden;width:300px;height:250px}" +
+          "iframe,img{display:block;margin:0 auto;border:0;max-width:100%}</style></head><body>" +
+          "<script>atOptions={key:'" +
+          BANNER_KEY +
+          "',format:'iframe',height:250,width:300,params:{}};<" +
+          "/script>" +
+          "<script src=\"https://www.highperformanceformat.com/" +
+          BANNER_KEY +
+          "/invoke.js?cb=" +
+          encodeURIComponent(cb) +
+          "\"><" +
+          "/script>" +
+          "</body></html>"
+        );
       }
 
-      function recentFailedHosts() {
-        var bad = {};
+      function peekFill(iframe) {
         try {
-          var list = performance.getEntriesByType("resource") || [];
-          var cutoff = performance.now() - 12000;
-          for (var i = 0; i < list.length; i++) {
-            var e = list[i];
-            if (e.startTime < cutoff) continue;
-            var failed =
-              (typeof e.responseStatus === "number" && e.responseStatus === 0) ||
-              (e.transferSize === 0 && e.decodedBodySize === 0 && e.duration > 0 && e.duration < 80);
-            if (!failed) continue;
-            try {
-              bad[new URL(e.name).hostname] = true;
-            } catch (_) {}
-          }
-        } catch (_) {}
-        return bad;
-      }
-
-      function probeUrl(url) {
-        if (!url || url.indexOf("http") !== 0) return Promise.resolve(false);
-        if (resourceFailed(url)) return Promise.resolve(false);
-        return new Promise(function (resolve) {
-          var done = false;
-          var finish = function (ok) {
-            if (done) return;
-            done = true;
-            resolve(!!ok);
-          };
-          var timer = setTimeout(function () {
-            finish(false);
-          }, 2200);
-          // no-cors: opaque success ≠ healthy page, but hard network fail still rejects.
-          fetch(url, { method: "GET", mode: "no-cors", cache: "no-store", credentials: "omit" })
-            .then(function () {
-              clearTimeout(timer);
-              // Re-check timing — refused hosts often still "resolve" oddly; trust failures.
-              finish(!resourceFailed(url));
-            })
-            .catch(function () {
-              clearTimeout(timer);
-              finish(false);
-            });
-        });
-      }
-
-      function readIframeHealth(iframe) {
-        try {
-          var href = iframe.contentWindow && iframe.contentWindow.location.href;
-          if (!href || href === "about:blank") return "unknown";
-          if (/^chrome-error:|^chrome:|^about:neterror/i.test(href)) return "dead";
           var doc = iframe.contentDocument;
-          if (doc) {
-            var t = ((doc.body && doc.body.innerText) || "").toLowerCase();
-            if (
-              /refused to connect|err_connection|can't be reached|this site can.t be reached|err_tunnel|not found|sad face/.test(
-                t
-              )
-            ) {
-              return "dead";
-            }
-            // Same-origin empty chrome error document
-            if (!doc.body || (!doc.body.children.length && !(doc.body.innerText || "").trim())) {
-              return "dead";
-            }
+          if (!doc || !doc.body) return "empty";
+          var nodes = doc.querySelectorAll("iframe, img, a, ins, object, embed");
+          if (!nodes.length) {
+            // Script present but no creative yet
+            if (doc.querySelector("script[src*='highperformanceformat']")) return "waiting";
+            return "empty";
           }
-          return "live";
+          for (var i = 0; i < nodes.length; i++) {
+            var el = nodes[i];
+            var r = el.getBoundingClientRect();
+            if (r.width >= 40 && r.height >= 40) return "filled";
+          }
+          return "waiting";
         } catch (_) {
           return "unknown";
         }
       }
 
-      function verifyCreative(hold) {
-        return new Promise(function (resolve) {
-          if (!hold) return resolve(false);
-          var iframes = hold.querySelectorAll("iframe");
-          var imgs = hold.querySelectorAll("img");
-          if (!iframes.length && !imgs.length) return resolve(false);
-
-          var badHosts = recentFailedHosts();
-
-          if (imgs.length) {
-            for (var i = 0; i < imgs.length; i++) {
-              var img = imgs[i];
-              if (img.complete && img.naturalWidth > 40 && img.naturalHeight > 40) {
-                try {
-                  if (badHosts[new URL(img.currentSrc || img.src).hostname]) continue;
-                } catch (_) {}
-                return resolve(true);
-              }
-            }
-          }
-
-          if (!iframes.length) return resolve(false);
-
-          var pending = iframes.length;
-          var anyLive = false;
-          var anyDead = false;
-
-          function oneDone() {
-            pending -= 1;
-            if (pending > 0) return;
-            // Nested dead creatives: outer iframe can be "live" while inner host refused.
-            // If any recent ad-host failure happened during this mount, treat as dead.
-            if (anyLive && Object.keys(badHosts).length) {
-              resolve(false);
-              return;
-            }
-            if (anyLive) resolve(true);
-            else resolve(false);
-          }
-
-          iframes.forEach(function (el) {
-            var r = el.getBoundingClientRect();
-            if (r.width < 40 || r.height < 40) {
-              oneDone();
-              return;
-            }
-            var src = el.currentSrc || el.src || "";
-            try {
-              if (src && badHosts[new URL(src).hostname]) {
-                anyDead = true;
-                oneDone();
-                return;
-              }
-            } catch (_) {}
-            if (src && resourceFailed(src)) {
-              anyDead = true;
-              oneDone();
-              return;
-            }
-            var health = readIframeHealth(el);
-            if (health === "dead") {
-              anyDead = true;
-              oneDone();
-              return;
-            }
-            if (health === "live") {
-              anyLive = true;
-              oneDone();
-              return;
-            }
-            probeUrl(src).then(function (ok) {
-              if (ok) anyLive = true;
-              else anyDead = true;
-              oneDone();
-            });
-          });
-        });
-      }
-
-      function loadBanner(hold, slotId) {
-        return new Promise(function (resolve) {
-          window.atOptions = {
-            key: BANNER_KEY,
-            format: "iframe",
-            height: 250,
-            width: 300,
-            params: {},
-          };
-          var s = document.createElement("script");
-          s.setAttribute("data-cfasync", "false");
-          s.src =
-            "https://www.highperformanceformat.com/" +
-            BANNER_KEY +
-            "/invoke.js?cb=" +
-            Date.now() +
-            "s" +
-            encodeURIComponent(slotId);
-          s.onload = function () {
-            resolve(true);
-          };
-          s.onerror = function () {
-            resolve(false);
-          };
-          hold.appendChild(s);
-        });
-      }
-
       function remountSlot(slot, force) {
         if (!slot || slot.kind === "popunder") return;
         var now = Date.now();
-        if (!force && slot.mountedAt && now - slot.mountedAt < 2500) return;
+        if (!force && slot.mountedAt && now - slot.mountedAt < 2000) return;
         if (slot.watchIv) clearInterval(slot.watchIv);
 
         slot.attempts = (slot.attempts || 0) + 1;
         slot.filled = false;
         slot.mountedAt = now;
         slot.gen = gen;
-        slot.slotId = "b" + now + "r" + Math.floor(Math.random() * 1e6);
         setSlotStatus(slot, "loading", false, false);
         paintFills();
         slot.body.innerHTML = "";
 
-        var hold = document.createElement("div");
-        hold.className = "hold";
-        // Hide until verified — avoids Chrome sad-face / "refused to connect" flash.
-        hold.style.visibility = "hidden";
-        slot.body.appendChild(hold);
-        slot.hold = hold;
+        var iframe = document.createElement("iframe");
+        iframe.className = "adframe";
+        iframe.width = 300;
+        iframe.height = 250;
+        iframe.setAttribute("scrolling", "no");
+        iframe.setAttribute("frameborder", "0");
+        iframe.setAttribute("allow", "attribution-reporting");
+        iframe.title = "banner " + (slot.index + 1);
+        iframe.srcdoc = bannerSrcdoc(now + "-" + slot.index + "-" + slot.attempts);
+        slot.body.appendChild(iframe);
+        slot.iframe = iframe;
 
-        mountQueue = mountQueue
-          .then(function () {
-            if (slot.gen !== gen) return;
-            return loadBanner(hold, slot.slotId).then(function (ok) {
-              if (!ok) {
-                setSlotStatus(slot, "script fail", false, true);
-                return;
-              }
-              var checks = 0;
-              slot.watchIv = setInterval(function () {
-                if (slot.gen !== gen) {
-                  clearInterval(slot.watchIv);
-                  return;
-                }
-                checks += 1;
-                var hasNode =
-                  hold.querySelectorAll("iframe").length > 0 ||
-                  hold.querySelectorAll("img").length > 0;
-                if (!hasNode) {
-                  if (checks >= 14) {
-                    clearInterval(slot.watchIv);
-                    setSlotStatus(slot, "no fill", false, true);
-                    setTimeout(function () {
-                      if (slot.gen === gen) remountSlot(slot, true);
-                    }, 300);
-                  }
-                  return;
-                }
-                // Wait long enough for nested creative hosts to fail (sad-face).
-                if (checks < 6) return;
-                clearInterval(slot.watchIv);
-                verifyCreative(hold).then(function (ok2) {
-                  if (slot.gen !== gen) return;
-                  if (ok2) {
-                    hold.style.visibility = "visible";
-                    slot.filled = true;
-                    setSlotStatus(slot, "filled", true, false);
-                    paintFills();
-                    // Re-check shortly — nested iframe can die after outer reports ok.
-                    setTimeout(function () {
-                      if (slot.gen !== gen || !slot.filled) return;
-                      verifyCreative(hold).then(function (still) {
-                        if (slot.gen !== gen) return;
-                        if (still) return;
-                        slot.filled = false;
-                        hold.style.visibility = "hidden";
-                        setSlotStatus(slot, "dead offer", false, true);
-                        paintFills();
-                        remountSlot(slot, true);
-                      });
-                    }, 1800);
-                  } else {
-                    setSlotStatus(slot, "dead offer", false, true);
-                    paintFills();
-                    setTimeout(function () {
-                      if (slot.gen === gen) remountSlot(slot, true);
-                    }, 280);
-                  }
-                });
-              }, 350);
-            });
-          })
-          .then(function () {
-            return new Promise(function (r) {
-              setTimeout(r, 400);
-            });
-          });
+        var checks = 0;
+        slot.watchIv = setInterval(function () {
+          if (slot.gen !== gen) {
+            clearInterval(slot.watchIv);
+            return;
+          }
+          checks += 1;
+          var state = peekFill(iframe);
+          if (state === "filled" || state === "unknown") {
+            clearInterval(slot.watchIv);
+            slot.filled = true;
+            setSlotStatus(slot, "filled", true, false);
+            paintFills();
+            return;
+          }
+          if (checks >= 18) {
+            clearInterval(slot.watchIv);
+            slot.filled = false;
+            setSlotStatus(slot, "no fill", false, true);
+            paintFills();
+            // Quick remount for empty inventory
+            setTimeout(function () {
+              if (slot.gen === gen) remountSlot(slot, true);
+            }, 250);
+          }
+        }, 350);
       }
 
       function retryEmpties() {
         var n = 0;
         slots.forEach(function (s) {
           if (s.kind === "popunder" || s.filled) return;
-          if (s.mountedAt && Date.now() - s.mountedAt < 2500) return;
+          if (s.mountedAt && Date.now() - s.mountedAt < 2000) return;
           remountSlot(s, true);
           n += 1;
         });
@@ -607,44 +407,45 @@
         });
         slots = [];
         grid.innerHTML = "";
-        mountQueue = Promise.resolve();
         ensurePopunder(wantPop);
 
         for (var i = 0; i < n; i++) {
-          var card = document.createElement("article");
-          card.className = "card";
-          var head = document.createElement("div");
-          head.className = "card-head";
-          var left = document.createElement("span");
-          left.innerHTML = "<b>banner</b> #" + (i + 1) + " · 300x250";
-          var st = document.createElement("span");
-          st.className = "st";
-          st.textContent = "queued";
-          head.appendChild(left);
-          head.appendChild(st);
-          var body = document.createElement("div");
-          body.className = "card-body";
-          card.appendChild(head);
-          card.appendChild(body);
-          grid.appendChild(card);
+          (function (index) {
+            var card = document.createElement("article");
+            card.className = "card";
+            var head = document.createElement("div");
+            head.className = "card-head";
+            var left = document.createElement("span");
+            left.innerHTML = "<b>banner</b> #" + (index + 1) + " · 300x250";
+            var st = document.createElement("span");
+            st.className = "st";
+            st.textContent = "queued";
+            head.appendChild(left);
+            head.appendChild(st);
+            var body = document.createElement("div");
+            body.className = "card-body";
+            card.appendChild(head);
+            card.appendChild(body);
+            grid.appendChild(card);
 
-          var slot = {
-            kind: "banner",
-            body: body,
-            st: st,
-            hold: null,
-            filled: false,
-            attempts: 0,
-            mountedAt: 0,
-            gen: my,
-          };
-          slots.push(slot);
-          (function (s, delay) {
+            var slot = {
+              kind: "banner",
+              index: index,
+              body: body,
+              st: st,
+              iframe: null,
+              filled: false,
+              attempts: 0,
+              mountedAt: 0,
+              gen: my,
+              watchIv: null,
+            };
+            slots.push(slot);
+            // Stagger so each srcdoc gets its own Adsterra request
             setTimeout(function () {
-              if (gen !== my) return;
-              remountSlot(s, true);
-            }, delay);
-          })(slot, 150 + i * 450);
+              if (slot.gen === gen) remountSlot(slot, true);
+            }, index * 280);
+          })(i);
         }
 
         if (wantPop) {
@@ -652,7 +453,7 @@
           card.className = "card is-pop";
           var head = document.createElement("div");
           head.className = "card-head";
-          head.innerHTML = "<span><b>popunder</b></span><span class='st ok'>armed</span>";
+          head.innerHTML = "<span><b>popunder</b></span><span class=\"st ok\">armed</span>";
           var body = document.createElement("div");
           body.className = "card-body";
           body.style.background = "transparent";
@@ -660,31 +461,27 @@
           btn.type = "button";
           btn.className = "pop-arm";
           btn.innerHTML =
-            "<strong>Arm &amp; fire popunder</strong>" +
-            "<span>Not an on-page ad. May open a tab behind this one (often blocked).</span>";
+            "<strong>Arm &amp; fire popunder</strong><span>Not an on-page ad. May open a tab behind this one (often blocked).</span>";
           btn.addEventListener("click", function () {
             popunderLoaded = false;
             ensurePopunder(true);
-            setTimeout(function () {
-              document.body.click();
-              btn.innerHTML =
-                "<strong>Gesture sent</strong><span>Check other tabs / blocked-popup icon.</span>";
-            }, 300);
+            setStatus("popunder re-armed", "ok");
           });
           body.appendChild(btn);
           card.appendChild(head);
           card.appendChild(body);
           grid.appendChild(card);
-          slots.push({ kind: "popunder", filled: true, body: body, st: null });
+          slots.push({ kind: "popunder", filled: true });
         }
 
-        setStatus(n + " banners", "ok");
         paintFills();
+        meta.innerHTML =
+          "<strong>" +
+          location.host +
+          "</strong> /testing/ · <strong>" +
+          n +
+          "</strong> banners · srcdoc";
         scheduleLoops();
-      }
-
-      function paintMeta() {
-        meta.innerHTML = "<strong>" + location.host + "</strong> " + location.pathname;
       }
 
       document.getElementById("btn-refresh").addEventListener("click", function () {
@@ -697,8 +494,8 @@
       document.getElementById("btn-help").addEventListener("click", function () {
         helpEl.classList.toggle("show");
       });
-      document.getElementById("ads-only").addEventListener("change", function (e) {
-        document.body.classList.toggle("ads-only", !!e.target.checked);
+      document.getElementById("ads-only").addEventListener("change", function () {
+        document.body.classList.toggle("ads-only", this.checked);
       });
       document.getElementById("auto").addEventListener("change", scheduleLoops);
       ["t-popunder", "count", "secs", "retry"].forEach(function (id) {
@@ -707,14 +504,10 @@
             scheduleLoops();
             return;
           }
-          popunderLoaded = false;
-          var old = document.getElementById("steady-lab-popunder");
-          if (old) old.remove();
           render();
         });
       });
 
-      paintMeta();
       render();
     })();
   </script>
