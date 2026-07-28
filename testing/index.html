@@ -447,7 +447,7 @@
   <section id="help">
     <p><strong>/testing/</strong> — every display unit is a fitted <strong>300×250</strong> (your working Adsterra banner zone).</p>
     <p>Default wall is <strong>24</strong> cards; when the reload timer hits, the <strong>whole wall</strong> remounts. Empty slots also retry in between.</p>
-    <p>Works in system <strong>Chrome, Edge, Firefox, Safari</strong> and on phones — not inside Cursor’s IDE browser (it blocks ad hosts).</p>
+    <p>Works in system <strong>Chrome, Edge, Firefox, Safari</strong> and on phones — not inside Cursor’s IDE browser (it blocks ad hosts). Each card reports fill from inside the unit so Safari/Firefox don’t get stuck on “loading”.</p>
     <p><strong>Smartlink</strong> = same banner + tap. <strong>Popunder</strong> = arm only. If creatives stay blank, run <code>scripts/fix_adsterra_dns.ps1</code> as admin.</p>
   </section>
 
@@ -472,7 +472,7 @@
       })();
       var WORKERS_LAB = "https://steady.less-phone.workers.dev/testing/";
       var PAGES_LAB = "https://labratkali.github.io/steady-web/testing/";
-      var LAB_BUILD = "2026-07-28g";
+      var LAB_BUILD = "2026-07-28h";
 
       var W = 300;
       var H = 250;
@@ -480,23 +480,13 @@
       var DEFAULT_CARDS = 24;
       var DEFAULT_RELOAD = 20;
       var DEFAULT_RETRY = 5;
-      var FILL_WAIT_MS = 12000;
-      var CHECK_MS = 200;
-      var BETWEEN_MS = 70;
+      var FILL_WAIT_MS = 18000;
+      var CHECK_MS = 250;
+      var BETWEEN_MS = 80;
       var MAX_CARDS = 120;
-      // unit.html is more reliable on Safari / Firefox / many phones than srcdoc+scripts.
-      var USE_UNIT_PAGE = (function () {
-        try {
-          if (!("srcdoc" in document.createElement("iframe"))) return true;
-        } catch (_) {
-          return true;
-        }
-        var ua = navigator.userAgent || "";
-        if (/iPhone|iPad|iPod|Android/i.test(ua)) return true;
-        if (/Firefox|FxiOS/i.test(ua)) return true;
-        if (/Safari/i.test(ua) && !/Chrome|CriOS|Chromium|Edg|OPR|Android/i.test(ua)) return true;
-        return false;
-      })();
+      // unit.html + postMessage fill reports — works across Chrome/Edge/Firefox/Safari/mobile.
+      // srcdoc is only a one-shot fallback after an empty unit mount.
+      var USE_UNIT_PAGE = true;
 
       var grid = document.getElementById("grid");
       var statusEl = document.getElementById("status");
@@ -731,23 +721,52 @@
             });
         }
 
-        // unit.html posts real onload/onerror — do NOT use Performance responseStatus
-        // (cross-origin scripts report 0 even when healthy) or a parent-page script probe.
+        // unit.html posts real onload/onerror + fill state — more reliable than parent-only scans
+        // (Safari/Firefox often hide nested creative docs from the parent).
         window.addEventListener("message", function (ev) {
           var d = ev && ev.data;
-          if (!d || d.steadyLab !== "invoke") return;
-          if (d.ok) {
-            netState.scriptOk = true;
-            netState.invokeFailedConfirmed = false;
-          } else {
-            // Only treat as failed if nothing has filled yet.
-            if (filledCount() === 0) {
+          if (!d || !d.steadyLab) return;
+
+          if (d.steadyLab === "invoke") {
+            if (d.ok) {
+              netState.scriptOk = true;
+              netState.invokeFailedConfirmed = false;
+            } else if (filledCount() === 0) {
               netState.scriptOk = false;
               netState.invokeFailedConfirmed = true;
             }
+            paintDiag();
+            updateEnvBannerFromState();
+            return;
           }
-          paintDiag();
-          updateEnvBannerFromState();
+
+          if (d.steadyLab !== "unit") return;
+          var slot = null;
+          for (var i = 0; i < slots.length; i++) {
+            var s = slots[i];
+            if (!s || !s.iframe) continue;
+            try {
+              if (s.iframe.contentWindow === ev.source) {
+                slot = s;
+                break;
+              }
+            } catch (_) {}
+          }
+          if (!slot || slot.gen !== gen) return;
+          if (d.state === "filled") {
+            markFilled(slot);
+          } else if (d.state === "pending") {
+            // Creative DOM is there — keep waiting, don't flash empty.
+            if (!slot.filled) {
+              setSlotStatus(slot, "loading", false, false);
+              setOverlay(slot, "waiting");
+            }
+          } else if (d.state === "error") {
+            netState.scriptOk = false;
+            netState.invokeFailedConfirmed = true;
+            paintDiag();
+            updateEnvBannerFromState();
+          }
         });
       }
 
@@ -851,26 +870,24 @@
         );
       }
 
-      function mountFrame(iframe, cb) {
+      function mountFrame(iframe, cb, forceSrcdoc) {
         var token = String(cb);
-        if (USE_UNIT_PAGE) {
-          iframe.src = unitHref(token);
-          try {
-            iframe.removeAttribute("srcdoc");
-          } catch (_) {}
-        } else {
+        if (forceSrcdoc) {
           iframe.srcdoc = bannerSrcdoc(token);
           try {
             iframe.removeAttribute("src");
           } catch (_) {}
+          return;
         }
+        iframe.src = unitHref(token);
+        try {
+          iframe.removeAttribute("srcdoc");
+        } catch (_) {}
       }
 
       function findCreative(doc) {
         if (!doc) return null;
 
-        // Real painted creative only — nested Adsterra about:blank shells with
-        // a loaded <img> (cdn.storageimagedisplay.com etc). Never count empty shells.
         function paintedImg(root) {
           if (!root) return null;
           var imgs = root.querySelectorAll("img");
@@ -879,19 +896,34 @@
             var w = img.naturalWidth || 0;
             var h = img.naturalHeight || 0;
             if (w >= 40 && h >= 40) return img;
+            // Safari/Firefox: naturalWidth can lag; layout size + real src is enough.
+            if (img.complete) {
+              var src = img.currentSrc || img.getAttribute("src") || "";
+              if (
+                src &&
+                src.indexOf("data:") !== 0 &&
+                ((img.width || 0) >= 40 ||
+                  (img.offsetWidth || 0) >= 40 ||
+                  parseInt(img.getAttribute("width"), 10) >= 40)
+              ) {
+                return img;
+              }
+            }
           }
           return null;
         }
 
         function pendingCreative(root) {
-          // Image tag present with a real src but not decoded yet — keep waiting.
           if (!root) return false;
+          if (root.querySelector("[id^='atContainer'], [id^='atLink'], a[id*='atLink']")) {
+            if (root.querySelector("img[src], img[srcset], iframe")) return true;
+          }
           var imgs = root.querySelectorAll("img[src], img[srcset]");
           for (var i = 0; i < imgs.length; i++) {
             var img = imgs[i];
             var src = img.currentSrc || img.getAttribute("src") || "";
             if (!src || src.indexOf("data:") === 0) continue;
-            if (/storageimagedisplay|highperformance|effectivecpm|adsterra|cdn\./i.test(src)) {
+            if (/storageimagedisplay|highperformance|effectivecpm|adsterra|cdn\.|ahacdn/i.test(src)) {
               return true;
             }
             if ((img.getAttribute("width") || 0) >= 40 || (img.width || 0) >= 40) return true;
@@ -902,23 +934,36 @@
         function walk(root, depth) {
           if (!root || depth > 5) return null;
           if (paintedImg(root)) return { kind: "img", pending: false };
+          if (pendingCreative(root)) return { kind: "pending", pending: true };
           var frames = root.querySelectorAll("iframe");
           for (var j = 0; j < frames.length; j++) {
             var f = frames[j];
-            try {
-              var nested = f.contentDocument;
-              if (nested) {
-                var hit = walk(nested, depth + 1);
-                if (hit) return hit;
+            // Sized Adsterra shell — keep waiting even if nested doc is briefly unreadable.
+            if ((f.offsetWidth || 0) >= 200 && (f.offsetHeight || 0) >= 150) {
+              try {
+                var nested = f.contentDocument;
+                if (nested) {
+                  var hit = walk(nested, depth + 1);
+                  if (hit) return hit;
+                  var html = (nested.body && nested.body.innerHTML) || "";
+                  if (html.length > 60 && /img|atContainer|atLink|<a /i.test(html)) {
+                    return { kind: "pending", pending: true };
+                  }
+                } else {
+                  return { kind: "pending", pending: true };
+                }
+              } catch (_) {
+                return { kind: "pending", pending: true };
               }
-            } catch (_) {}
-          }
-          if (pendingCreative(root)) return { kind: "pending", pending: true };
-          for (var k = 0; k < frames.length; k++) {
-            try {
-              var n2 = frames[k].contentDocument;
-              if (n2 && pendingCreative(n2)) return { kind: "pending", pending: true };
-            } catch (_) {}
+            } else {
+              try {
+                var n2 = f.contentDocument;
+                if (n2) {
+                  var hit2 = walk(n2, depth + 1);
+                  if (hit2) return hit2;
+                }
+              } catch (_) {}
+            }
           }
           return null;
         }
@@ -991,6 +1036,19 @@
         slot.filled = false;
         slot.mounting = false;
         slot.watching = false;
+        // One automatic remount with the alternate loader (srcdoc) before giving up.
+        if (slot && !slot.triedSrcdocFallback && slot.gen === gen) {
+          slot.triedSrcdocFallback = true;
+          setSlotStatus(slot, "retry", false, false);
+          setOverlay(slot, "loading");
+          setTimeout(function () {
+            if (!slot || slot.gen !== gen || slot.filled) return;
+            slot.forceSrcdoc = true;
+            if (waitQueue.indexOf(slot) < 0) waitQueue.unshift(slot);
+            pumpQueue();
+          }, 400);
+          return;
+        }
         setOverlay(slot, "empty");
         setSlotStatus(slot, "empty", false, true);
         paintFills();
@@ -1046,12 +1104,17 @@
         iframe.setAttribute("height", String(H));
         iframe.setAttribute("scrolling", "no");
         iframe.setAttribute("frameborder", "0");
-        iframe.setAttribute("referrerpolicy", "no-referrer-when-downgrade");
         iframe.setAttribute("allow", "attribution-reporting");
-        iframe.setAttribute("importance", "high");
         iframe.title = slot.kind + " " + (slot.index + 1);
-        // Safari/Firefox/mobile → unit.html; Chromium desktop → srcdoc.
-        mountFrame(iframe, Date.now() + "-" + slot.index + "-" + slot.attempts);
+        // Let Adsterra see a normal referrer (important on Safari / Firefox).
+        try {
+          iframe.referrerPolicy = "no-referrer-when-downgrade";
+        } catch (_) {}
+        mountFrame(
+          iframe,
+          Date.now() + "-" + slot.index + "-" + slot.attempts,
+          !!slot.forceSrcdoc
+        );
         host.appendChild(iframe);
         slot.iframe = iframe;
 
@@ -1077,9 +1140,10 @@
             markFilled(slot);
             return;
           }
-          // Creative DOM present but image still decoding — give it a bit more time.
-          if (creative && creative.pending && bonusChecks < 25) {
+          // Creative DOM present but image still decoding — give it more time.
+          if (creative && creative.pending && bonusChecks < 40) {
             bonusChecks += 1;
+            setOverlay(slot, "waiting");
             return;
           }
           if (checks >= maxChecks + bonusChecks) markEmpty(slot);
@@ -1184,6 +1248,8 @@
           watchIv: null,
           mounting: false,
           watching: false,
+          triedSrcdocFallback: false,
+          forceSrcdoc: false,
         };
         slots.push(slot);
         enqueueMount(slot);
