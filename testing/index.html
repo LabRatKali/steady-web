@@ -12,53 +12,58 @@
   <style>
     :root {
       color-scheme: dark;
-      --bg: #070b09;
-      --panel: #101712;
-      --line: rgba(244, 248, 245, 0.12);
+      --bg: #060a08;
+      --panel: #0e1511;
+      --line: rgba(232, 240, 235, 0.1);
       --text: #e8f0eb;
-      --muted: #8fa398;
+      --muted: #7f9488;
       --accent: #3dcf8a;
       --warn: #e6c36a;
       --danger: #e8a0a0;
-      --stage: #ffffff;
+      --stage: #fff;
+      --pad: 0.45rem;
+      --banner-w: 300px;
+      --banner-h: 250px;
     }
     * { box-sizing: border-box; }
     html, body {
       margin: 0;
       min-height: 100%;
       background:
-        radial-gradient(ellipse 70% 45% at 50% -8%, rgba(61, 207, 138, 0.1), transparent),
+        radial-gradient(ellipse 90% 40% at 50% -5%, rgba(61, 207, 138, 0.09), transparent 55%),
         var(--bg);
       color: var(--text);
       font: 13px/1.4 "Segoe UI", system-ui, sans-serif;
     }
     body.ads-only .lab-chrome,
     body.ads-only #help { display: none !important; }
+    body.ads-only #grid { padding-top: 0.75rem; }
+
     .lab-chrome {
       position: sticky;
       top: 0;
       z-index: 40;
-      background: rgba(7, 11, 9, 0.95);
+      background: rgba(6, 10, 8, 0.92);
       border-bottom: 1px solid var(--line);
-      padding: 0.7rem 1rem 0.85rem;
-      backdrop-filter: blur(14px);
+      padding: 0.75rem 1.1rem 0.85rem;
+      backdrop-filter: blur(16px);
     }
     .row {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.4rem 0.7rem;
+      gap: 0.45rem 0.75rem;
       align-items: center;
-      margin: 0.22rem 0;
+      margin: 0.2rem 0;
     }
     .title {
       font-weight: 800;
       color: var(--accent);
-      letter-spacing: 0.05em;
-      font-size: 14px;
+      letter-spacing: 0.06em;
+      font-size: 13px;
     }
     label.chk {
       display: inline-flex;
-      gap: 0.28rem;
+      gap: 0.3rem;
       align-items: center;
       color: var(--muted);
       cursor: pointer;
@@ -68,24 +73,26 @@
     label.chk input { accent-color: var(--accent); }
     label:not(.chk) { color: var(--muted); font-size: 12px; }
     input[type="number"] {
-      width: 3.5rem;
+      width: 3.4rem;
       background: var(--panel);
       color: var(--text);
       border: 1px solid var(--line);
       border-radius: 6px;
-      padding: 0.25rem 0.35rem;
+      padding: 0.28rem 0.35rem;
       font: inherit;
     }
     button {
       border: 1px solid var(--line);
-      background: #162019;
+      background: #15201a;
       color: var(--text);
-      border-radius: 7px;
-      padding: 0.35rem 0.7rem;
+      border-radius: 8px;
+      padding: 0.38rem 0.75rem;
       font: inherit;
       cursor: pointer;
+      transition: border-color 0.15s ease, transform 0.12s ease;
     }
-    button:hover { border-color: rgba(61, 207, 138, 0.45); }
+    button:hover { border-color: rgba(61, 207, 138, 0.4); }
+    button:active { transform: scale(0.98); }
     button.primary {
       background: var(--accent);
       color: #042316;
@@ -96,79 +103,130 @@
     #meta strong, #tick strong, #fills strong { color: var(--text); }
     #status.ok { color: var(--accent); }
     #status.warn { color: var(--warn); }
-    #diag.bad { color: var(--danger); }
     #diag.ok { color: var(--accent); }
+    #diag.bad { color: var(--danger); }
+
     #help {
       display: none;
-      margin: 0.7rem 1rem 0;
-      padding: 0.85rem 1rem;
+      margin: 0.75rem 1.1rem 0;
+      padding: 0.9rem 1rem;
       border: 1px solid var(--line);
       border-radius: 12px;
       background: var(--panel);
       color: var(--muted);
       font-size: 12.5px;
-      max-width: 54rem;
+      max-width: 42rem;
     }
     #help.show { display: block; }
     #help p { margin: 0.35rem 0; }
     #help strong { color: var(--text); }
+
     #grid {
       display: grid;
-      gap: 0.85rem;
-      padding: 0.9rem 1rem 1.4rem;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1rem;
+      padding: 1rem 1.1rem 1.6rem;
+      /* Exact fit for 300×250 stages + card chrome */
+      grid-template-columns: repeat(auto-fill, minmax(312px, 312px));
+      justify-content: start;
       align-items: start;
     }
+
     .card {
+      width: 312px;
       border: 1px solid var(--line);
-      border-radius: 14px;
+      border-radius: 12px;
       background: var(--panel);
-      padding: 0.5rem;
+      padding: var(--pad);
       display: flex;
       flex-direction: column;
+      gap: 0.35rem;
       overflow: hidden;
-      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      transition: border-color 0.2s ease, box-shadow 0.25s ease, transform 0.25s ease;
     }
     .card.is-filled {
-      border-color: rgba(61, 207, 138, 0.5);
-      box-shadow: 0 0 0 1px rgba(61, 207, 138, 0.14);
+      border-color: rgba(61, 207, 138, 0.55);
+      box-shadow: 0 0 0 1px rgba(61, 207, 138, 0.12), 0 8px 24px rgba(0, 0, 0, 0.25);
     }
-    .card.is-wide { grid-column: 1 / -1; }
-    .card.is-pop, .card.is-smart { min-height: 140px; }
+    .card.is-filled.is-fresh {
+      animation: popIn 0.35s ease;
+    }
+    @keyframes popIn {
+      from { transform: scale(0.985); box-shadow: 0 0 0 0 transparent; }
+      to { transform: scale(1); }
+    }
+    .card.is-pop {
+      width: 312px;
+      min-height: auto;
+    }
+
     .card-head {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 0.5rem;
-      padding: 0.15rem 0.25rem 0.45rem;
+      gap: 0.4rem;
+      padding: 0 0.1rem;
       color: var(--muted);
-      font-size: 11.5px;
+      font-size: 11px;
+      letter-spacing: 0.02em;
+    }
+    .card-head .who {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
     }
     .card-head b { color: var(--text); font-weight: 700; }
-    .st { font-variant-numeric: tabular-nums; }
+    .tag {
+      display: inline-block;
+      padding: 0.1rem 0.35rem;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      background: rgba(61, 207, 138, 0.12);
+      color: var(--accent);
+    }
+    .tag.smart { background: rgba(230, 195, 106, 0.14); color: var(--warn); }
+    .tag.native { background: rgba(140, 180, 255, 0.14); color: #9db7ff; }
+    .tag.pop { background: rgba(232, 160, 160, 0.12); color: var(--danger); }
+
+    .st { font-variant-numeric: tabular-nums; font-size: 11px; }
     .st.ok { color: var(--accent); }
     .st.bad { color: var(--danger); }
     .st.wait { color: var(--warn); }
+
+    /* Exact creative stage — no leftover white / overflow */
     .card-body {
-      flex: 1;
+      width: var(--banner-w);
+      height: var(--banner-h);
+      margin: 0 auto;
       display: flex;
       align-items: center;
       justify-content: center;
       background: var(--stage);
-      border-radius: 10px;
+      border-radius: 8px;
       position: relative;
       overflow: hidden;
-      min-height: 60px;
+      flex-shrink: 0;
     }
-    .card.is-pop .card-body,
-    .card.is-smart .card-body { background: transparent; }
+    .card.is-pop .card-body {
+      width: 100%;
+      height: auto;
+      min-height: 0;
+      background: transparent;
+      overflow: visible;
+    }
+
     .adframe {
+      width: var(--banner-w);
+      height: var(--banner-h);
       border: 0;
       background: #fff;
       display: block;
       position: relative;
       z-index: 1;
     }
+
     .overlay {
       position: absolute;
       inset: 0;
@@ -177,54 +235,81 @@
       align-items: center;
       justify-content: center;
       text-align: center;
-      padding: 1rem;
+      padding: 0.75rem;
       font-size: 12px;
-      letter-spacing: 0.03em;
       pointer-events: none;
     }
     .overlay.show { display: flex; }
     .overlay.loading {
-      color: #5f6f66;
-      background: linear-gradient(110deg, #f3f6f4 25%, #e7eeea 45%, #f3f6f4 65%);
+      color: #6a7a72;
+      background: linear-gradient(110deg, #f2f5f3 20%, #e6ece8 45%, #f2f5f3 70%);
       background-size: 200% 100%;
-      animation: shimmer 1.15s ease-in-out infinite;
+      animation: shimmer 1s ease-in-out infinite;
     }
     .overlay.empty {
-      color: #7a4a4a;
-      background: rgba(255, 248, 248, 0.96);
       flex-direction: column;
-      gap: 0.25rem;
+      gap: 0.2rem;
+      color: #8a5555;
+      background: #fbf6f6;
     }
-    .overlay.empty strong { color: #a05050; font-size: 12.5px; }
+    .overlay.empty strong { color: #b06060; font-size: 12px; }
     @keyframes shimmer {
       0% { background-position: 100% 0; }
       100% { background-position: -100% 0; }
     }
-    .arm-btn {
-      width: 100%;
-      text-align: left;
-      padding: 0.9rem;
-      font: inherit;
-      cursor: pointer;
-      background: #162019;
-      border: 1px dashed rgba(61, 207, 138, 0.35);
-      border-radius: 10px;
-      color: var(--text);
-    }
-    .arm-btn strong { color: var(--accent); display: block; margin-bottom: 0.3rem; }
-    .arm-btn span { color: var(--muted); font-size: 12px; display: block; }
+
     .smart-wrap {
       position: relative;
-      display: inline-flex;
+      width: var(--banner-w);
+      height: var(--banner-h);
     }
     .smart-wrap .hit {
       position: absolute;
       inset: 0;
       z-index: 3;
       cursor: pointer;
-      background: transparent;
       border: 0;
       padding: 0;
+      background: transparent;
+    }
+    .smart-wrap .hit:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: -2px;
+    }
+    .smart-caption {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 4;
+      pointer-events: none;
+      padding: 0.35rem 0.5rem;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #042316;
+      background: linear-gradient(transparent, rgba(61, 207, 138, 0.92));
+      text-align: center;
+    }
+
+    .arm-btn {
+      width: 100%;
+      text-align: left;
+      padding: 0.85rem 0.9rem;
+      font: inherit;
+      cursor: pointer;
+      background: #15201a;
+      border: 1px dashed rgba(61, 207, 138, 0.35);
+      border-radius: 10px;
+      color: var(--text);
+    }
+    .arm-btn strong { color: var(--accent); display: block; margin-bottom: 0.25rem; }
+    .arm-btn span { color: var(--muted); font-size: 12px; display: block; line-height: 1.35; }
+
+    @media (max-width: 340px) {
+      #grid { grid-template-columns: 1fr; justify-content: stretch; }
+      .card { width: 100%; max-width: 312px; }
     }
   </style>
 </head>
@@ -239,9 +324,8 @@
     </div>
     <div class="row">
       <label>cards <input id="count" type="number" min="1" max="24" value="12" /></label>
-      <label>reload all <input id="reload" type="number" min="10" max="300" value="30" /> s</label>
-      <label>retry empty <input id="retry" type="number" min="3" max="90" value="6" /> s</label>
-      <label class="chk"><input type="checkbox" id="mix" checked /> mix sizes</label>
+      <label>reload all <input id="reload" type="number" min="8" max="300" value="18" /> s</label>
+      <label>retry empty <input id="retry" type="number" min="2" max="60" value="4" /> s</label>
       <label class="chk"><input type="checkbox" id="t-native" checked /> native</label>
       <label class="chk"><input type="checkbox" id="t-smart" checked /> smartlink</label>
       <label class="chk"><input type="checkbox" id="t-popunder" /> popunder</label>
@@ -255,10 +339,9 @@
   </div>
 
   <section id="help">
-    <p><strong>URL:</strong> <code>/testing/</code> only. Hard-refresh (Ctrl+F5) if you ever see an old lab.</p>
-    <p><strong>Banners</strong> use your Adsterra 300×250 zone. With <strong>mix sizes</strong> on, the lab also requests 336×280, 728×90, 160×600, 320×50, etc. Those extra sizes fill when inventory allows — 300×250 stays the most reliable.</p>
-    <p><strong>Native</strong> is your second Adsterra unit. <strong>Smartlink</strong> shows a real banner; clicking it opens the smartlink. <strong>Popunder</strong> is not an on-page box — arm it, then a later click may open a tab behind this one.</p>
-    <p>Ads mount a couple at a time so the wall fills fast without starving Adsterra. Empty slots retry; the whole wall reloads on the timer.</p>
+    <p><strong>/testing/</strong> — every display unit is a true <strong>300×250</strong> frame so creatives fit cleanly (your Adsterra banner zone).</p>
+    <p><strong>Native</strong> uses its own unit in the same fitted stage. <strong>Smartlink</strong> is a 300×250 banner you can tap to open the link. <strong>Popunder</strong> is arm-only (not an on-page size).</p>
+    <p>Slots mount together for speed. Empties retry; the wall reloads on the timer.</p>
   </section>
 
   <div id="grid" aria-live="polite"></div>
@@ -275,22 +358,14 @@
       var POPUNDER_SRC =
         "https://pl30567774.effectivecpmnetwork.com/3c/91/ea/3c91ea5fe0936ca26b9cc5cebf036f9f.js";
 
-      // Proven fast wall: a couple at a time + about:blank creative detection.
-      var CONCURRENCY = 2;
-      var FILL_WAIT_MS = 14000;
-      var CHECK_MS = 250;
-      var BETWEEN_MS = 280;
-
-      var BANNER_SIZES = [
-        { w: 300, h: 250, name: "300×250" },
-        { w: 336, h: 280, name: "336×280" },
-        { w: 728, h: 90, name: "728×90", wide: true },
-        { w: 320, h: 50, name: "320×50" },
-        { w: 468, h: 60, name: "468×60" },
-        { w: 160, h: 600, name: "160×600" },
-        { w: 120, h: 600, name: "120×600" },
-        { w: 300, h: 250, name: "300×250" },
-      ];
+      // Zone size only — creatives fit the frame.
+      var W = 300;
+      var H = 250;
+      // Parallel mounts — detection is solid; fill the wall fast.
+      var CONCURRENCY = 8;
+      var FILL_WAIT_MS = 12000;
+      var CHECK_MS = 220;
+      var BETWEEN_MS = 40;
 
       var grid = document.getElementById("grid");
       var statusEl = document.getElementById("status");
@@ -328,7 +403,7 @@
         var ctrl = typeof AbortController !== "undefined" ? new AbortController() : null;
         var t = setTimeout(function () {
           if (ctrl) ctrl.abort();
-        }, 8000);
+        }, 7000);
         fetch(INVOKE + "?diag=" + Date.now(), {
           mode: "no-cors",
           cache: "no-store",
@@ -336,12 +411,12 @@
         })
           .then(function () {
             clearTimeout(t);
-            diagEl.textContent = "ad network reachable · dual mount · /testing/";
+            diagEl.textContent = "ad network reachable · parallel mount · /testing/";
             diagEl.className = "ok";
           })
           .catch(function () {
             clearTimeout(t);
-            diagEl.textContent = "ad network blocked or slow — check DNS (1.1.1.1) / ad blocker";
+            diagEl.textContent = "ad network blocked or slow — check DNS / ad blocker";
             diagEl.className = "bad";
           });
       }
@@ -368,13 +443,13 @@
         if (!slot || !slot.overlay) return;
         if (mode === "loading") {
           slot.overlay.className = "overlay loading show";
-          slot.overlay.textContent = "loading ad…";
+          slot.overlay.textContent = "loading…";
         } else if (mode === "waiting") {
           slot.overlay.className = "overlay loading show";
-          slot.overlay.textContent = "waiting…";
+          slot.overlay.textContent = "…";
         } else if (mode === "empty") {
           slot.overlay.className = "overlay empty show";
-          slot.overlay.innerHTML = "<strong>no fill</strong><span>will retry</span>";
+          slot.overlay.innerHTML = "<strong>no fill</strong><span>retrying</span>";
         } else {
           slot.overlay.className = "overlay";
           slot.overlay.textContent = "";
@@ -387,7 +462,14 @@
         slot.st.className =
           "st" +
           (ok ? " ok" : bad ? " bad" : text === "loading" || text === "queued" ? " wait" : "");
-        if (slot.card) slot.card.classList.toggle("is-filled", !!ok);
+        if (slot.card) {
+          slot.card.classList.toggle("is-filled", !!ok);
+          if (ok) {
+            slot.card.classList.remove("is-fresh");
+            void slot.card.offsetWidth;
+            slot.card.classList.add("is-fresh");
+          }
+        }
       }
 
       function paintFills() {
@@ -395,24 +477,23 @@
         var filled = 0;
         slots.forEach(function (s) {
           if (s.kind === "popunder") return;
-          if (s.kind === "smart" && !s.iframe) return;
           total++;
           if (s.filled) filled++;
         });
         fillsEl.innerHTML = "ok <strong>" + filled + "</strong>/<strong>" + total + "</strong>";
-        if (total > 0 && filled === total) setStatus("all slots filled", "ok");
+        if (total > 0 && filled === total) setStatus("all filled", "ok");
       }
 
-      function bannerSrcdoc(w, h, cb) {
+      function bannerSrcdoc(cb) {
         return (
           "<!DOCTYPE html><html><head><meta charset=\"utf-8\" />" +
           "<meta name=\"referrer\" content=\"no-referrer-when-downgrade\" />" +
           "<base href=\"" + location.origin + "/\" />" +
           "<style>html,body{margin:0;padding:0;background:#fff;overflow:hidden;width:" +
-          w + "px;height:" + h + "px}" +
-          "iframe,img{display:block;margin:0 auto;border:0;max-width:100%}</style></head><body>" +
+          W + "px;height:" + H + "px}" +
+          "iframe,img{display:block;margin:0;border:0;width:100%;max-width:" + W + "px}</style></head><body>" +
           "<script>window.atOptions={key:'" + BANNER_KEY +
-          "',format:'iframe',height:" + h + ",width:" + w + ",params:{}};<" + "/script>" +
+          "',format:'iframe',height:" + H + ",width:" + W + ",params:{}};<" + "/script>" +
           "<script src=\"" + INVOKE + "?cb=" + encodeURIComponent(cb) + "\"><" + "/script>" +
           "</body></html>"
         );
@@ -422,9 +503,11 @@
         return (
           "<!DOCTYPE html><html><head><meta charset=\"utf-8\" />" +
           "<base href=\"" + location.origin + "/\" />" +
-          "<style>html,body{margin:0;padding:8px;background:#fff;overflow:hidden;min-height:250px}" +
-          "#container-" + NATIVE_ID + "{min-height:220px;display:flex;align-items:center;justify-content:center}" +
-          "iframe,img{display:block;margin:0 auto;border:0;max-width:100%}</style></head><body>" +
+          "<style>html,body{margin:0;padding:0;background:#fff;overflow:hidden;width:" +
+          W + "px;height:" + H + "px}" +
+          "#container-" + NATIVE_ID + "{width:" + W + "px;height:" + H +
+          "px;display:flex;align-items:center;justify-content:center;overflow:hidden}" +
+          "iframe,img{display:block;margin:0 auto;border:0;max-width:100%;max-height:100%}</style></head><body>" +
           "<div id=\"container-" + NATIVE_ID + "\"></div>" +
           "<script async data-cfasync=\"false\" src=\"" + NATIVE_SRC + "?cb=" +
           encodeURIComponent(cb) + "\"><" + "/script>" +
@@ -458,9 +541,6 @@
         for (var j = 0; j < frames.length; j++) {
           var f = frames[j];
           var src = (f.getAttribute("src") || f.src || "").trim();
-          var sized =
-            (f.offsetWidth || parseInt(f.width, 10) || 0) >= 40 &&
-            (f.offsetHeight || parseInt(f.height, 10) || 0) >= 40;
 
           if (!src || src === "about:blank") {
             try {
@@ -555,48 +635,46 @@
         setOverlay(slot, "loading");
         paintFills();
 
-        var w = slot.size ? slot.size.w : 300;
-        var h = slot.size ? slot.size.h : 250;
         slot.body.innerHTML = "";
         var overlay = document.createElement("div");
         overlay.className = "overlay loading show";
-        overlay.textContent = "loading ad…";
+        overlay.textContent = "loading…";
         slot.overlay = overlay;
-        slot.body.appendChild(overlay);
 
         var host = slot.body;
         if (slot.kind === "smart") {
           var wrap = document.createElement("div");
           wrap.className = "smart-wrap";
-          wrap.style.width = w + "px";
-          wrap.style.height = h + "px";
           var hit = document.createElement("button");
           hit.type = "button";
           hit.className = "hit";
-          hit.title = "Open smartlink";
+          hit.setAttribute("aria-label", "Open smartlink");
           hit.addEventListener("click", function () {
             window.open(SMARTLINK, "_blank", "noopener,noreferrer");
           });
+          var caption = document.createElement("div");
+          caption.className = "smart-caption";
+          caption.textContent = "tap · smartlink";
+          wrap.appendChild(overlay);
           wrap.appendChild(hit);
+          wrap.appendChild(caption);
           slot.body.appendChild(wrap);
           host = wrap;
-          host.appendChild(overlay);
+        } else {
+          slot.body.appendChild(overlay);
         }
 
         var iframe = document.createElement("iframe");
         iframe.className = "adframe";
-        iframe.width = w;
-        iframe.height = h;
-        iframe.style.width = w + "px";
-        iframe.style.height = h + "px";
+        iframe.width = W;
+        iframe.height = H;
         iframe.setAttribute("scrolling", "no");
         iframe.setAttribute("frameborder", "0");
         iframe.setAttribute("referrerpolicy", "no-referrer-when-downgrade");
         iframe.setAttribute("allow", "attribution-reporting");
-        iframe.title = (slot.kind || "banner") + " " + (slot.index + 1);
+        iframe.title = slot.kind + " " + (slot.index + 1);
         var cb = Date.now() + "-" + slot.index + "-" + slot.attempts;
-        iframe.srcdoc =
-          slot.kind === "native" ? nativeSrcdoc(cb) : bannerSrcdoc(w, h, cb);
+        iframe.srcdoc = slot.kind === "native" ? nativeSrcdoc(cb) : bannerSrcdoc(cb);
         host.appendChild(iframe);
         slot.iframe = iframe;
 
@@ -625,11 +703,11 @@
         var n = 0;
         slots.forEach(function (s) {
           if (s.kind === "popunder" || s.filled || s.mounting) return;
-          if (s.mountedAt && Date.now() - s.mountedAt < 2500) return;
+          if (s.mountedAt && Date.now() - s.mountedAt < 1500) return;
           enqueueMount(s);
           n += 1;
         });
-        if (n) setStatus("retrying " + n + " empty", "ok");
+        if (n) setStatus("retry " + n, "ok");
       }
 
       function clearTimers() {
@@ -645,8 +723,8 @@
           tickEl.innerHTML = "auto <strong>off</strong>";
           return;
         }
-        var retrySecs = num("retry", 3, 90, 6);
-        var reloadSecs = num("reload", 10, 300, 30);
+        var retrySecs = num("retry", 2, 60, 4);
+        var reloadSecs = num("reload", 8, 300, 18);
         nextReloadAt = Date.now() + reloadSecs * 1000;
         retryTimer = setInterval(retryEmpties, retrySecs * 1000);
         function paintTick() {
@@ -663,28 +741,31 @@
         }, reloadSecs * 1000);
       }
 
-      function pickSize(i, mix) {
-        if (!mix) return BANNER_SIZES[0];
-        return BANNER_SIZES[i % BANNER_SIZES.length];
+      function kindMeta(kind) {
+        if (kind === "smart") return { label: "smartlink", tag: "smart", tagText: "link" };
+        if (kind === "native") return { label: "native", tag: "native", tagText: "native" };
+        return { label: "banner", tag: "", tagText: "ad" };
       }
 
       function makeMountCard(spec, my) {
+        var metaK = kindMeta(spec.kind);
         var card = document.createElement("article");
         card.className = "card";
-        if (spec.size && spec.size.wide) card.classList.add("is-wide");
-        if (spec.kind === "smart") card.classList.add("is-smart");
 
         var head = document.createElement("div");
         head.className = "card-head";
         var left = document.createElement("span");
-        var label =
-          spec.kind === "native"
-            ? "native"
-            : spec.kind === "smart"
-              ? "smartlink"
-              : "banner";
-        var sizeLabel = spec.size ? spec.size.name : "300×250";
-        left.innerHTML = "<b>" + label + "</b> #" + (spec.index + 1) + " · " + sizeLabel;
+        left.className = "who";
+        left.innerHTML =
+          "<b>" +
+          metaK.label +
+          "</b> #" +
+          (spec.index + 1) +
+          ' <span class="tag' +
+          (metaK.tag ? " " + metaK.tag : "") +
+          '">' +
+          metaK.tagText +
+          "</span> · 300×250";
         var st = document.createElement("span");
         st.className = "st wait";
         st.textContent = "queued";
@@ -693,11 +774,6 @@
 
         var body = document.createElement("div");
         body.className = "card-body";
-        if (spec.size) {
-          body.style.minHeight = Math.max(60, spec.size.h + 8) + "px";
-        } else {
-          body.style.minHeight = "258px";
-        }
 
         card.appendChild(head);
         card.appendChild(body);
@@ -706,7 +782,6 @@
         var slot = {
           kind: spec.kind,
           index: spec.index,
-          size: spec.size,
           card: card,
           body: body,
           st: st,
@@ -728,43 +803,27 @@
         waitQueue = [];
         activeMounts = 0;
         var n = num("count", 1, 24, 12);
-        var mix = document.getElementById("mix").checked;
         var wantNative = document.getElementById("t-native").checked;
         var wantSmart = document.getElementById("t-smart").checked;
         var wantPop = document.getElementById("t-popunder").checked;
 
-        slots.forEach(function (s) {
-          stopWatch(s);
-        });
+        slots.forEach(stopWatch);
         slots = [];
         grid.innerHTML = "";
         if (!wantPop) ensurePopunder(false);
 
         var plan = [];
-        var i = 0;
         while (plan.length < n) {
-          // Prefer proven 300×250; mix other sizes + optional native/smart.
-          if (wantNative && plan.length > 0 && plan.length % 5 === 4) {
-            plan.push({
-              kind: "native",
-              index: plan.length,
-              size: { w: 300, h: 250, name: "native" },
-            });
+          var i = plan.length;
+          if (wantNative && i > 0 && i % 5 === 4) {
+            plan.push({ kind: "native", index: i });
             continue;
           }
-          if (wantSmart && plan.length > 0 && plan.length % 7 === 6) {
-            plan.push({
-              kind: "smart",
-              index: plan.length,
-              size: pickSize(i++, mix),
-            });
+          if (wantSmart && i > 0 && i % 6 === 5) {
+            plan.push({ kind: "smart", index: i });
             continue;
           }
-          plan.push({
-            kind: "banner",
-            index: plan.length,
-            size: pickSize(i++, mix),
-          });
+          plan.push({ kind: "banner", index: i });
         }
 
         plan.forEach(function (spec) {
@@ -776,19 +835,19 @@
           card.className = "card is-pop";
           var head = document.createElement("div");
           head.className = "card-head";
-          head.innerHTML = "<span><b>popunder</b></span><span class=\"st ok\">ready</span>";
+          head.innerHTML =
+            '<span class="who"><b>popunder</b> <span class="tag pop">arm</span></span><span class="st ok">ready</span>';
           var body = document.createElement("div");
           body.className = "card-body";
-          body.style.background = "transparent";
           var btn = document.createElement("button");
           btn.type = "button";
           btn.className = "arm-btn";
           btn.innerHTML =
-            "<strong>Arm popunder</strong><span>Not an on-page ad. After arming, a later click may open a tab behind this one (often blocked).</span>";
+            "<strong>Arm popunder</strong><span>Not a banner size. After arming, a later click may open a tab behind this one.</span>";
           btn.addEventListener("click", function () {
             popunderLoaded = false;
             ensurePopunder(true);
-            setStatus("popunder armed — click elsewhere on the page", "ok");
+            setStatus("popunder armed", "ok");
           });
           body.appendChild(btn);
           card.appendChild(head);
@@ -799,12 +858,8 @@
 
         paintFills();
         meta.innerHTML =
-          "<strong>" +
-          location.host +
-          "</strong> /testing/ · <strong>" +
-          n +
-          "</strong> cards";
-        setStatus("mounting…", "warn");
+          "<strong>" + location.host + "</strong> /testing/ · <strong>" + n + "</strong> cards";
+        setStatus("loading wall…", "warn");
         scheduleLoops();
       }
 
@@ -825,23 +880,18 @@
       ["reload", "retry"].forEach(function (id) {
         document.getElementById(id).addEventListener("change", scheduleLoops);
       });
-      ["count", "mix", "t-native", "t-smart", "t-popunder"].forEach(function (id) {
-        document.getElementById(id).addEventListener("change", function () {
-          render();
-        });
+      ["count", "t-native", "t-smart", "t-popunder"].forEach(function (id) {
+        document.getElementById(id).addEventListener("change", render);
       });
 
-      // Prefer a clean /testing/ address bar (no index.html, no ?v= junk).
       (function cleanUrl() {
         var path = location.pathname.replace(/index\.html$/i, "");
         if (!path.endsWith("/")) path += "/";
+        if (path.indexOf("/testing") === -1) return;
         var q = new URLSearchParams(location.search);
-        q.delete("v");
-        q.delete("chrome");
-        q.delete("nocache");
-        q.delete("t");
-        q.delete("_");
-        q.delete("cb");
+        ["v", "chrome", "nocache", "t", "_", "cb"].forEach(function (k) {
+          q.delete(k);
+        });
         var next = path + (q.toString() ? "?" + q.toString() : "") + location.hash;
         if (next !== location.pathname + location.search + location.hash) {
           history.replaceState(null, "", next);
@@ -854,3 +904,4 @@
   </script>
 </body>
 </html>
+<!-- fit-fast 1785255050 -->
