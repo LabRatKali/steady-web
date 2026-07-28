@@ -248,6 +248,43 @@
     });
   }
 
+  function registrableDomain(raw) {
+    let host = String(raw || "")
+      .trim()
+      .toLowerCase()
+      .replace(/^https?:\/\//, "")
+      .split("/")[0]
+      .split("?")[0]
+      .replace(/:\d+$/, "")
+      .replace(/\.$/, "")
+      .replace(/^www\./, "");
+    if (!host || host.indexOf(".") < 0) return "";
+    const multi = [
+      "github.io",
+      "workers.dev",
+      "pages.dev",
+      "co.uk",
+      "org.uk",
+      "ac.uk",
+      "gov.uk",
+      "com.au",
+      "net.au",
+      "co.nz",
+      "co.il",
+      "com.br",
+    ];
+    for (const suffix of multi) {
+      if (host === suffix) return host;
+      if (host.endsWith("." + suffix)) {
+        const left = host.slice(0, -(suffix.length + 1));
+        const label = left.includes(".") ? left.split(".").pop() : left;
+        return label ? label + "." + suffix : host;
+      }
+    }
+    const parts = host.split(".");
+    return parts.length <= 2 ? host : parts.slice(-2).join(".");
+  }
+
   async function removeAllowedSite(host) {
     mutatePolicyLocal((p) => {
       const hosts = String(p.extraAllowedHosts || "")
@@ -260,22 +297,17 @@
   }
 
   async function addAllowedSite(raw) {
-    const host = String(raw || "")
-      .trim()
-      .toLowerCase()
-      .replace(/^https?:\/\//, "")
-      .split("/")[0]
-      .replace(/^www\./, "");
+    const host = registrableDomain(raw);
     if (!host) return;
     mutatePolicyLocal((p) => {
       const hosts = String(p.extraAllowedHosts || "")
         .split(/[,;\s]+/)
-        .map((h) => h.trim().toLowerCase())
+        .map((h) => registrableDomain(h) || h.trim().toLowerCase())
         .filter(Boolean);
       if (!hosts.includes(host)) hosts.push(host);
       p.extraAllowedHosts = hosts.join(",");
     });
-    flashOk(`${host} allowed — tap Save & push`);
+    flashOk(`${host} allowed (all subdomains) — tap Save & push`);
   }
 
   async function loadKidPhones() {
