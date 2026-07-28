@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="robots" content="noindex, nofollow, noarchive" />
-  <meta name="googlebot" content="noindex, nofollow" />
   <title>Steady ad lab</title>
   <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml" />
   <style>
@@ -12,14 +11,13 @@
       color-scheme: dark;
       --bg: #070b09;
       --panel: #101712;
-      --panel2: #162019;
       --line: rgba(244, 248, 245, 0.12);
       --text: #e8f0eb;
       --muted: #8fa398;
       --accent: #3dcf8a;
-      --danger: #e8a0a0;
       --warn: #e6c36a;
-      --browser-h: min(42vh, 420px);
+      --danger: #e8a0a0;
+      --browser-h: min(46vh, 460px);
     }
     * { box-sizing: border-box; }
     html, body {
@@ -27,61 +25,54 @@
       min-height: 100%;
       background: var(--bg);
       color: var(--text);
-      font: 13px/1.45 "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+      font: 13px/1.4 "Segoe UI", system-ui, sans-serif;
     }
-    body.has-browser { padding-bottom: calc(var(--browser-h) + 12px); }
+    body.has-browser { padding-bottom: calc(var(--browser-h) + 8px); }
     body.ads-only .lab-chrome,
-    body.ads-only #help,
-    body.ads-only #browser { display: none !important; }
-    body.ads-only { padding-bottom: 0; }
+    body.ads-only #help { display: none !important; }
 
     .lab-chrome {
       position: sticky;
       top: 0;
       z-index: 50;
-      background: rgba(7, 11, 9, 0.96);
+      background: rgba(7, 11, 9, 0.97);
       border-bottom: 1px solid var(--line);
-      padding: 0.75rem 1rem 0.9rem;
+      padding: 0.65rem 0.9rem 0.75rem;
       backdrop-filter: blur(12px);
     }
     .row {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.45rem 0.7rem;
+      gap: 0.4rem 0.65rem;
       align-items: center;
-      margin: 0.28rem 0;
+      margin: 0.25rem 0;
     }
-    .title {
-      font-weight: 700;
-      letter-spacing: 0.02em;
-      color: var(--accent);
-      margin-right: 0.4rem;
-    }
+    .title { font-weight: 800; color: var(--accent); letter-spacing: 0.04em; }
     label.chk {
       display: inline-flex;
-      gap: 0.3rem;
+      gap: 0.28rem;
       align-items: center;
       color: var(--muted);
       cursor: pointer;
-      user-select: none;
       font-size: 12px;
+      user-select: none;
     }
     label.chk input { accent-color: var(--accent); }
     input[type="number"] {
-      width: 3.5rem;
+      width: 3.4rem;
       background: var(--panel);
       color: var(--text);
       border: 1px solid var(--line);
       border-radius: 6px;
-      padding: 0.28rem 0.35rem;
+      padding: 0.25rem 0.35rem;
       font: inherit;
     }
-    button, .btn {
+    button {
       border: 1px solid var(--line);
-      background: var(--panel2);
+      background: #162019;
       color: var(--text);
       border-radius: 7px;
-      padding: 0.38rem 0.7rem;
+      padding: 0.35rem 0.65rem;
       font: inherit;
       cursor: pointer;
     }
@@ -89,7 +80,7 @@
       background: var(--accent);
       color: #042316;
       border-color: transparent;
-      font-weight: 700;
+      font-weight: 800;
     }
     #meta, #status, #tick, #fills { color: var(--muted); font-size: 12px; }
     #meta strong, #tick strong, #fills strong { color: var(--text); }
@@ -97,74 +88,61 @@
     #status.err { color: var(--danger); }
 
     #help {
-      margin: 0.75rem 1rem 0;
-      padding: 0.9rem 1rem;
+      display: none;
+      margin: 0.7rem 0.9rem 0;
+      padding: 0.85rem 1rem;
       border: 1px solid var(--line);
       border-radius: 12px;
-      background: linear-gradient(165deg, #121a16, #0c1210);
-    }
-    #help h2 {
-      margin: 0 0 0.45rem;
-      font-size: 0.95rem;
-      color: var(--accent);
-    }
-    #help p, #help li {
-      margin: 0.35rem 0;
+      background: #101712;
       color: var(--muted);
       font-size: 12.5px;
       max-width: 70rem;
     }
+    #help.show { display: block; }
+    #help h2 { color: var(--accent); font-size: 0.9rem; margin: 0.6rem 0 0.3rem; }
+    #help p { margin: 0.3rem 0; }
     #help strong { color: var(--text); }
-    #help summary {
-      cursor: pointer;
-      color: var(--warn);
-      font-weight: 600;
-      list-style: none;
-    }
-    #help details[open] summary { margin-bottom: 0.5rem; }
 
     #grid {
       display: grid;
-      gap: 0.85rem;
-      padding: 0.85rem 1rem 1rem;
+      gap: 0.8rem;
+      padding: 0.8rem 0.9rem 1rem;
       grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      align-items: stretch;
     }
     .card {
       border: 1px solid var(--line);
       border-radius: 12px;
       background: var(--panel);
-      padding: 0.5rem;
+      padding: 0.45rem;
       display: flex;
       flex-direction: column;
-      min-height: 292px;
-      overflow: hidden;
+      min-height: 300px;
+      position: relative;
+      cursor: pointer;
     }
+    .card:focus-within, .card:hover { border-color: rgba(61, 207, 138, 0.45); }
     .card.is-wide { grid-column: 1 / -1; max-width: 760px; min-height: 140px; }
-    .card.is-pop { min-height: 200px; background: linear-gradient(160deg, #16241c, #101712); }
+    .card.is-pop { min-height: 190px; cursor: default; }
     .card-head {
       display: flex;
       justify-content: space-between;
-      gap: 0.5rem;
-      margin-bottom: 0.4rem;
+      gap: 0.4rem;
+      margin-bottom: 0.35rem;
       font-size: 11px;
       text-transform: uppercase;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.03em;
       color: var(--muted);
     }
-    .card-head b { color: var(--text); font-weight: 700; }
+    .card-head b { color: var(--text); }
     .card-head .st { color: var(--warn); text-transform: none; letter-spacing: 0; }
     .card-head .st.ok { color: var(--accent); }
     .card-body {
       flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      min-height: 250px;
       background: #050807;
       border-radius: 8px;
-      min-height: 250px;
-      position: relative;
       overflow: hidden;
+      position: relative;
     }
     .card.is-wide .card-body { min-height: 100px; }
     .card-body > iframe.adframe {
@@ -172,64 +150,62 @@
       height: 100%;
       min-height: 250px;
       border: 0;
-      background: #050807;
       display: block;
+      background: #050807;
+      pointer-events: none; /* clicks go to card → mini browser (stay on /watch) */
     }
     .card.is-wide .card-body > iframe.adframe { min-height: 100px; }
-    .hit {
+    .open-chip {
       position: absolute;
-      inset: 0;
-      z-index: 3;
-      background: transparent;
+      right: 8px;
+      bottom: 8px;
+      z-index: 4;
+      background: rgba(61, 207, 138, 0.92);
+      color: #042316;
       border: 0;
-      cursor: pointer;
-      text-indent: -9999px;
+      border-radius: 999px;
+      padding: 0.35rem 0.7rem;
+      font-weight: 800;
+      font-size: 11px;
+      pointer-events: none;
     }
     .pop-arm {
       width: calc(100% - 8px);
-      min-height: 180px;
+      min-height: 160px;
       margin: 4px;
       border: 1px dashed rgba(61, 207, 138, 0.35);
       border-radius: 10px;
       background: rgba(61, 207, 138, 0.06);
       color: var(--text);
+      text-align: left;
+      padding: 0.9rem;
       font: inherit;
       cursor: pointer;
-      padding: 1rem;
-      text-align: left;
     }
     .pop-arm strong { color: var(--accent); display: block; margin-bottom: 0.35rem; }
-    .pop-arm span { color: var(--muted); font-size: 12px; display: block; line-height: 1.45; }
+    .pop-arm span { color: var(--muted); font-size: 12px; display: block; }
 
     #browser {
       position: fixed;
-      left: 0;
-      right: 0;
-      bottom: 0;
+      left: 0; right: 0; bottom: 0;
       height: var(--browser-h);
-      z-index: 60;
+      z-index: 80;
       background: #0b100e;
       border-top: 1px solid var(--line);
       display: none;
       flex-direction: column;
-      box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.45);
+      box-shadow: 0 -12px 40px rgba(0,0,0,0.5);
     }
     body.has-browser #browser { display: flex; }
     .browser-bar {
       display: flex;
       gap: 0.4rem;
       align-items: center;
-      padding: 0.45rem 0.6rem;
-      border-bottom: 1px solid var(--line);
+      padding: 0.4rem 0.55rem;
       background: #101712;
+      border-bottom: 1px solid var(--line);
     }
-    .browser-bar .dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: #3dcf8a;
-      flex: 0 0 auto;
-    }
+    .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); flex: 0 0 auto; }
     #browser-url {
       flex: 1;
       min-width: 0;
@@ -243,24 +219,19 @@
       white-space: nowrap;
       text-overflow: ellipsis;
     }
-    #browser-frame {
-      flex: 1;
-      width: 100%;
-      border: 0;
-      background: #fff;
+    #browser-frame { flex: 1; width: 100%; border: 0; background: #fff; }
+    #browser-tip {
+      display: none;
+      padding: 0.55rem 0.75rem;
+      background: #1a1810;
+      color: var(--warn);
+      font-size: 12px;
+      border-bottom: 1px solid var(--line);
     }
-    .browser-empty {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--muted);
-      padding: 1rem;
-      text-align: center;
-    }
+    #browser-tip.show { display: block; }
   </style>
 </head>
-<body>
+<body class="has-browser">
   <div class="lab-chrome">
     <div class="row">
       <span class="title">AD LAB</span>
@@ -279,7 +250,6 @@
       <label class="chk"><input type="checkbox" id="t-smartlink" checked /> smartlink</label>
       <label class="chk"><input type="checkbox" id="t-popunder" checked /> popunder</label>
       <label class="chk"><input type="checkbox" id="auto" checked /> auto</label>
-      <label class="chk"><input type="checkbox" id="use-browser" checked /> open clicks in page browser</label>
       <label class="chk"><input type="checkbox" id="ads-only" /> ads only</label>
       <button type="button" class="primary" id="btn-refresh">reload all</button>
       <button type="button" id="btn-retry">retry empties</button>
@@ -288,70 +258,36 @@
   </div>
 
   <section id="help">
-    <details open>
-      <summary>What is this page / why /watch / what is a popunder?</summary>
-      <h2>Why there is /watch (and /testing)</h2>
-      <p>
-        Your live site is proxied by Cloudflare Worker → GitHub Pages.
-        When I first fixed ads, <strong>/testing</strong> kept showing the old broken page
-        (“frame blocked”) because Cloudflare <strong>cached</strong> it. Publishing again didn’t show up right away.
-        I created <strong>/watch</strong> as a <strong>fresh path</strong> that wasn’t stuck in that cache so you could use the fixed lab immediately.
-        Both <code>/watch/</code> and <code>/testing/</code> now serve this same improved lab.
-      </p>
-      <h2>Why ads looked broken before</h2>
-      <p>
-        1) Ads were loaded inside <strong>sandboxed iframes</strong> → every card said “frame blocked” (scripts couldn’t run).<br />
-        2) Then the worker CDN kept serving that old HTML.<br />
-        3) Even when fixed, Adsterra often leaves some slots empty (no fill for that size/moment). Empty ≠ broken — this lab <strong>retries</strong> empties.
-      </p>
-      <h2>What is a popunder?</h2>
-      <p>
-        A <strong>popunder</strong> is <strong>not</strong> a black box on this page.
-        When Adsterra’s popunder script is armed, and you <strong>click once</strong> on the page,
-        it tries to open the advertiser’s site in a <strong>new browser tab behind</strong> the one you’re using
-        (under your current tab). That’s why it’s called pop-<em>under</em>, not popup.
-      </p>
-      <p>
-        You often <strong>won’t see anything happen</strong> on this page. Check your browser tab strip for a new tab,
-        or look for a blocked-popup icon in the address bar. Chrome/Edge frequently block popunders.
-        Use the green <strong>Arm &amp; fire popunder</strong> card (real click required).
-      </p>
-      <h2>Smartlink</h2>
-      <p>
-        A smartlink is only a <strong>click URL</strong> — Adsterra does not draw a banner for it.
-        This lab puts a <strong>real banner</strong> in that card and routes your click through the smartlink
-        into the <strong>in-page browser</strong> below (or a new tab if you turn that off).
-      </p>
-    </details>
+    <h2>Why black boxes happened</h2>
+    <p>Ads were loading in <strong>srcdoc</strong> iframes (opaque origin). Adsterra often refuses to fill those. This lab now loads each unit from a <strong>same-origin</strong> page (<code>unit.html</code>) on your domain so fills work.</p>
+    <h2>Why /watch</h2>
+    <p>Cloudflare cached a broken old <code>/testing</code> page. <code>/watch</code> was a fresh path so the fix could go live. Both paths share this lab now.</p>
+    <h2>Popunder</h2>
+    <p>Not a black box here. After you tap <strong>Arm &amp; fire</strong>, Adsterra may open an offer in a <strong>tab behind</strong> this one. Browsers often block it.</p>
+    <h2>Mini browser</h2>
+    <p>Click any ad card → offer opens in the bottom mini browser. Your address bar stays on this Steady page.</p>
   </section>
 
   <div id="grid" aria-live="polite"></div>
 
-  <div id="browser" aria-label="In-page browser">
+  <div id="browser" aria-label="Mini browser">
     <div class="browser-bar">
-      <span class="dot" title="page browser"></span>
-      <div id="browser-url">Click a smartlink / ad card to open it here</div>
-      <button type="button" id="btn-browser-open">open in new tab</button>
+      <span class="dot"></span>
+      <div id="browser-url">Click any ad card — opens here (you stay on this Steady page)</div>
+      <button type="button" id="btn-browser-reload">reload</button>
       <button type="button" id="btn-browser-close">close</button>
     </div>
-    <div class="browser-empty" id="browser-empty">
-      In-page browser — many offer pages block embedding (blank frame). If blank, use “open in new tab”.
-    </div>
-    <iframe id="browser-frame" title="Offer browser" hidden></iframe>
+    <div id="browser-tip">If this panel is blank, the offer blocks embedding. That’s normal — the Steady page still didn’t leave /watch.</div>
+    <iframe id="browser-frame" title="Mini browser" src="about:blank"></iframe>
   </div>
 
   <script>
     (function () {
-      var BANNER_KEY = "d737196962ef25449dcb66c5655248f1";
-      var NATIVE_ID = "aa9f63337d56fa208fd27e208e22774a";
-      var REWARD_SRC =
-        "https://pl30566396.effectivecpmnetwork.com/75/7d/b0/757db01b5a07eb68043c6fd140726fed.js";
       var SMARTLINK =
         "https://www.effectivecpmnetwork.com/s889n4i77?key=38aa37c91a94f34912a4a89f8b27799d";
       var POPUNDER_SRC =
         "https://pl30567774.effectivecpmnetwork.com/3c/91/ea/3c91ea5fe0936ca26b9cc5cebf036f9f.js";
 
-      // Mostly 300x250 — this size fills best for your key.
       var BANNER_SIZES = [
         { w: 300, h: 250, label: "300×250", cls: "" },
         { w: 300, h: 250, label: "300×250", cls: "" },
@@ -369,11 +305,10 @@
       var tickEl = document.getElementById("tick");
       var fillsEl = document.getElementById("fills");
       var helpEl = document.getElementById("help");
-      var browserEl = document.getElementById("browser");
       var browserUrl = document.getElementById("browser-url");
       var browserFrame = document.getElementById("browser-frame");
-      var browserEmpty = document.getElementById("browser-empty");
-      var lastOfferUrl = "";
+      var browserTip = document.getElementById("browser-tip");
+      var lastOfferUrl = SMARTLINK;
 
       var popunderLoaded = false;
       var reloadTimer = null;
@@ -398,70 +333,36 @@
         return n;
       }
 
-      function adPage(inner, minH) {
+      function unitSrc(kind, w, h) {
         return (
-          "<!DOCTYPE html><html><head><meta charset='utf-8'>" +
-          "<style>html,body{margin:0;padding:6px;background:#050807;min-height:" +
-          (minH || 250) +
-          "px;display:flex;align-items:center;justify-content:center}" +
-          "iframe{margin:0 auto!important}</style></head><body>" +
-          inner +
-          "</body></html>"
+          "unit.html?kind=" +
+          encodeURIComponent(kind) +
+          "&w=" +
+          w +
+          "&h=" +
+          h +
+          "&t=" +
+          Date.now() +
+          "&r=" +
+          Math.floor(Math.random() * 1e9)
         );
       }
 
-      function bannerHtml(w, h) {
-        var cb = Date.now() + "" + Math.floor(Math.random() * 1e6);
-        return adPage(
-          "<script>atOptions={key:'" +
-            BANNER_KEY +
-            "',format:'iframe',height:" +
-            h +
-            ",width:" +
-            w +
-            ",params:{}};<\/script>" +
-            "<script src='https://www.highperformanceformat.com/" +
-            BANNER_KEY +
-            "/invoke.js?cb=" +
-            cb +
-            "'><\/script>",
-          h
-        );
+      function browseSrc(url) {
+        return "browse.html?u=" + encodeURIComponent(url) + "&t=" + Date.now();
       }
 
-      function nativeHtml() {
-        var cb = Date.now() + "" + Math.floor(Math.random() * 1e6);
-        return adPage(
-          "<div id='container-" +
-            NATIVE_ID +
-            "' style='min-height:250px;width:100%'></div>" +
-            "<script async data-cfasync='false' src='https://pl30566397.effectivecpmnetwork.com/" +
-            NATIVE_ID +
-            "/invoke.js?cb=" +
-            cb +
-            "'><\/script>",
-          280
-        );
-      }
-
-      function rewardHtml() {
-        var cb = Date.now() + "" + Math.floor(Math.random() * 1e6);
-        return adPage(
-          "<script>atOptions={key:'" +
-            BANNER_KEY +
-            "',format:'iframe',height:250,width:300,params:{}};<\/script>" +
-            "<script src='https://www.highperformanceformat.com/" +
-            BANNER_KEY +
-            "/invoke.js?cb=" +
-            cb +
-            "'><\/script>" +
-            "<script src='" +
-            REWARD_SRC +
-            "?cb=" +
-            cb +
-            "'><\/script>",
-          260
-        );
+      function openMini(url) {
+        lastOfferUrl = url || SMARTLINK;
+        browserUrl.textContent = lastOfferUrl;
+        document.body.classList.add("has-browser");
+        browserTip.classList.remove("show");
+        browserFrame.src = browseSrc(lastOfferUrl);
+        setStatus("opened in mini browser — still on this page", "ok");
+        // If embed blocked, tip after a moment
+        setTimeout(function () {
+          browserTip.classList.add("show");
+        }, 2500);
       }
 
       function ensurePopunder(on) {
@@ -482,21 +383,6 @@
         popunderLoaded = true;
       }
 
-      function openInPageBrowser(url) {
-        lastOfferUrl = url;
-        browserUrl.textContent = url;
-        document.body.classList.add("has-browser");
-        browserEmpty.hidden = true;
-        browserFrame.hidden = false;
-        browserFrame.src = url;
-        setStatus("opened in page browser", "ok");
-      }
-
-      function openOffer(url) {
-        if (document.getElementById("use-browser").checked) openInPageBrowser(url);
-        else window.open(url, "_blank", "noopener,noreferrer");
-      }
-
       function setSlotStatus(slot, text, ok) {
         if (!slot || !slot.st) return;
         slot.st.textContent = text;
@@ -509,9 +395,9 @@
           if (!doc) return false;
           if (doc.querySelectorAll("iframe").length > 0) return true;
           if (doc.querySelectorAll("img").length > 0) return true;
-          if (doc.querySelectorAll("ins,a[href]").length > 0) return true;
-          var kids = doc.body ? doc.body.children.length : 0;
-          return kids > 2;
+          var stage = doc.getElementById("stage");
+          if (stage && stage.querySelectorAll("iframe,img,ins").length > 0) return true;
+          return false;
         } catch (_) {
           return true;
         }
@@ -524,33 +410,24 @@
         slot.filled = false;
         slot.body.innerHTML = "";
 
+        var kind = slot.kind === "smartlink" ? "banner" : slot.kind;
         var frame = document.createElement("iframe");
         frame.className = "adframe";
         frame.title = "ad";
-        if (slot.kind === "banner") frame.srcdoc = bannerHtml(slot.w, slot.h);
-        else if (slot.kind === "native") frame.srcdoc = nativeHtml();
-        else if (slot.kind === "reward") frame.srcdoc = rewardHtml();
-        else frame.srcdoc = bannerHtml(300, 250); // smartlink visual = banner
+        frame.loading = "eager";
+        frame.referrerPolicy = "no-referrer-when-downgrade";
+        frame.src = unitSrc(kind, slot.w, slot.h);
         slot.body.appendChild(frame);
         slot.frame = frame;
 
-        if (slot.kind === "smartlink") {
-          var hit = document.createElement("button");
-          hit.type = "button";
-          hit.className = "hit";
-          hit.title = "Open smartlink";
-          hit.textContent = "open";
-          hit.addEventListener("click", function (e) {
-            e.preventDefault();
-            openOffer(SMARTLINK);
-          });
-          slot.body.appendChild(hit);
-        }
+        var chip = document.createElement("div");
+        chip.className = "open-chip";
+        chip.textContent = "tap → mini browser";
+        slot.body.appendChild(chip);
       }
 
       function paintFills() {
-        var total = 0;
-        var filled = 0;
+        var total = 0, filled = 0;
         slots.forEach(function (s) {
           if (s.kind === "popunder") return;
           total++;
@@ -561,8 +438,7 @@
 
       function checkFills() {
         slots.forEach(function (s) {
-          if (s.kind === "popunder") return;
-          if (s.filled || !s.frame) return;
+          if (s.kind === "popunder" || s.filled || !s.frame) return;
           if (frameHasFill(s.frame)) {
             s.filled = true;
             setSlotStatus(s, "filled", true);
@@ -595,10 +471,8 @@
         if (wantSmart) types.push("smartlink");
         if (!types.length) return plan;
 
-        var bi = 0;
-        var i = 0;
-        var nativeCount = 0;
-        while (plan.length < n && i < n * 10) {
+        var bi = 0, i = 0, nativeCount = 0;
+        while (plan.length < n && i < n * 12) {
           var t = types[i % types.length];
           i++;
           if (t === "banner") {
@@ -611,20 +485,14 @@
             plan.push({ kind: "native", detail: "native", w: 300, h: 280, cls: "" });
           } else if (t === "reward") {
             plan.push({ kind: "reward", detail: "banner+social", w: 300, h: 250, cls: "" });
-          } else if (t === "smartlink") {
-            plan.push({ kind: "smartlink", detail: "banner → click", w: 300, h: 250, cls: "" });
+          } else {
+            plan.push({ kind: "smartlink", detail: "banner → mini browser", w: 300, h: 250, cls: "" });
           }
         }
         while (plan.length < n) {
           var sz2 = BANNER_SIZES[bi % BANNER_SIZES.length];
           bi++;
-          plan.push({
-            kind: "banner",
-            detail: sz2.label,
-            w: sz2.w,
-            h: sz2.h,
-            cls: sz2.cls,
-          });
+          plan.push({ kind: "banner", detail: sz2.label, w: sz2.w, h: sz2.h, cls: sz2.cls });
         }
         return plan.slice(0, n);
       }
@@ -639,7 +507,7 @@
 
       function scheduleLoops() {
         clearTimers();
-        fillTimer = setInterval(checkFills, 900);
+        fillTimer = setInterval(checkFills, 800);
         retryTimer = setInterval(retryEmpties, num("retry", 3, 60, 5) * 1000);
         if (!document.getElementById("auto").checked) {
           tickEl.innerHTML = "auto <strong>off</strong>";
@@ -679,6 +547,7 @@
         plan.forEach(function (item, idx) {
           var card = document.createElement("article");
           card.className = "card " + (item.cls || "");
+          card.tabIndex = 0;
           var head = document.createElement("div");
           head.className = "card-head";
           var left = document.createElement("span");
@@ -703,12 +572,24 @@
             frame: null,
             filled: false,
             attempts: 0,
+            card: card,
           };
           slots.push(slot);
+
+          card.addEventListener("click", function () {
+            openMini(SMARTLINK);
+          });
+          card.addEventListener("keydown", function (e) {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              openMini(SMARTLINK);
+            }
+          });
+
           setTimeout(function () {
             if (my !== gen) return;
             remountSlot(slot);
-          }, idx * 100);
+          }, idx * 90);
         });
 
         if (wantPop) {
@@ -716,7 +597,7 @@
           card.className = "card is-pop";
           var head = document.createElement("div");
           head.className = "card-head";
-          head.innerHTML = "<span><b>popunder</b> · not a visible ad box</span><span class='st ok'>armed</span>";
+          head.innerHTML = "<span><b>popunder</b> · not an on-page ad</span><span class='st ok'>armed</span>";
           var body = document.createElement("div");
           body.className = "card-body";
           var btn = document.createElement("button");
@@ -724,17 +605,17 @@
           btn.className = "pop-arm";
           btn.innerHTML =
             "<strong>Arm &amp; fire popunder</strong>" +
-            "<span>This does not draw a black popup here. After you tap, look for a <em>new tab behind</em> this one, or a blocked-popup icon in the address bar.</span>";
-          btn.addEventListener("click", function () {
+            "<span>Won’t draw a black box here. May open a tab behind this one (often blocked by the browser).</span>";
+          btn.addEventListener("click", function (e) {
+            e.stopPropagation();
             popunderLoaded = false;
             ensurePopunder(true);
             setTimeout(function () {
               document.body.click();
               btn.innerHTML =
                 "<strong>Gesture sent</strong>" +
-                "<span>Check other browser tabs now. If nothing appeared, the browser blocked it — allow popups for this site and tap again.</span>";
-              setStatus("popunder gesture sent — check tabs", "ok");
-            }, 350);
+                "<span>Check other tabs / blocked-popup icon. You are still on this Steady page.</span>";
+            }, 300);
           });
           body.appendChild(btn);
           card.appendChild(head);
@@ -743,14 +624,13 @@
           slots.push({ kind: "popunder", filled: true, body: body, st: null });
         }
 
-        setStatus(plan.length + " slots mounting", "ok");
+        setStatus(plan.length + " slots mounting (same-origin units)", "ok");
         paintFills();
         scheduleLoops();
       }
 
       function paintMeta() {
-        meta.innerHTML =
-          "<strong>" + location.host + "</strong> " + location.pathname;
+        meta.innerHTML = "<strong>" + location.host + "</strong> " + location.pathname;
       }
 
       document.getElementById("btn-refresh").addEventListener("click", function () {
@@ -761,28 +641,19 @@
       });
       document.getElementById("btn-retry").addEventListener("click", retryEmpties);
       document.getElementById("btn-help").addEventListener("click", function () {
-        helpEl.hidden = !helpEl.hidden;
-        var d = helpEl.querySelector("details");
-        if (d && !helpEl.hidden) d.open = true;
+        helpEl.classList.toggle("show");
       });
       document.getElementById("ads-only").addEventListener("change", function (e) {
         document.body.classList.toggle("ads-only", !!e.target.checked);
-      });
-      document.getElementById("use-browser").addEventListener("change", function (e) {
-        if (!e.target.checked) {
-          document.body.classList.remove("has-browser");
-        }
       });
       document.getElementById("btn-browser-close").addEventListener("click", function () {
         document.body.classList.remove("has-browser");
         browserFrame.src = "about:blank";
       });
-      document.getElementById("btn-browser-open").addEventListener("click", function () {
-        if (lastOfferUrl) window.open(lastOfferUrl, "_blank", "noopener,noreferrer");
+      document.getElementById("btn-browser-reload").addEventListener("click", function () {
+        if (lastOfferUrl) openMini(lastOfferUrl);
       });
-      document.getElementById("auto").addEventListener("change", function () {
-        scheduleLoops();
-      });
+      document.getElementById("auto").addEventListener("change", scheduleLoops);
       ["t-banner", "t-native", "t-reward", "t-smartlink", "t-popunder", "count", "secs", "retry"].forEach(
         function (id) {
           document.getElementById(id).addEventListener("change", function () {
@@ -804,8 +675,6 @@
 
       paintMeta();
       render();
-      // Show browser dock ready (empty) so the feature is obvious
-      document.body.classList.add("has-browser");
     })();
   </script>
 </body>
