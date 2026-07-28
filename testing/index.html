@@ -220,7 +220,7 @@
   </style>
   <script>
     (function () {
-      var LAB_BUILD = "b11";
+      var LAB_BUILD = "b12";
       var q = new URLSearchParams(location.search);
       if (q.get("v") === LAB_BUILD) return;
       q.set("v", LAB_BUILD);
@@ -254,7 +254,7 @@
   </div>
 
   <section id="help">
-    <p><strong>Path:</strong> <code>/testing/?v=b11</code> — always use this so your browser is not stuck on a cached lab.</p>
+    <p><strong>Path:</strong> <code>/testing/?v=b12</code> — always use this so your browser is not stuck on a cached lab.</p>
     <p>Each card loads one Adsterra <strong>300×250</strong> banner in its own iframe (required so <code>atOptions</code> does not collide). Ads mount <strong>one at a time</strong>, then the next starts — this fills more reliably than blasting 12 at once.</p>
     <p><strong>Popunder</strong> is optional and off by default. It is not a box on the page; after arming, a later click may open a tab behind this one.</p>
     <p>If cards stay empty, Optimum/ISP DNS may sinkhole Adsterra hosts. Use Cloudflare DNS <strong>1.1.1.1</strong>, or run <code>scripts/fix_adsterra_dns.ps1</code> as admin.</p>
@@ -264,7 +264,7 @@
 
   <script>
     (function () {
-      var LAB_BUILD = "b11";
+      var LAB_BUILD = "b12";
       var BANNER_KEY = "d737196962ef25449dcb66c5655248f1";
       var INVOKE =
         "https://www.highperformanceformat.com/" + BANNER_KEY + "/invoke.js";
@@ -272,9 +272,9 @@
         "https://pl30567774.effectivecpmnetwork.com/3c/91/ea/3c91ea5fe0936ca26b9cc5cebf036f9f.js";
       // One at a time — Adsterra inventory + invoke.js hate stampedes.
       var CONCURRENCY = 1;
-      var FILL_WAIT_MS = 12000;
+      var FILL_WAIT_MS = 16000;
       var CHECK_MS = 250;
-      var BETWEEN_MS = 400;
+      var BETWEEN_MS = 350;
 
       var grid = document.getElementById("grid");
       var statusEl = document.getElementById("status");
@@ -391,6 +391,9 @@
         return (
           "<!DOCTYPE html><html><head><meta charset=\"utf-8\" />" +
           "<meta name=\"referrer\" content=\"no-referrer-when-downgrade\" />" +
+          "<base href=\"" +
+          location.origin +
+          "/\" />" +
           "<style>html,body{margin:0;padding:0;background:#fff;overflow:hidden;width:300px;height:250px}" +
           "iframe,img{display:block;margin:0 auto;border:0;max-width:100%}</style></head><body>" +
           "<script>window.atOptions={key:'" +
@@ -409,23 +412,61 @@
 
       function findCreative(doc) {
         if (!doc) return null;
-        var imgs = doc.querySelectorAll("img");
-        for (var i = 0; i < imgs.length; i++) {
-          var img = imgs[i];
-          var w = img.naturalWidth || img.width || 0;
-          var h = img.naturalHeight || img.height || 0;
-          if (w >= 40 && h >= 40) return { kind: "img" };
-          if (img.complete && w >= 20 && h >= 20) return { kind: "img" };
+
+        function hasPaintedImg(root) {
+          if (!root) return false;
+          var imgs = root.querySelectorAll("img");
+          for (var i = 0; i < imgs.length; i++) {
+            var img = imgs[i];
+            var w = img.naturalWidth || img.width || 0;
+            var h = img.naturalHeight || img.height || 0;
+            if (w >= 20 && h >= 20) return true;
+          }
+          return false;
         }
+
+        if (hasPaintedImg(doc)) return { kind: "img" };
+
         var frames = doc.querySelectorAll("iframe");
         for (var j = 0; j < frames.length; j++) {
           var f = frames[j];
-          var src = f.getAttribute("src") || f.src || "";
-          if (!src || src === "about:blank") continue;
-          // Adsterra injects a creative iframe — treat as fill even before pixels paint.
-          if (f.offsetWidth >= 20 || f.width >= 20 || true) {
+          var src = (f.getAttribute("src") || f.src || "").trim();
+          var sized = (f.offsetWidth || parseInt(f.width, 10) || 0) >= 40 &&
+            (f.offsetHeight || parseInt(f.height, 10) || 0) >= 40;
+
+          // Adsterra often injects about:blank then document.writes the creative into it.
+          if (!src || src === "about:blank") {
+            try {
+              var nested = f.contentDocument;
+              if (nested && (hasPaintedImg(nested) || nested.body && nested.body.childElementCount > 0 && nested.body.innerHTML.length > 40)) {
+                return { kind: "blank-filled" };
+              }
+            } catch (_) {}
+            // Sized blank iframe after invoke ran = slot is alive; wait a bit more via caller,
+            // but count as fill once secondary script + iframe exist (creative chain started).
+            if (sized && doc.querySelectorAll("script[src*='highperformanceformat'],script[src*='invoke'],script[src*='0a/9d']").length) {
+              // Only accept blank iframe as fill if it has stayed sized and invoke chain present
+              // AND either nested content OR a real http(s) src later — handled below.
+            }
+            continue;
+          }
+
+          if (/^https?:\/\//i.test(src) && sized) {
             return { kind: "iframe", src: src };
           }
+          if (/^https?:\/\//i.test(src)) {
+            return { kind: "iframe", src: src };
+          }
+        }
+
+        // Secondary Adsterra script present + any iframe (incl about:blank) sized 300x250
+        // means the creative frame is up — treat as filled so we don't thrash remounts.
+        var chain = doc.querySelectorAll("script[src*='0a/9d'],script[src*='spendsdetachment'],script[src*='zoologyfibre'],script[src*='workdeadline'],script[src*='newestfangs']");
+        var anyFrame = doc.querySelector("iframe");
+        if (chain.length && anyFrame) {
+          var aw = anyFrame.offsetWidth || parseInt(anyFrame.width, 10) || 0;
+          var ah = anyFrame.offsetHeight || parseInt(anyFrame.height, 10) || 0;
+          if (aw >= 40 && ah >= 40) return { kind: "chain-iframe" };
         }
         return null;
       }
@@ -459,7 +500,10 @@
         if (waitQueue.indexOf(slot) >= 0) return;
         waitQueue.push(slot);
         setSlotStatus(slot, "queued", false, false);
-        setOverlay(slot, "loading");
+        if (slot.overlay) {
+          slot.overlay.className = "overlay loading show";
+          slot.overlay.textContent = "waiting…";
+        }
         pumpQueue();
       }
 
