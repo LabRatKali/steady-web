@@ -17,7 +17,7 @@
       background: #fff;
       -webkit-text-size-adjust: 100%;
     }
-    iframe, img { display: block; margin: 0; border: 0; max-width: 300px; }
+    iframe, img, a { display: block; margin: 0; border: 0; max-width: 300px; }
   </style>
 </head>
 <body>
@@ -25,11 +25,89 @@
     (function () {
       var KEY = "d737196962ef25449dcb66c5655248f1";
       var DIRECT = "https://www.highperformanceformat.com/" + KEY + "/invoke.js";
+      var reported = "";
 
-      function ping(ok) {
+      function ping(msg) {
         try {
           if (window.parent && window.parent !== window) {
-            window.parent.postMessage({ steadyLab: "invoke", ok: !!ok }, "*");
+            window.parent.postMessage(msg, "*");
+          }
+        } catch (_) {}
+      }
+
+      function report(state, extra) {
+        if (state === reported && state !== "pending") return;
+        reported = state;
+        var payload = { steadyLab: "unit", state: state };
+        if (extra) {
+          for (var k in extra) payload[k] = extra[k];
+        }
+        ping(payload);
+      }
+
+      function paintedImg(root) {
+        if (!root) return null;
+        var imgs = root.querySelectorAll("img");
+        for (var i = 0; i < imgs.length; i++) {
+          var img = imgs[i];
+          var w = img.naturalWidth || 0;
+          var h = img.naturalHeight || 0;
+          if (w >= 40 && h >= 40) return img;
+          // Safari sometimes lags naturalWidth; attribute/layout size still counts once complete.
+          if (img.complete && (img.width >= 40 || img.offsetWidth >= 40)) {
+            var src = img.currentSrc || img.src || "";
+            if (src && src.indexOf("data:") !== 0) return img;
+          }
+        }
+        return null;
+      }
+
+      function structuralFill(root) {
+        if (!root) return null;
+        if (root.querySelector("[id^='atContainer'], [id^='atLink'], a[id*='atLink']")) {
+          var img = root.querySelector("img[src], img[srcset]");
+          if (img) return { kind: "at-structure" };
+        }
+        var frames = root.querySelectorAll("iframe");
+        for (var i = 0; i < frames.length; i++) {
+          var f = frames[i];
+          if ((f.offsetWidth || 0) < 100 || (f.offsetHeight || 0) < 100) continue;
+          try {
+            var doc = f.contentDocument;
+            if (!doc || !doc.body) continue;
+            if (paintedImg(doc)) return { kind: "nested-img" };
+            if (doc.querySelector("img[src], a[href], canvas, video, object, embed")) {
+              return { kind: "nested-media" };
+            }
+            var html = doc.body.innerHTML || "";
+            if (html.length > 80 && /<img|<a |atContainer|atLink/i.test(html)) {
+              return { kind: "nested-html" };
+            }
+          } catch (_) {}
+        }
+        return null;
+      }
+
+      function scan() {
+        try {
+          if (paintedImg(document)) {
+            report("filled", { how: "img" });
+            return;
+          }
+          var frames = document.querySelectorAll("iframe");
+          for (var i = 0; i < frames.length; i++) {
+            try {
+              var d = frames[i].contentDocument;
+              if (d && paintedImg(d)) {
+                report("filled", { how: "nested-img" });
+                return;
+              }
+            } catch (_) {}
+          }
+          var struct = structuralFill(document);
+          if (struct) {
+            report("pending", { how: struct.kind });
+            return;
           }
         } catch (_) {}
       }
@@ -41,17 +119,33 @@
         width: 300,
         params: {},
       };
+
       var s = document.createElement("script");
       s.async = true;
       s.setAttribute("data-cfasync", "false");
       s.src = DIRECT + "?cb=" + encodeURIComponent(Date.now());
       s.onload = function () {
-        ping(true);
+        ping({ steadyLab: "invoke", ok: true });
       };
       s.onerror = function () {
-        ping(false);
+        ping({ steadyLab: "invoke", ok: false });
+        report("error", { how: "script" });
       };
       document.body.appendChild(s);
+
+      var checks = 0;
+      var iv = setInterval(function () {
+        checks += 1;
+        scan();
+        if (reported === "filled") {
+          clearInterval(iv);
+          return;
+        }
+        if (checks >= 90) {
+          clearInterval(iv);
+          if (reported !== "filled") report("empty");
+        }
+      }, 200);
     })();
   </script>
 </body>
