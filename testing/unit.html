@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=300, height=250" />
   <meta name="referrer" content="no-referrer-when-downgrade" />
   <meta name="robots" content="noindex,nofollow" />
   <meta http-equiv="Cache-Control" content="no-store" />
@@ -14,6 +15,7 @@
       height: 250px;
       overflow: hidden;
       background: #fff;
+      -webkit-text-size-adjust: 100%;
     }
     iframe, img { display: block; margin: 0; border: 0; max-width: 300px; }
   </style>
@@ -23,17 +25,6 @@
     (function () {
       var KEY = "d737196962ef25449dcb66c5655248f1";
       var DIRECT = "https://www.highperformanceformat.com/" + KEY + "/invoke.js";
-      // On the Cloudflare worker, /adp/ proxies creatives past ISP DNS sinkholes.
-      var useProxy =
-        /(?:\?|&)proxy=1(?:&|$)/.test(location.search) ||
-        /workers\.dev$/i.test(location.hostname) ||
-        /less-phone/i.test(location.hostname);
-      var src = useProxy
-        ? location.origin +
-          "/adp/https/www.highperformanceformat.com/" +
-          KEY +
-          "/invoke.js"
-        : DIRECT;
 
       function ping(ok) {
         try {
@@ -53,25 +44,11 @@
       var s = document.createElement("script");
       s.async = true;
       s.setAttribute("data-cfasync", "false");
-      s.src = src + (src.indexOf("?") >= 0 ? "&" : "?") + "cb=" + encodeURIComponent(Date.now());
+      s.src = DIRECT + "?cb=" + encodeURIComponent(Date.now());
       s.onload = function () {
         ping(true);
       };
       s.onerror = function () {
-        if (useProxy && s.src.indexOf("/adp/") >= 0) {
-          var s2 = document.createElement("script");
-          s2.async = true;
-          s2.setAttribute("data-cfasync", "false");
-          s2.src = DIRECT + "?cb=" + encodeURIComponent(Date.now());
-          s2.onload = function () {
-            ping(true);
-          };
-          s2.onerror = function () {
-            ping(false);
-          };
-          document.body.appendChild(s2);
-          return;
-        }
         ping(false);
       };
       document.body.appendChild(s);
