@@ -173,8 +173,8 @@
   <div class="lab-chrome">
     <div class="row">
       <span class="title">AD LAB</span>
-      <span id="meta">â€¦</span>
-      <span id="tick">reload <strong>â€”</strong></span>
+      <span id="meta">...</span>
+      <span id="tick">reload <strong>-</strong></span>
       <span id="fills">filled <strong>0</strong>/<strong>0</strong></span>
       <span id="status"></span>
     </div>
@@ -196,7 +196,7 @@
   </div>
 
   <section id="help">
-    <p><strong>White boxes</strong> are the ad stage (ads need a light background). If a card stays empty, Adsterra has no fill â€” it will retry slowly, not thrash.</p>
+    <p><strong>White boxes</strong> are the ad stage (ads need a light background). If a card stays empty, Adsterra has no fill - it will retry slowly, not thrash.</p>
     <p><strong>Popunder</strong> is not an on-page image. Tap the popunder card once, then check for a tab behind this one (browsers often block it).</p>
     <p><strong>/ads/</strong> is the live lab path (Cloudflare sometimes caches older /testing, /watch, and /a pages).</p>
   </section>
@@ -457,7 +457,7 @@
           var head = document.createElement("div");
           head.className = "card-head";
           var left = document.createElement("span");
-          left.innerHTML = "<b>" + item.kind + "</b> #" + (idx + 1) + " Â· " + item.detail;
+          left.innerHTML = "<b>" + item.kind + "</b> #" + (idx + 1) + " - " + item.detail;
           var st = document.createElement("span");
           st.className = "st";
           st.textContent = "queued";
@@ -522,12 +522,12 @@
           slots.push({ kind: "popunder", filled: true, body: body, st: null });
         }
 
-        // Optional smartlink strip (only if enabled) â€” one visible link, not a fake banner label
+        // Optional smartlink strip (only if enabled) - one visible link, not a fake banner label
         if (document.getElementById("t-smartlink").checked) {
           var sc = document.createElement("article");
           sc.className = "card";
           sc.innerHTML =
-            "<div class='card-head'><span><b>smartlink</b> Â· click URL</span><span class='st ok'>ready</span></div>";
+            "<div class='card-head'><span><b>smartlink</b> - click URL</span><span class='st ok'>ready</span></div>";
           var sb = document.createElement("div");
           sb.className = "card-body";
           sb.style.display = "flex";
@@ -546,7 +546,7 @@
           grid.appendChild(sc);
         }
 
-        setStatus(plan.length + " slots Â· staggered load", "ok");
+        setStatus(plan.length + " slots - staggered load", "ok");
         paintFills();
         scheduleLoops();
       }
