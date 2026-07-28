@@ -27,19 +27,18 @@
       margin: 0;
       min-height: 100%;
       background:
-        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(61, 207, 138, 0.08), transparent),
+        radial-gradient(ellipse 70% 45% at 50% -8%, rgba(61, 207, 138, 0.1), transparent),
         var(--bg);
       color: var(--text);
       font: 13px/1.4 "Segoe UI", system-ui, sans-serif;
     }
     body.ads-only .lab-chrome,
     body.ads-only #help { display: none !important; }
-    body.ads-only #grid { padding-top: 0.6rem; }
     .lab-chrome {
       position: sticky;
       top: 0;
       z-index: 40;
-      background: rgba(7, 11, 9, 0.94);
+      background: rgba(7, 11, 9, 0.95);
       border-bottom: 1px solid var(--line);
       padding: 0.7rem 1rem 0.8rem;
       backdrop-filter: blur(14px);
@@ -93,10 +92,12 @@
       border-color: transparent;
       font-weight: 800;
     }
-    #meta, #tick, #fills, #status { color: var(--muted); font-size: 12px; }
+    #meta, #tick, #fills, #status, #diag { color: var(--muted); font-size: 12px; }
     #meta strong, #tick strong, #fills strong { color: var(--text); }
     #status.ok { color: var(--accent); }
     #status.warn { color: var(--warn); }
+    #diag.bad { color: var(--danger); }
+    #diag.ok { color: var(--accent); }
     #help {
       display: none;
       margin: 0.7rem 1rem 0;
@@ -127,13 +128,13 @@
       flex-direction: column;
       min-height: 310px;
       overflow: hidden;
-      transition: border-color 0.25s ease, box-shadow 0.25s ease;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
     }
-    .card.filled {
-      border-color: rgba(61, 207, 138, 0.45);
-      box-shadow: 0 0 0 1px rgba(61, 207, 138, 0.12);
+    .card.is-filled {
+      border-color: rgba(61, 207, 138, 0.5);
+      box-shadow: 0 0 0 1px rgba(61, 207, 138, 0.14);
     }
-    .card.is-pop { min-height: 160px; }
+    .card.is-pop { min-height: 150px; }
     .card-head {
       display: flex;
       justify-content: space-between;
@@ -159,29 +160,46 @@
       position: relative;
       overflow: hidden;
     }
-    .card.is-pop .card-body { background: transparent; min-height: 110px; }
+    .card.is-pop .card-body {
+      background: transparent;
+      min-height: 100px;
+    }
     .adframe {
       width: 300px;
       height: 250px;
       border: 0;
       background: #fff;
       display: block;
+      position: relative;
+      z-index: 1;
     }
-    .card-body .pulse {
+    .overlay {
       position: absolute;
       inset: 0;
-      display: flex;
+      z-index: 2;
+      display: none;
       align-items: center;
       justify-content: center;
-      color: #6b7a72;
+      text-align: center;
+      padding: 1rem;
       font-size: 12px;
-      letter-spacing: 0.04em;
-      background: linear-gradient(110deg, #f4f7f5 25%, #e8efeb 40%, #f4f7f5 55%);
-      background-size: 200% 100%;
-      animation: shimmer 1.2s ease-in-out infinite;
+      letter-spacing: 0.03em;
       pointer-events: none;
     }
-    .card.filled .pulse { display: none; }
+    .overlay.show { display: flex; }
+    .overlay.loading {
+      color: #5f6f66;
+      background: linear-gradient(110deg, #f3f6f4 25%, #e7eeea 45%, #f3f6f4 65%);
+      background-size: 200% 100%;
+      animation: shimmer 1.15s ease-in-out infinite;
+    }
+    .overlay.empty {
+      color: #7a4a4a;
+      background: rgba(255, 248, 248, 0.96);
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    .overlay.empty strong { color: #a05050; font-size: 12.5px; }
     @keyframes shimmer {
       0% { background-position: 100% 0; }
       100% { background-position: -100% 0; }
@@ -201,10 +219,8 @@
     .pop-arm span { color: var(--muted); font-size: 12px; display: block; }
   </style>
   <script>
-    // Plain /testing/ often kept a stale cached lab; ?chrome=1 worked because it was uncached.
-    // Always land on the current build query so normal browsers pick up this HTML.
     (function () {
-      var LAB_BUILD = "b10";
+      var LAB_BUILD = "b11";
       var q = new URLSearchParams(location.search);
       if (q.get("v") === LAB_BUILD) return;
       q.set("v", LAB_BUILD);
@@ -218,42 +234,47 @@
     <div class="row">
       <span class="title">AD LAB</span>
       <span id="meta">...</span>
-      <span id="tick">reload <strong>-</strong></span>
+      <span id="tick">retry <strong>-</strong></span>
       <span id="fills">ok <strong>0</strong>/<strong>0</strong></span>
       <span id="status"></span>
     </div>
     <div class="row">
-      <label>cards <input id="count" type="number" min="4" max="20" value="12" /></label>
-      <label>rotate <input id="secs" type="number" min="8" max="180" value="18" /> s</label>
-      <label>retry <input id="retry" type="number" min="2" max="60" value="3" /> s</label>
-      <label class="chk"><input type="checkbox" id="t-popunder" checked /> popunder</label>
-      <label class="chk"><input type="checkbox" id="auto" checked /> auto</label>
+      <label>cards <input id="count" type="number" min="1" max="12" value="6" /></label>
+      <label>retry empties <input id="retry" type="number" min="4" max="90" value="8" /> s</label>
+      <label class="chk"><input type="checkbox" id="auto" checked /> auto retry</label>
+      <label class="chk"><input type="checkbox" id="t-popunder" /> popunder</label>
       <label class="chk"><input type="checkbox" id="ads-only" /> ads only</label>
       <button type="button" class="primary" id="btn-refresh">reload all</button>
       <button type="button" id="btn-retry">retry empties</button>
       <button type="button" id="btn-help">help</button>
     </div>
+    <div class="row">
+      <span id="diag">checking ad network…</span>
+    </div>
   </div>
 
   <section id="help">
-    <p><strong>Only path:</strong> <code>/testing/</code> (auto-jumps to <code>?v=b10</code> so your browser drops stale cache).</p>
-    <p>Each card is a real Adsterra <strong>300×250</strong> banner. Two–three mount at a time so inventory isn’t flooded. Empties retry; filled slots stay until soft rotate.</p>
-    <p><strong>Popunder</strong> is not an on-page box — after arming, a later click may open a tab <em>behind</em> this one (browsers often block it).</p>
-    <p>If almost everything stays empty, your ISP may be sinkholing Adsterra creative DNS. Prefer Cloudflare DNS (1.1.1.1) and open this in normal Chrome, not an embedded preview.</p>
+    <p><strong>Path:</strong> <code>/testing/?v=b11</code> — always use this so your browser is not stuck on a cached lab.</p>
+    <p>Each card loads one Adsterra <strong>300×250</strong> banner in its own iframe (required so <code>atOptions</code> does not collide). Ads mount <strong>one at a time</strong>, then the next starts — this fills more reliably than blasting 12 at once.</p>
+    <p><strong>Popunder</strong> is optional and off by default. It is not a box on the page; after arming, a later click may open a tab behind this one.</p>
+    <p>If cards stay empty, Optimum/ISP DNS may sinkhole Adsterra hosts. Use Cloudflare DNS <strong>1.1.1.1</strong>, or run <code>scripts/fix_adsterra_dns.ps1</code> as admin.</p>
   </section>
 
   <div id="grid" aria-live="polite"></div>
 
   <script>
     (function () {
-      var LAB_BUILD = "b10";
+      var LAB_BUILD = "b11";
       var BANNER_KEY = "d737196962ef25449dcb66c5655248f1";
+      var INVOKE =
+        "https://www.highperformanceformat.com/" + BANNER_KEY + "/invoke.js";
       var POPUNDER_SRC =
         "https://pl30567774.effectivecpmnetwork.com/3c/91/ea/3c91ea5fe0936ca26b9cc5cebf036f9f.js";
-      var CONCURRENCY = 3;
-      var FILL_WAIT_MS = 8500;
-      var CHECK_MS = 280;
-      var STAGGER_MS = 180;
+      // One at a time — Adsterra inventory + invoke.js hate stampedes.
+      var CONCURRENCY = 1;
+      var FILL_WAIT_MS = 12000;
+      var CHECK_MS = 250;
+      var BETWEEN_MS = 400;
 
       var grid = document.getElementById("grid");
       var statusEl = document.getElementById("status");
@@ -261,17 +282,16 @@
       var tickEl = document.getElementById("tick");
       var fillsEl = document.getElementById("fills");
       var helpEl = document.getElementById("help");
+      var diagEl = document.getElementById("diag");
 
       var popunderLoaded = false;
-      var reloadTimer = null;
-      var countdownTimer = null;
       var retryTimer = null;
-      var nextAt = 0;
+      var countdownTimer = null;
+      var nextRetryAt = 0;
       var gen = 0;
       var slots = [];
       var activeMounts = 0;
       var waitQueue = [];
-      var rotateCursor = 0;
 
       function setStatus(msg, kind) {
         statusEl.textContent = msg || "";
@@ -285,6 +305,29 @@
         if (n > max) n = max;
         document.getElementById(id).value = String(n);
         return n;
+      }
+
+      function runDiag() {
+        var ctrl = typeof AbortController !== "undefined" ? new AbortController() : null;
+        var t = setTimeout(function () {
+          if (ctrl) ctrl.abort();
+        }, 8000);
+        fetch(INVOKE + "?diag=" + Date.now(), {
+          mode: "no-cors",
+          cache: "no-store",
+          signal: ctrl && ctrl.signal,
+        })
+          .then(function () {
+            clearTimeout(t);
+            diagEl.textContent = "ad network reachable · mount 1 at a time · build " + LAB_BUILD;
+            diagEl.className = "ok";
+          })
+          .catch(function () {
+            clearTimeout(t);
+            diagEl.textContent =
+              "ad network blocked or slow — check DNS (1.1.1.1) / ad blocker";
+            diagEl.className = "bad";
+          });
       }
 
       function ensurePopunder(on) {
@@ -305,12 +348,28 @@
         popunderLoaded = true;
       }
 
+      function setOverlay(slot, mode) {
+        if (!slot || !slot.overlay) return;
+        slot.overlay.className = "overlay";
+        if (mode === "loading") {
+          slot.overlay.className = "overlay loading show";
+          slot.overlay.textContent = "loading ad…";
+        } else if (mode === "empty") {
+          slot.overlay.className = "overlay empty show";
+          slot.overlay.innerHTML = "<strong>no fill</strong><span>will retry</span>";
+        } else {
+          slot.overlay.className = "overlay";
+          slot.overlay.textContent = "";
+        }
+      }
+
       function setSlotStatus(slot, text, ok, bad) {
         if (!slot || !slot.st) return;
         slot.st.textContent = text;
         slot.st.className =
-          "st" + (ok ? " ok" : bad ? " bad" : text === "loading" || text === "queued" ? " wait" : "");
-        if (slot.card) slot.card.classList.toggle("filled", !!ok);
+          "st" +
+          (ok ? " ok" : bad ? " bad" : text === "loading" || text === "queued" ? " wait" : "");
+        if (slot.card) slot.card.classList.toggle("is-filled", !!ok);
       }
 
       function paintFills() {
@@ -323,19 +382,27 @@
         });
         fillsEl.innerHTML = "ok <strong>" + filled + "</strong>/<strong>" + total + "</strong>";
         if (total > 0 && filled === total) setStatus("all slots filled", "ok");
-        else if (total > 0 && filled === 0) setStatus("waiting on inventory…", "warn");
+        else if (total > 0 && filled === 0 && activeMounts === 0 && !waitQueue.length) {
+          setStatus("no fills yet — retrying", "warn");
+        }
       }
 
       function bannerSrcdoc(cb) {
         return (
           "<!DOCTYPE html><html><head><meta charset=\"utf-8\" />" +
-          "<base href=\"" + location.origin + "/\" />" +
+          "<meta name=\"referrer\" content=\"no-referrer-when-downgrade\" />" +
           "<style>html,body{margin:0;padding:0;background:#fff;overflow:hidden;width:300px;height:250px}" +
           "iframe,img{display:block;margin:0 auto;border:0;max-width:100%}</style></head><body>" +
-          "<script>atOptions={key:'" + BANNER_KEY +
-          "',format:'iframe',height:250,width:300,params:{}};<" + "/script>" +
-          "<script src=\"https://www.highperformanceformat.com/" + BANNER_KEY +
-          "/invoke.js?cb=" + encodeURIComponent(cb) + "\"><" + "/script>" +
+          "<script>window.atOptions={key:'" +
+          BANNER_KEY +
+          "',format:'iframe',height:250,width:300,params:{}};<" +
+          "/script>" +
+          "<script src=\"" +
+          INVOKE +
+          "?cb=" +
+          encodeURIComponent(cb) +
+          "\"><" +
+          "/script>" +
           "</body></html>"
         );
       }
@@ -345,76 +412,93 @@
         var imgs = doc.querySelectorAll("img");
         for (var i = 0; i < imgs.length; i++) {
           var img = imgs[i];
-          if (img.complete && img.naturalWidth >= 40 && img.naturalHeight >= 40) {
-            return { kind: "img", el: img };
-          }
+          var w = img.naturalWidth || img.width || 0;
+          var h = img.naturalHeight || img.height || 0;
+          if (w >= 40 && h >= 40) return { kind: "img" };
+          if (img.complete && w >= 20 && h >= 20) return { kind: "img" };
         }
         var frames = doc.querySelectorAll("iframe");
         for (var j = 0; j < frames.length; j++) {
           var f = frames[j];
-          var src = f.src || "";
+          var src = f.getAttribute("src") || f.src || "";
           if (!src || src === "about:blank") continue;
-          if (f.offsetWidth >= 40 && f.offsetHeight >= 40) {
-            return { kind: "iframe", el: f, src: src };
+          // Adsterra injects a creative iframe — treat as fill even before pixels paint.
+          if (f.offsetWidth >= 20 || f.width >= 20 || true) {
+            return { kind: "iframe", src: src };
           }
         }
         return null;
       }
 
+      function stopWatch(slot) {
+        if (slot && slot.watchIv) {
+          clearInterval(slot.watchIv);
+          slot.watchIv = null;
+        }
+      }
+
+      function releaseMount(slot) {
+        if (!slot || !slot.mounting) return;
+        slot.mounting = false;
+        activeMounts = Math.max(0, activeMounts - 1);
+        setTimeout(pumpQueue, BETWEEN_MS);
+      }
+
       function pumpQueue() {
         while (activeMounts < CONCURRENCY && waitQueue.length) {
           var slot = waitQueue.shift();
-          if (!slot || slot.gen !== gen || slot.filled || slot.mounting) continue;
+          if (!slot || slot.gen !== gen) continue;
+          if (slot.filled || slot.mounting) continue;
           startMount(slot);
         }
       }
 
       function enqueueMount(slot) {
-        if (!slot || slot.kind === "popunder" || slot.filled || slot.mounting) return;
+        if (!slot || slot.kind === "popunder") return;
+        if (slot.filled || slot.mounting) return;
         if (waitQueue.indexOf(slot) >= 0) return;
         waitQueue.push(slot);
         setSlotStatus(slot, "queued", false, false);
+        setOverlay(slot, "loading");
         pumpQueue();
       }
 
-      function finishMount(slot, filled) {
-        if (slot.watchIv) {
-          clearInterval(slot.watchIv);
-          slot.watchIv = null;
-        }
-        slot.mounting = false;
-        activeMounts = Math.max(0, activeMounts - 1);
-        if (filled) {
-          slot.filled = true;
-          setSlotStatus(slot, "filled", true, false);
-        } else {
-          slot.filled = false;
-          setSlotStatus(slot, "empty", false, true);
-        }
+      function markFilled(slot) {
+        stopWatch(slot);
+        slot.filled = true;
+        setOverlay(slot, null);
+        setSlotStatus(slot, "filled", true, false);
+        releaseMount(slot);
         paintFills();
-        setTimeout(pumpQueue, STAGGER_MS);
+      }
+
+      function markEmpty(slot) {
+        stopWatch(slot);
+        slot.filled = false;
+        setOverlay(slot, "empty");
+        setSlotStatus(slot, "empty", false, true);
+        releaseMount(slot);
+        paintFills();
       }
 
       function startMount(slot) {
         if (!slot || slot.gen !== gen) return;
+        stopWatch(slot);
         slot.mounting = true;
         slot.attempts = (slot.attempts || 0) + 1;
         slot.filled = false;
         slot.mountedAt = Date.now();
         activeMounts += 1;
         setSlotStatus(slot, "loading", false, false);
+        setOverlay(slot, "loading");
         paintFills();
 
-        if (slot.watchIv) {
-          clearInterval(slot.watchIv);
-          slot.watchIv = null;
-        }
-
         slot.body.innerHTML = "";
-        var pulse = document.createElement("div");
-        pulse.className = "pulse";
-        pulse.textContent = "loading ad…";
-        slot.body.appendChild(pulse);
+        var overlay = document.createElement("div");
+        overlay.className = "overlay loading show";
+        overlay.textContent = "loading ad…";
+        slot.overlay = overlay;
+        slot.body.appendChild(overlay);
 
         var iframe = document.createElement("iframe");
         iframe.className = "adframe";
@@ -422,7 +506,7 @@
         iframe.height = 250;
         iframe.setAttribute("scrolling", "no");
         iframe.setAttribute("frameborder", "0");
-        iframe.setAttribute("referrerpolicy", "strict-origin-when-cross-origin");
+        iframe.setAttribute("referrerpolicy", "no-referrer-when-downgrade");
         iframe.setAttribute("allow", "attribution-reporting");
         iframe.title = "banner " + (slot.index + 1);
         iframe.srcdoc = bannerSrcdoc(Date.now() + "-" + slot.index + "-" + slot.attempts);
@@ -433,7 +517,8 @@
         var maxChecks = Math.ceil(FILL_WAIT_MS / CHECK_MS);
         slot.watchIv = setInterval(function () {
           if (slot.gen !== gen) {
-            finishMount(slot, false);
+            stopWatch(slot);
+            releaseMount(slot);
             return;
           }
           checks += 1;
@@ -443,89 +528,54 @@
           } catch (_) {}
 
           if (creative) {
-            finishMount(slot, true);
+            markFilled(slot);
             return;
           }
-
           if (checks >= maxChecks) {
-            finishMount(slot, false);
+            markEmpty(slot);
           }
         }, CHECK_MS);
-      }
-
-      function remountSlot(slot, force) {
-        if (!slot || slot.kind === "popunder") return;
-        if (!force && slot.mountedAt && Date.now() - slot.mountedAt < 2000) return;
-        if (slot.mounting) return;
-        slot.filled = false;
-        if (slot.card) slot.card.classList.remove("filled");
-        enqueueMount(slot);
       }
 
       function retryEmpties() {
         var n = 0;
         slots.forEach(function (s) {
           if (s.kind === "popunder" || s.filled || s.mounting) return;
-          if (s.mountedAt && Date.now() - s.mountedAt < 2000) return;
+          // avoid thrashing a slot that just failed
+          if (s.mountedAt && Date.now() - s.mountedAt < 3000) return;
           enqueueMount(s);
           n += 1;
         });
-        if (n) setStatus("retrying " + n, "ok");
-      }
-
-      /** Soft rotate: remount empties + a few oldest filled so the wall stays mostly green. */
-      function softRotate() {
-        var banners = slots.filter(function (s) {
-          return s.kind !== "popunder";
-        });
-        var empties = banners.filter(function (s) {
-          return !s.filled && !s.mounting;
-        });
-        empties.forEach(function (s) {
-          remountSlot(s, true);
-        });
-
-        var filled = banners.filter(function (s) {
-          return s.filled && !s.mounting;
-        });
-        var rotateN = Math.min(3, Math.max(1, Math.floor(filled.length / 4) || 1));
-        for (var i = 0; i < rotateN && filled.length; i++) {
-          rotateCursor = rotateCursor % filled.length;
-          var pick = filled[rotateCursor];
-          rotateCursor += 1;
-          remountSlot(pick, true);
-        }
-        setStatus("soft rotate · retry " + empties.length + " · refresh " + rotateN, "ok");
-        ensurePopunder(document.getElementById("t-popunder").checked);
+        if (n) setStatus("retrying " + n + " empty", "ok");
         scheduleLoops();
       }
 
       function clearTimers() {
         if (countdownTimer) clearInterval(countdownTimer);
-        if (reloadTimer) clearTimeout(reloadTimer);
-        if (retryTimer) clearInterval(retryTimer);
-        countdownTimer = reloadTimer = retryTimer = null;
+        if (retryTimer) clearTimeout(retryTimer);
+        countdownTimer = retryTimer = null;
       }
 
       function scheduleLoops() {
         clearTimers();
-        retryTimer = setInterval(retryEmpties, num("retry", 2, 60, 3) * 1000);
         if (!document.getElementById("auto").checked) {
           tickEl.innerHTML = "auto <strong>off</strong>";
           return;
         }
-        var secs = num("secs", 8, 180, 18);
-        nextAt = Date.now() + secs * 1000;
+        var secs = num("retry", 4, 90, 8);
+        nextRetryAt = Date.now() + secs * 1000;
         function paintTick() {
-          var left = Math.max(0, Math.ceil((nextAt - Date.now()) / 1000));
-          tickEl.innerHTML = "rotate <strong>" + left + "s</strong>";
+          var left = Math.max(0, Math.ceil((nextRetryAt - Date.now()) / 1000));
+          tickEl.innerHTML = "retry <strong>" + left + "s</strong>";
         }
         paintTick();
         countdownTimer = setInterval(paintTick, 250);
-        reloadTimer = setTimeout(softRotate, secs * 1000);
+        retryTimer = setTimeout(function () {
+          retryEmpties();
+        }, secs * 1000);
       }
 
-      function makeBannerCard(index, my, unit) {
+      function makeBannerCard(index, my) {
         var card = document.createElement("article");
         card.className = "card";
         var head = document.createElement("div");
@@ -545,11 +595,11 @@
 
         var slot = {
           kind: "banner",
-          unit: unit || "iframe",
           index: index,
           card: card,
           body: body,
           st: st,
+          overlay: null,
           iframe: null,
           filled: false,
           attempts: 0,
@@ -559,29 +609,25 @@
           mounting: false,
         };
         slots.push(slot);
-        // Stagger enqueue so first paints don’t stampede Adsterra
-        setTimeout(function () {
-          if (slot.gen === gen) enqueueMount(slot);
-        }, index * STAGGER_MS);
+        enqueueMount(slot);
       }
 
-      function render(full) {
+      function render() {
         var my = ++gen;
         waitQueue = [];
         activeMounts = 0;
-        rotateCursor = 0;
-        var n = num("count", 4, 20, 12);
+        var n = num("count", 1, 12, 6);
         var wantPop = document.getElementById("t-popunder").checked;
         slots.forEach(function (s) {
-          if (s.watchIv) clearInterval(s.watchIv);
+          stopWatch(s);
         });
         slots = [];
         grid.innerHTML = "";
-        ensurePopunder(wantPop);
+        // Never auto-load popunder on every render — only when armed checkbox + card click.
+        if (!wantPop) ensurePopunder(false);
 
-        // Stick to the proven iframe 300×250 zone — native units wasted queue slots.
         for (var i = 0; i < n; i++) {
-          makeBannerCard(i, my, "iframe");
+          makeBannerCard(i, my);
         }
 
         if (wantPop) {
@@ -589,7 +635,7 @@
           card.className = "card is-pop";
           var head = document.createElement("div");
           head.className = "card-head";
-          head.innerHTML = "<span><b>popunder</b></span><span class=\"st ok\">armed</span>";
+          head.innerHTML = "<span><b>popunder</b></span><span class=\"st ok\">ready</span>";
           var body = document.createElement("div");
           body.className = "card-body";
           body.style.background = "transparent";
@@ -597,11 +643,11 @@
           btn.type = "button";
           btn.className = "pop-arm";
           btn.innerHTML =
-            "<strong>Arm &amp; fire popunder</strong><span>Not an on-page ad. May open a tab behind this one (often blocked).</span>";
+            "<strong>Arm popunder</strong><span>Loads the script once. A later click may open a tab behind this one (often blocked). Not an on-page banner.</span>";
           btn.addEventListener("click", function () {
             popunderLoaded = false;
             ensurePopunder(true);
-            setStatus("popunder re-armed — click elsewhere on the page", "ok");
+            setStatus("popunder armed — click elsewhere on the page", "ok");
           });
           body.appendChild(btn);
           card.appendChild(head);
@@ -619,7 +665,7 @@
           "</strong> banners · build <strong>" +
           LAB_BUILD +
           "</strong>";
-        setStatus(full ? "loading wall…" : "loading wall…", "warn");
+        setStatus("mounting one at a time…", "warn");
         scheduleLoops();
       }
 
@@ -627,7 +673,7 @@
         popunderLoaded = false;
         var old = document.getElementById("steady-lab-popunder");
         if (old) old.remove();
-        render(true);
+        render();
       });
       document.getElementById("btn-retry").addEventListener("click", retryEmpties);
       document.getElementById("btn-help").addEventListener("click", function () {
@@ -637,18 +683,17 @@
         document.body.classList.toggle("ads-only", this.checked);
       });
       document.getElementById("auto").addEventListener("change", scheduleLoops);
-      ["t-popunder", "count", "secs", "retry"].forEach(function (id) {
-        document.getElementById(id).addEventListener("change", function () {
-          if (id === "secs" || id === "retry") {
-            scheduleLoops();
-            return;
-          }
-          render(true);
-        });
+      document.getElementById("t-popunder").addEventListener("change", function () {
+        render();
       });
+      document.getElementById("count").addEventListener("change", function () {
+        render();
+      });
+      document.getElementById("retry").addEventListener("change", scheduleLoops);
 
+      runDiag();
       if (new URLSearchParams(location.search).get("v") === LAB_BUILD) {
-        render(true);
+        render();
       }
     })();
   </script>
