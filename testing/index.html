@@ -222,10 +222,17 @@
     (function () {
       var LAB_BUILD = "b12";
       var q = new URLSearchParams(location.search);
-      if (q.get("v") === LAB_BUILD) return;
+      var path = location.pathname;
+      // Bare /testing/ is often stuck on a Cloudflare HIT of an old lab.
+      // /testing/index.html is a different cache key and stays fresh.
+      if (!/index\.html$/i.test(path)) {
+        if (path.endsWith("/")) path += "index.html";
+        else path += "/index.html";
+      }
+      if (q.get("v") === LAB_BUILD && /index\.html$/i.test(location.pathname)) return;
       q.set("v", LAB_BUILD);
       q.delete("chrome");
-      location.replace(location.pathname + "?" + q.toString() + location.hash);
+      location.replace(path + "?" + q.toString() + location.hash);
     })();
   </script>
 </head>
@@ -254,7 +261,7 @@
   </div>
 
   <section id="help">
-    <p><strong>Path:</strong> <code>/testing/?v=b12</code> — always use this so your browser is not stuck on a cached lab.</p>
+    <p><strong>Path:</strong> <code>/testing/index.html?v=b12</code> — use this exact URL if ads look stuck on an old cached page.</p>
     <p>Each card loads one Adsterra <strong>300×250</strong> banner in its own iframe (required so <code>atOptions</code> does not collide). Ads mount <strong>one at a time</strong>, then the next starts — this fills more reliably than blasting 12 at once.</p>
     <p><strong>Popunder</strong> is optional and off by default. It is not a box on the page; after arming, a later click may open a tab behind this one.</p>
     <p>If cards stay empty, Optimum/ISP DNS may sinkhole Adsterra hosts. Use Cloudflare DNS <strong>1.1.1.1</strong>, or run <code>scripts/fix_adsterra_dns.ps1</code> as admin.</p>
