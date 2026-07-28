@@ -92,16 +92,12 @@
     if (navAuth) navAuth.hidden = !on;
     const navSign = $("nav-signin-link");
     if (navSign) navSign.hidden = !!on;
-    // Signed-in sponsor banners → crypto publisher (keys/monetize.json), not Google
+    // Signed-in pages never inject third-party ad scripts next to session tokens.
     document.querySelectorAll("[data-steady-ad]").forEach((el) => {
-      el.hidden = !on;
-      el.setAttribute("aria-hidden", on ? "false" : "true");
+      el.hidden = true;
+      el.setAttribute("aria-hidden", "true");
+      el.innerHTML = "";
     });
-    if (on && window.SteadyMonetizeWeb && typeof SteadyMonetizeWeb.showSignedInAds === "function") {
-      try {
-        SteadyMonetizeWeb.showSignedInAds();
-      } catch (_) {}
-    }
   }
 
   function escapeHtml(s) {
