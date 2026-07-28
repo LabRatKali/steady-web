@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="robots" content="noindex, nofollow, noarchive" />
+  <title>Steady ad lab</title>
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml" />
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #070b09;
+      --panel: #101712;
+      --line: rgba(244, 248, 245, 0.12);
+      --text: #e8f0eb;
+      --muted: #8fa398;
+      --accent: #3dcf8a;
+      --warn: #e6c36a;
+      --danger: #e8a0a0;
+      --browser-h: min(46vh, 460px);
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font: 13px/1.4 "Segoe UI", system-ui, sans-serif;
+    }
+    body.has-browser { padding-bottom: calc(var(--browser-h) + 8px); }
+    body.ads-only .lab-chrome,
+    body.ads-only #help { display: none !important; }
+
+    .lab-chrome {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(7, 11, 9, 0.97);
+      border-bottom: 1px solid var(--line);
+      padding: 0.65rem 0.9rem 0.75rem;
+      backdrop-filter: blur(12px);
+    }
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem 0.65rem;
+      align-items: center;
+      margin: 0.25rem 0;
+    }
+    .title { font-weight: 800; color: var(--accent); letter-spacing: 0.04em; }
+    label.chk {
+      display: inline-flex;
+      gap: 0.28rem;
+      align-items: center;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 12px;
+      user-select: none;
+    }
+    label.chk input { accent-color: var(--accent); }
+    input[type="number"] {
+      width: 3.4rem;
+      background: var(--panel);
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 0.25rem 0.35rem;
+      font: inherit;
+    }
+    button {
+      border: 1px solid var(--line);
+      background: #162019;
+      color: var(--text);
+      border-radius: 7px;
+      padding: 0.35rem 0.65rem;
+      font: inherit;
+      cursor: pointer;
+    }
+    button.primary {
+      background: var(--accent);
+      color: #042316;
+      border-color: transparent;
+      font-weight: 800;
+    }
+    #meta, #status, #tick, #fills { color: var(--muted); font-size: 12px; }
+    #meta strong, #tick strong, #fills strong { color: var(--text); }
+    #status.ok { color: var(--accent); }
+    #status.err { color: var(--danger); }
+
+    #help {
+      display: none;
+      margin: 0.7rem 0.9rem 0;
+      padding: 0.85rem 1rem;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #101712;
+      color: var(--muted);
+      font-size: 12.5px;
+      max-width: 70rem;
+    }
+    #help.show { display: block; }
+    #help h2 { color: var(--accent); font-size: 0.9rem; margin: 0.6rem 0 0.3rem; }
+    #help p { margin: 0.3rem 0; }
+    #help strong { color: var(--text); }
+
+    #grid {
+      display: grid;
+      gap: 0.8rem;
+      padding: 0.8rem 0.9rem 1rem;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    }
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--panel);
+      padding: 0.45rem;
+      display: flex;
+      flex-direction: column;
+      min-height: 300px;
+      position: relative;
+      cursor: pointer;
+    }
+    .card:focus-within, .card:hover { border-color: rgba(61, 207, 138, 0.45); }
+    .card.is-wide { grid-column: 1 / -1; max-width: 760px; min-height: 140px; }
+    .card.is-pop { min-height: 190px; cursor: default; }
+    .card-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.4rem;
+      margin-bottom: 0.35rem;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: var(--muted);
+    }
+    .card-head b { color: var(--text); }
+    .card-head .st { color: var(--warn); text-transform: none; letter-spacing: 0; }
+    .card-head .st.ok { color: var(--accent); }
+    .card-body {
+      flex: 1;
+      min-height: 250px;
+      background: #ffffff;
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+    }
+    .card.is-wide .card-body { min-height: 100px; }
+    .card-body > iframe.adframe {
+      width: 100%;
+      height: 100%;
+      min-height: 250px;
+      border: 0;
+      display: block;
+      background: #ffffff;
+      pointer-events: none; /* clicks go to card → mini browser (stay on /watch) */
+    }
+    .card.is-wide .card-body > iframe.adframe { min-height: 100px; }
+    .open-chip {
+      position: absolute;
+      right: 8px;
+      bottom: 8px;
+      z-index: 4;
+      background: rgba(61, 207, 138, 0.92);
+      color: #042316;
+      border: 0;
+      border-radius: 999px;
+      padding: 0.35rem 0.7rem;
+      font-weight: 800;
+      font-size: 11px;
+      pointer-events: none;
+    }
+    .pop-arm {
+      width: calc(100% - 8px);
+      min-height: 160px;
+      margin: 4px;
+      border: 1px dashed rgba(61, 207, 138, 0.35);
+      border-radius: 10px;
+      background: rgba(61, 207, 138, 0.06);
+      color: var(--text);
+      text-align: left;
+      padding: 0.9rem;
+      font: inherit;
+      cursor: pointer;
+    }
+    .pop-arm strong { color: var(--accent); display: block; margin-bottom: 0.35rem; }
+    .pop-arm span { color: var(--muted); font-size: 12px; display: block; }
+
+    #browser {
+      position: fixed;
+      left: 0; right: 0; bottom: 0;
+      height: var(--browser-h);
+      z-index: 80;
+      background: #0b100e;
+      border-top: 1px solid var(--line);
+      display: none;
+      flex-direction: column;
+      box-shadow: 0 -12px 40px rgba(0,0,0,0.5);
+    }
+    body.has-browser #browser { display: flex; }
+    .browser-bar {
+      display: flex;
+      gap: 0.4rem;
+      align-items: center;
+      padding: 0.4rem 0.55rem;
+      background: #101712;
+      border-bottom: 1px solid var(--line);
+    }
+    .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); flex: 0 0 auto; }
+    #browser-url {
+      flex: 1;
+      min-width: 0;
+      background: #070b09;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--muted);
+      padding: 0.35rem 0.75rem;
+      font-size: 12px;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+    #browser-frame { flex: 1; width: 100%; border: 0; background: #fff; }
+    #browser-tip {
+      display: none;
+      padding: 0.55rem 0.75rem;
+      background: #1a1810;
+      color: var(--warn);
+      font-size: 12px;
+      border-bottom: 1px solid var(--line);
+    }
+    #browser-tip.show { display: block; }
+  </style>
+</head>
+<body class="has-browser">
+  <div class="lab-chrome">
+    <div class="row">
+      <span class="title">AD LAB</span>
+      <span id="meta">…</span>
+      <span id="tick">reload <strong>—</strong></span>
+      <span id="fills">filled <strong>0</strong>/<strong>0</strong></span>
+      <span id="status"></span>
+    </div>
+    <div class="row">
+      <label>cards <input id="count" type="number" min="4" max="36" value="12" /></label>
+      <label>reload <input id="secs" type="number" min="15" max="300" value="45" /> s</label>
+      <label>retry <input id="retry" type="number" min="8" max="90" value="15" /> s</label>
+      <label class="chk"><input type="checkbox" id="t-banner" checked /> banners</label>
+      <label class="chk"><input type="checkbox" id="t-native" checked /> native</label>
+      <label class="chk"><input type="checkbox" id="t-reward" checked /> reward</label>
+      <label class="chk"><input type="checkbox" id="t-smartlink" checked /> smartlink</label>
+      <label class="chk"><input type="checkbox" id="t-popunder" checked /> popunder</label>
+      <label class="chk"><input type="checkbox" id="auto" checked /> auto</label>
+      <label class="chk"><input type="checkbox" id="ads-only" /> ads only</label>
+      <button type="button" class="primary" id="btn-refresh">reload all</button>
+      <button type="button" id="btn-retry">retry empties</button>
+      <button type="button" id="btn-help">help</button>
+    </div>
+  </div>
+
+  <section id="help">
+    <h2>Why black boxes happened</h2>
+    <p>Ads were loading in <strong>srcdoc</strong> iframes (opaque origin). Adsterra often refuses to fill those. This lab now loads each unit from a <strong>same-origin</strong> page (<code>unit.html</code>) on your domain so fills work.</p>
+    <h2>Why /watch</h2>
+    <p>Cloudflare cached a broken old <code>/testing</code> page. <code>/watch</code> was a fresh path so the fix could go live. Both paths share this lab now.</p>
+    <h2>Popunder</h2>
+    <p>Not a black box here. After you tap <strong>Arm &amp; fire</strong>, Adsterra may open an offer in a <strong>tab behind</strong> this one. Browsers often block it.</p>
+    <h2>Mini browser</h2>
+    <p>Click any ad card → offer opens in the bottom mini browser. Your address bar stays on this Steady page.</p>
+  </section>
+
+  <div id="grid" aria-live="polite"></div>
+
+  <div id="browser" aria-label="Mini browser">
+    <div class="browser-bar">
+      <span class="dot"></span>
+      <div id="browser-url">Click any ad card — opens here (you stay on this Steady page)</div>
+      <button type="button" id="btn-browser-reload">reload</button>
+      <button type="button" id="btn-browser-close">close</button>
+    </div>
+    <div id="browser-tip">If this panel is blank, the offer blocks embedding. That’s normal — the Steady page still didn’t leave /watch.</div>
+    <iframe id="browser-frame" title="Mini browser" src="about:blank"></iframe>
+  </div>
+
+  <script>
+    (function () {
+      var SMARTLINK =
+        "https://www.effectivecpmnetwork.com/s889n4i77?key=38aa37c91a94f34912a4a89f8b27799d";
+      var POPUNDER_SRC =
+        "https://pl30567774.effectivecpmnetwork.com/3c/91/ea/3c91ea5fe0936ca26b9cc5cebf036f9f.js";
+
+      var BANNER_SIZES = [
+        { w: 300, h: 250, label: "300×250", cls: "" },
+        { w: 300, h: 250, label: "300×250", cls: "" },
+        { w: 300, h: 250, label: "300×250", cls: "" },
+        { w: 300, h: 250, label: "300×250", cls: "" },
+        { w: 336, h: 280, label: "336×280", cls: "" },
+        { w: 300, h: 250, label: "300×250", cls: "" },
+        { w: 728, h: 90, label: "728×90", cls: "is-wide" },
+        { w: 300, h: 250, label: "300×250", cls: "" },
+      ];
+
+      var grid = document.getElementById("grid");
+      var statusEl = document.getElementById("status");
+      var meta = document.getElementById("meta");
+      var tickEl = document.getElementById("tick");
+      var fillsEl = document.getElementById("fills");
+      var helpEl = document.getElementById("help");
+      var browserUrl = document.getElementById("browser-url");
+      var browserFrame = document.getElementById("browser-frame");
+      var browserTip = document.getElementById("browser-tip");
+      var lastOfferUrl = SMARTLINK;
+
+      var popunderLoaded = false;
+      var reloadTimer = null;
+      var countdownTimer = null;
+      var retryTimer = null;
+      var fillTimer = null;
+      var nextAt = 0;
+      var gen = 0;
+      var slots = [];
+
+      function setStatus(msg, kind) {
+        statusEl.textContent = msg || "";
+        statusEl.className = kind || "";
+      }
+
+      function num(id, min, max, fallback) {
+        var n = parseInt(document.getElementById(id).value, 10);
+        if (!isFinite(n)) n = fallback;
+        if (n < min) n = min;
+        if (n > max) n = max;
+        document.getElementById(id).value = String(n);
+        return n;
+      }
+
+      function unitSrc(kind, w, h) {
+        return (
+          "unit.html?kind=" +
+          encodeURIComponent(kind) +
+          "&w=" +
+          w +
+          "&h=" +
+          h +
+          "&t=" +
+          Date.now() +
+          "&r=" +
+          Math.floor(Math.random() * 1e9)
+        );
+      }
+
+      function browseSrc(url) {
+        return "browse.html?u=" + encodeURIComponent(url) + "&t=" + Date.now();
+      }
+
+      function openMini(url) {
+        lastOfferUrl = url || SMARTLINK;
+        browserUrl.textContent = lastOfferUrl;
+        document.body.classList.add("has-browser");
+        browserTip.classList.remove("show");
+        browserFrame.src = browseSrc(lastOfferUrl);
+        setStatus("opened in mini browser — still on this page", "ok");
+        // If embed blocked, tip after a moment
+        setTimeout(function () {
+          browserTip.classList.add("show");
+        }, 2500);
+      }
+
+      function ensurePopunder(on) {
+        var existing = document.getElementById("steady-lab-popunder");
+        if (!on) {
+          if (existing) existing.remove();
+          popunderLoaded = false;
+          return;
+        }
+        if (popunderLoaded && existing) return;
+        if (existing) existing.remove();
+        var s = document.createElement("script");
+        s.id = "steady-lab-popunder";
+        s.async = true;
+        s.setAttribute("data-cfasync", "false");
+        s.src = POPUNDER_SRC + "?cb=" + Date.now();
+        document.head.appendChild(s);
+        popunderLoaded = true;
+      }
+
+      function setSlotStatus(slot, text, ok) {
+        if (!slot || !slot.st) return;
+        slot.st.textContent = text;
+        slot.st.className = "st" + (ok ? " ok" : "");
+      }
+
+      function frameHasFill(frame) {
+        try {
+          var doc = frame.contentDocument || (frame.contentWindow && frame.contentWindow.document);
+          if (!doc) return false;
+          if (doc.querySelectorAll("iframe").length > 0) return true;
+          if (doc.querySelectorAll("img").length > 0) return true;
+          var stage = doc.getElementById("stage");
+          if (stage && stage.querySelectorAll("iframe,img,ins").length > 0) return true;
+          return false;
+        } catch (_) {
+          return true;
+        }
+      }
+
+      function remountSlot(slot) {
+        if (!slot || slot.kind === "popunder") return;
+        var now = Date.now();
+        // Don't thrash a slot that just started loading
+        if (slot.mountedAt && now - slot.mountedAt < 12000 && !slot.forceRetry) return;
+        slot.forceRetry = false;
+        slot.attempts = (slot.attempts || 0) + 1;
+        setSlotStatus(slot, "loading #" + slot.attempts, false);
+        slot.filled = false;
+        slot.mountedAt = now;
+        slot.body.innerHTML = "";
+
+        var kind = slot.kind === "smartlink" ? "banner" : slot.kind;
+        var frame = document.createElement("iframe");
+        frame.className = "adframe";
+        frame.title = "ad";
+        frame.loading = "eager";
+        frame.referrerPolicy = "no-referrer-when-downgrade";
+        frame.src = unitSrc(kind, slot.w, slot.h);
+        slot.body.appendChild(frame);
+        slot.frame = frame;
+
+        var chip = document.createElement("div");
+        chip.className = "open-chip";
+        chip.textContent = "tap → mini browser";
+        slot.body.appendChild(chip);
+      }
+
+      function paintFills() {
+        var total = 0, filled = 0;
+        slots.forEach(function (s) {
+          if (s.kind === "popunder") return;
+          total++;
+          if (s.filled) filled++;
+        });
+        fillsEl.innerHTML = "filled <strong>" + filled + "</strong>/<strong>" + total + "</strong>";
+      }
+
+      function checkFills() {
+        slots.forEach(function (s) {
+          if (s.kind === "popunder" || s.filled || !s.frame) return;
+          if (frameHasFill(s.frame)) {
+            s.filled = true;
+            setSlotStatus(s, "filled", true);
+          }
+        });
+        paintFills();
+      }
+
+      function retryEmpties() {
+        var n = 0;
+        slots.forEach(function (s) {
+          if (s.kind === "popunder" || s.filled) return;
+          if (s.mountedAt && Date.now() - s.mountedAt < 12000) return;
+          s.forceRetry = true;
+          remountSlot(s);
+          n++;
+        });
+        if (n) setStatus("retrying " + n + " empty", "ok");
+        paintFills();
+      }
+
+      function buildPlan(n) {
+        var plan = [];
+        var wantBanner = document.getElementById("t-banner").checked;
+        var wantNative = document.getElementById("t-native").checked;
+        var wantReward = document.getElementById("t-reward").checked;
+        var wantSmart = document.getElementById("t-smartlink").checked;
+        var types = [];
+        if (wantBanner) types.push("banner");
+        if (wantNative) types.push("native");
+        if (wantReward) types.push("reward");
+        if (wantSmart) types.push("smartlink");
+        if (!types.length) return plan;
+
+        var bi = 0, i = 0, nativeCount = 0;
+        while (plan.length < n && i < n * 12) {
+          var t = types[i % types.length];
+          i++;
+          if (t === "banner") {
+            var sz = BANNER_SIZES[bi % BANNER_SIZES.length];
+            bi++;
+            plan.push({ kind: "banner", detail: sz.label, w: sz.w, h: sz.h, cls: sz.cls });
+          } else if (t === "native") {
+            if (nativeCount >= Math.max(1, Math.floor(n / 8))) continue;
+            nativeCount++;
+            plan.push({ kind: "native", detail: "native", w: 300, h: 280, cls: "" });
+          } else if (t === "reward") {
+            plan.push({ kind: "reward", detail: "banner+social", w: 300, h: 250, cls: "" });
+          } else {
+            plan.push({ kind: "smartlink", detail: "banner → mini browser", w: 300, h: 250, cls: "" });
+          }
+        }
+        while (plan.length < n) {
+          var sz2 = BANNER_SIZES[bi % BANNER_SIZES.length];
+          bi++;
+          plan.push({ kind: "banner", detail: sz2.label, w: sz2.w, h: sz2.h, cls: sz2.cls });
+        }
+        return plan.slice(0, n);
+      }
+
+      function clearTimers() {
+        if (countdownTimer) clearInterval(countdownTimer);
+        if (reloadTimer) clearTimeout(reloadTimer);
+        if (retryTimer) clearInterval(retryTimer);
+        if (fillTimer) clearInterval(fillTimer);
+        countdownTimer = reloadTimer = retryTimer = fillTimer = null;
+      }
+
+      function scheduleLoops() {
+        clearTimers();
+        fillTimer = setInterval(checkFills, 800);
+        retryTimer = setInterval(retryEmpties, num("retry", 3, 60, 5) * 1000);
+        if (!document.getElementById("auto").checked) {
+          tickEl.innerHTML = "auto <strong>off</strong>";
+          return;
+        }
+        var secs = num("secs", 10, 300, 20);
+        nextAt = Date.now() + secs * 1000;
+        function paintTick() {
+          var left = Math.max(0, Math.ceil((nextAt - Date.now()) / 1000));
+          tickEl.innerHTML = "reload <strong>" + left + "s</strong>";
+        }
+        paintTick();
+        countdownTimer = setInterval(paintTick, 250);
+        reloadTimer = setTimeout(function () {
+          popunderLoaded = false;
+          var old = document.getElementById("steady-lab-popunder");
+          if (old) old.remove();
+          render();
+        }, secs * 1000);
+      }
+
+      function render() {
+        var my = ++gen;
+        var n = num("count", 4, 36, 16);
+        var wantPop = document.getElementById("t-popunder").checked;
+        var plan = buildPlan(n);
+        slots = [];
+        grid.innerHTML = "";
+        ensurePopunder(wantPop);
+
+        if (!plan.length && !wantPop) {
+          setStatus("pick at least one ad type", "err");
+          paintFills();
+          return;
+        }
+
+        plan.forEach(function (item, idx) {
+          var card = document.createElement("article");
+          card.className = "card " + (item.cls || "");
+          card.tabIndex = 0;
+          var head = document.createElement("div");
+          head.className = "card-head";
+          var left = document.createElement("span");
+          left.innerHTML = "<b>" + item.kind + "</b> #" + (idx + 1) + " · " + item.detail;
+          var st = document.createElement("span");
+          st.className = "st";
+          st.textContent = "loading";
+          head.appendChild(left);
+          head.appendChild(st);
+          var body = document.createElement("div");
+          body.className = "card-body";
+          card.appendChild(head);
+          card.appendChild(body);
+          grid.appendChild(card);
+
+          var slot = {
+            kind: item.kind,
+            w: item.w,
+            h: item.h,
+            body: body,
+            st: st,
+            frame: null,
+            filled: false,
+            attempts: 0,
+            card: card,
+          };
+          slots.push(slot);
+
+          card.addEventListener("click", function () {
+            openMini(SMARTLINK);
+          });
+          card.addEventListener("keydown", function (e) {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              openMini(SMARTLINK);
+            }
+          });
+
+          setTimeout(function () {
+            if (my !== gen) return;
+            remountSlot(slot);
+          }, idx * 350);
+        });
+
+        if (wantPop) {
+          var card = document.createElement("article");
+          card.className = "card is-pop";
+          var head = document.createElement("div");
+          head.className = "card-head";
+          head.innerHTML = "<span><b>popunder</b> · not an on-page ad</span><span class='st ok'>armed</span>";
+          var body = document.createElement("div");
+          body.className = "card-body";
+          var btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "pop-arm";
+          btn.innerHTML =
+            "<strong>Arm &amp; fire popunder</strong>" +
+            "<span>Won’t draw a black box here. May open a tab behind this one (often blocked by the browser).</span>";
+          btn.addEventListener("click", function (e) {
+            e.stopPropagation();
+            popunderLoaded = false;
+            ensurePopunder(true);
+            setTimeout(function () {
+              document.body.click();
+              btn.innerHTML =
+                "<strong>Gesture sent</strong>" +
+                "<span>Check other tabs / blocked-popup icon. You are still on this Steady page.</span>";
+            }, 300);
+          });
+          body.appendChild(btn);
+          card.appendChild(head);
+          card.appendChild(body);
+          grid.appendChild(card);
+          slots.push({ kind: "popunder", filled: true, body: body, st: null });
+        }
+
+        setStatus(plan.length + " slots mounting (same-origin units)", "ok");
+        paintFills();
+        scheduleLoops();
+      }
+
+      function paintMeta() {
+        meta.innerHTML = "<strong>" + location.host + "</strong> " + location.pathname;
+      }
+
+      document.getElementById("btn-refresh").addEventListener("click", function () {
+        popunderLoaded = false;
+        var old = document.getElementById("steady-lab-popunder");
+        if (old) old.remove();
+        render();
+      });
+      document.getElementById("btn-retry").addEventListener("click", retryEmpties);
+      document.getElementById("btn-help").addEventListener("click", function () {
+        helpEl.classList.toggle("show");
+      });
+      document.getElementById("ads-only").addEventListener("change", function (e) {
+        document.body.classList.toggle("ads-only", !!e.target.checked);
+      });
+      document.getElementById("btn-browser-close").addEventListener("click", function () {
+        document.body.classList.remove("has-browser");
+        browserFrame.src = "about:blank";
+      });
+      document.getElementById("btn-browser-reload").addEventListener("click", function () {
+        if (lastOfferUrl) openMini(lastOfferUrl);
+      });
+      document.getElementById("auto").addEventListener("change", scheduleLoops);
+      ["t-banner", "t-native", "t-reward", "t-smartlink", "t-popunder", "count", "secs", "retry"].forEach(
+        function (id) {
+          document.getElementById(id).addEventListener("change", function () {
+            if (id === "secs" || id === "retry") {
+              scheduleLoops();
+              return;
+            }
+            popunderLoaded = false;
+            var old = document.getElementById("steady-lab-popunder");
+            if (old) old.remove();
+            render();
+          });
+        }
+      );
+
+      document.addEventListener("visibilitychange", function () {
+        if (!document.hidden) retryEmpties();
+      });
+
+      window.addEventListener("message", function (ev) {
+        var data = ev.data || {};
+        if (data.type === "steady-unit-filled") {
+          slots.forEach(function (s) {
+            if (s.filled || !s.frame) return;
+            if (frameHasFill(s.frame)) {
+              s.filled = true;
+              setSlotStatus(s, "filled", true);
+            }
+          });
+          paintFills();
+        }
+      });
+
+      paintMeta();
+      render();
+    })();
+  </script>
+</body>
+</html>
