@@ -263,9 +263,51 @@
         fillsEl.innerHTML = "ok <strong>" + filled + "</strong>/<strong>" + total + "</strong>";
       }
 
-      /** Probe whether an ad iframe URL is actually reachable (catches sad-face / refused). */
+      /** True if Resource Timing shows a failed load for this URL (Chrome sad-face / refused). */
+      function resourceFailed(url) {
+        if (!url || !window.performance || !performance.getEntriesByName) return false;
+        try {
+          var entries = performance.getEntriesByName(url);
+          for (var i = 0; i < entries.length; i++) {
+            var e = entries[i];
+            if (typeof e.responseStatus === "number" && e.responseStatus === 0) return true;
+            // Connection refused / DNS fail often leave zero transfer and tiny duration.
+            if (
+              e.transferSize === 0 &&
+              e.decodedBodySize === 0 &&
+              e.duration > 0 &&
+              e.duration < 80
+            ) {
+              return true;
+            }
+          }
+        } catch (_) {}
+        return false;
+      }
+
+      function recentFailedHosts() {
+        var bad = {};
+        try {
+          var list = performance.getEntriesByType("resource") || [];
+          var cutoff = performance.now() - 12000;
+          for (var i = 0; i < list.length; i++) {
+            var e = list[i];
+            if (e.startTime < cutoff) continue;
+            var failed =
+              (typeof e.responseStatus === "number" && e.responseStatus === 0) ||
+              (e.transferSize === 0 && e.decodedBodySize === 0 && e.duration > 0 && e.duration < 80);
+            if (!failed) continue;
+            try {
+              bad[new URL(e.name).hostname] = true;
+            } catch (_) {}
+          }
+        } catch (_) {}
+        return bad;
+      }
+
       function probeUrl(url) {
         if (!url || url.indexOf("http") !== 0) return Promise.resolve(false);
+        if (resourceFailed(url)) return Promise.resolve(false);
         return new Promise(function (resolve) {
           var done = false;
           var finish = function (ok) {
@@ -275,11 +317,13 @@
           };
           var timer = setTimeout(function () {
             finish(false);
-          }, 2800);
+          }, 2200);
+          // no-cors: opaque success ≠ healthy page, but hard network fail still rejects.
           fetch(url, { method: "GET", mode: "no-cors", cache: "no-store", credentials: "omit" })
             .then(function () {
               clearTimeout(timer);
-              finish(true);
+              // Re-check timing — refused hosts often still "resolve" oddly; trust failures.
+              finish(!resourceFailed(url));
             })
             .catch(function () {
               clearTimeout(timer);
@@ -289,7 +333,6 @@
       }
 
       function readIframeHealth(iframe) {
-        // Returns: 'dead' | 'live' | 'unknown'
         try {
           var href = iframe.contentWindow && iframe.contentWindow.location.href;
           if (!href || href === "about:blank") return "unknown";
@@ -297,13 +340,21 @@
           var doc = iframe.contentDocument;
           if (doc) {
             var t = ((doc.body && doc.body.innerText) || "").toLowerCase();
-            if (/refused to connect|err_connection|can't be reached|this site can.t be reached|err_tunnel|not found/.test(t)) {
+            if (
+              /refused to connect|err_connection|can't be reached|this site can.t be reached|err_tunnel|not found|sad face/.test(
+                t
+              )
+            ) {
+              return "dead";
+            }
+            // Same-origin empty chrome error document
+            if (!doc.body || (!doc.body.children.length && !(doc.body.innerText || "").trim())) {
               return "dead";
             }
           }
           return "live";
         } catch (_) {
-          return "unknown"; // cross-origin - need fetch probe
+          return "unknown";
         }
       }
 
@@ -314,10 +365,17 @@
           var imgs = hold.querySelectorAll("img");
           if (!iframes.length && !imgs.length) return resolve(false);
 
+          var badHosts = recentFailedHosts();
+
           if (imgs.length) {
             for (var i = 0; i < imgs.length; i++) {
-              var r = imgs[i].getBoundingClientRect();
-              if (r.width > 40 && r.height > 40) return resolve(true);
+              var img = imgs[i];
+              if (img.complete && img.naturalWidth > 40 && img.naturalHeight > 40) {
+                try {
+                  if (badHosts[new URL(img.currentSrc || img.src).hostname]) continue;
+                } catch (_) {}
+                return resolve(true);
+              }
             }
           }
 
@@ -330,14 +388,32 @@
           function oneDone() {
             pending -= 1;
             if (pending > 0) return;
+            // Nested dead creatives: outer iframe can be "live" while inner host refused.
+            // If any recent ad-host failure happened during this mount, treat as dead.
+            if (anyLive && Object.keys(badHosts).length) {
+              resolve(false);
+              return;
+            }
             if (anyLive) resolve(true);
-            else if (anyDead) resolve(false);
             else resolve(false);
           }
 
           iframes.forEach(function (el) {
             var r = el.getBoundingClientRect();
             if (r.width < 40 || r.height < 40) {
+              oneDone();
+              return;
+            }
+            var src = el.currentSrc || el.src || "";
+            try {
+              if (src && badHosts[new URL(src).hostname]) {
+                anyDead = true;
+                oneDone();
+                return;
+              }
+            } catch (_) {}
+            if (src && resourceFailed(src)) {
+              anyDead = true;
               oneDone();
               return;
             }
@@ -352,8 +428,6 @@
               oneDone();
               return;
             }
-            // unknown (cross-origin): probe the src
-            var src = el.currentSrc || el.src || "";
             probeUrl(src).then(function (ok) {
               if (ok) anyLive = true;
               else anyDead = true;
@@ -408,6 +482,8 @@
 
         var hold = document.createElement("div");
         hold.className = "hold";
+        // Hide until verified — avoids Chrome sad-face / "refused to connect" flash.
+        hold.style.visibility = "hidden";
         slot.body.appendChild(hold);
         slot.hold = hold;
 
@@ -430,33 +506,47 @@
                   hold.querySelectorAll("iframe").length > 0 ||
                   hold.querySelectorAll("img").length > 0;
                 if (!hasNode) {
-                  if (checks >= 16) {
+                  if (checks >= 14) {
                     clearInterval(slot.watchIv);
                     setSlotStatus(slot, "no fill", false, true);
                     setTimeout(function () {
                       if (slot.gen === gen) remountSlot(slot, true);
-                    }, 400);
+                    }, 300);
                   }
                   return;
                 }
-                // Give the iframe a moment to fail/succeed, then verify
-                if (checks < 3) return;
+                // Wait long enough for nested creative hosts to fail (sad-face).
+                if (checks < 6) return;
                 clearInterval(slot.watchIv);
                 verifyCreative(hold).then(function (ok2) {
                   if (slot.gen !== gen) return;
                   if (ok2) {
+                    hold.style.visibility = "visible";
                     slot.filled = true;
                     setSlotStatus(slot, "filled", true, false);
                     paintFills();
+                    // Re-check shortly — nested iframe can die after outer reports ok.
+                    setTimeout(function () {
+                      if (slot.gen !== gen || !slot.filled) return;
+                      verifyCreative(hold).then(function (still) {
+                        if (slot.gen !== gen) return;
+                        if (still) return;
+                        slot.filled = false;
+                        hold.style.visibility = "hidden";
+                        setSlotStatus(slot, "dead offer", false, true);
+                        paintFills();
+                        remountSlot(slot, true);
+                      });
+                    }, 1800);
                   } else {
                     setSlotStatus(slot, "dead offer", false, true);
                     paintFills();
                     setTimeout(function () {
                       if (slot.gen === gen) remountSlot(slot, true);
-                    }, 350);
+                    }, 280);
                   }
                 });
-              }, 400);
+              }, 350);
             });
           })
           .then(function () {
