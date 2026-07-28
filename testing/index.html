@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="robots" content="noindex, nofollow, noarchive" />
-  <title>Steady ad lab</title>
+  <title>Steady</title>
   <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml" />
   <style>
     :root {
@@ -131,13 +131,15 @@
     .card-body {
       flex: 1;
       min-height: 250px;
-      background: #fff;
+      background: #111;
       border-radius: 10px;
       overflow: hidden;
       display: flex;
       align-items: center;
       justify-content: center;
+      position: relative;
     }
+    .card-body.ready { background: #fff; }
     .adframe {
       width: 300px;
       height: 250px;
@@ -145,7 +147,10 @@
       border: 0;
       display: block;
       background: #fff;
+      opacity: 0;
+      transition: opacity 0.15s ease;
     }
+    .adframe.show { opacity: 1; }
     .pop-arm {
       width: calc(100% - 8px);
       min-height: 140px;
@@ -186,7 +191,7 @@
   </div>
 
   <section id="help">
-    <p>Only path: <strong>/testing/</strong>. Each card is a fresh 300×250 banner. Empty/dead slots auto-retry; the whole grid reloads on the timer.</p>
+    <p>Only path: <strong>/testing/</strong>. Cards remount until a live creative appears. Dead “refused to connect” offers stay hidden and get replaced.</p>
   </section>
 
   <div id="grid" aria-live="polite"></div>
@@ -211,6 +216,7 @@
       var nextAt = 0;
       var gen = 0;
       var slots = [];
+      var deadHosts = {};
 
       function setStatus(msg, kind) {
         statusEl.textContent = msg || "";
@@ -261,10 +267,59 @@
         fillsEl.innerHTML = "ok <strong>" + filled + "</strong>/<strong>" + total + "</strong>";
       }
 
-      /** Adsterra invoke.js needs a real document (document.write). srcdoc provides that. */
+      function hostOf(url) {
+        try {
+          return new URL(url).hostname;
+        } catch (_) {
+          return "";
+        }
+      }
+
+      function markDeadHost(url) {
+        var h = hostOf(url);
+        if (h) deadHosts[h] = Date.now();
+      }
+
+      function isKnownDead(url) {
+        var h = hostOf(url);
+        if (!h) return false;
+        var t = deadHosts[h];
+        return t && Date.now() - t < 120000;
+      }
+
+      function probeUrl(url) {
+        if (!url || url.indexOf("http") !== 0) return Promise.resolve(false);
+        if (isKnownDead(url)) return Promise.resolve(false);
+        return new Promise(function (resolve) {
+          var done = false;
+          var finish = function (ok) {
+            if (done) return;
+            done = true;
+            if (!ok) markDeadHost(url);
+            resolve(!!ok);
+          };
+          var timer = setTimeout(function () {
+            finish(false);
+          }, 1800);
+          fetch(url, { method: "GET", mode: "no-cors", cache: "no-store", credentials: "omit" })
+            .then(function () {
+              clearTimeout(timer);
+              finish(true);
+            })
+            .catch(function () {
+              clearTimeout(timer);
+              finish(false);
+            });
+        });
+      }
+
+      /** Fresh document so Adsterra invoke.js can document.write. */
       function bannerSrcdoc(cb) {
         return (
           "<!DOCTYPE html><html><head><meta charset=\"utf-8\" />" +
+          "<base href=\"" +
+          location.origin +
+          "/\" />" +
           "<style>html,body{margin:0;padding:0;background:#fff;overflow:hidden;width:300px;height:250px}" +
           "iframe,img{display:block;margin:0 auto;border:0;max-width:100%}</style></head><body>" +
           "<script>atOptions={key:'" +
@@ -281,31 +336,50 @@
         );
       }
 
-      function peekFill(iframe) {
-        try {
-          var doc = iframe.contentDocument;
-          if (!doc || !doc.body) return "empty";
-          var nodes = doc.querySelectorAll("iframe, img, a, ins, object, embed");
-          if (!nodes.length) {
-            // Script present but no creative yet
-            if (doc.querySelector("script[src*='highperformanceformat']")) return "waiting";
-            return "empty";
+      function findCreative(doc) {
+        if (!doc) return null;
+        var imgs = doc.querySelectorAll("img");
+        for (var i = 0; i < imgs.length; i++) {
+          var img = imgs[i];
+          if (img.complete && img.naturalWidth >= 40 && img.naturalHeight >= 40) {
+            return { kind: "img", el: img, src: img.currentSrc || img.src };
           }
-          for (var i = 0; i < nodes.length; i++) {
-            var el = nodes[i];
-            var r = el.getBoundingClientRect();
-            if (r.width >= 40 && r.height >= 40) return "filled";
-          }
-          return "waiting";
-        } catch (_) {
-          return "unknown";
         }
+        var frames = doc.querySelectorAll("iframe");
+        for (var j = 0; j < frames.length; j++) {
+          var f = frames[j];
+          var src = f.src || "";
+          if (!src || src === "about:blank") continue;
+          if (f.offsetWidth >= 40 && f.offsetHeight >= 40) {
+            return { kind: "iframe", el: f, src: src };
+          }
+        }
+        return null;
+      }
+
+      function verifyCreative(iframe) {
+        return new Promise(function (resolve) {
+          try {
+            var doc = iframe.contentDocument;
+            if (!doc || !doc.body) return resolve(false);
+            var creative = findCreative(doc);
+            if (!creative) return resolve(false);
+            if (creative.kind === "img") return resolve(true);
+            if (isKnownDead(creative.src)) return resolve(false);
+            // Nested ad hosts often refuse to connect — probe before showing.
+            probeUrl(creative.src).then(function (ok) {
+              resolve(ok);
+            });
+          } catch (_) {
+            resolve(false);
+          }
+        });
       }
 
       function remountSlot(slot, force) {
         if (!slot || slot.kind === "popunder") return;
         var now = Date.now();
-        if (!force && slot.mountedAt && now - slot.mountedAt < 2000) return;
+        if (!force && slot.mountedAt && now - slot.mountedAt < 1600) return;
         if (slot.watchIv) clearInterval(slot.watchIv);
 
         slot.attempts = (slot.attempts || 0) + 1;
@@ -314,6 +388,7 @@
         slot.gen = gen;
         setSlotStatus(slot, "loading", false, false);
         paintFills();
+        slot.body.classList.remove("ready");
         slot.body.innerHTML = "";
 
         var iframe = document.createElement("iframe");
@@ -322,45 +397,68 @@
         iframe.height = 250;
         iframe.setAttribute("scrolling", "no");
         iframe.setAttribute("frameborder", "0");
-        iframe.setAttribute("allow", "attribution-reporting");
+        iframe.setAttribute("referrerpolicy", "strict-origin-when-cross-origin");
         iframe.title = "banner " + (slot.index + 1);
         iframe.srcdoc = bannerSrcdoc(now + "-" + slot.index + "-" + slot.attempts);
         slot.body.appendChild(iframe);
         slot.iframe = iframe;
 
         var checks = 0;
+        var verifying = false;
         slot.watchIv = setInterval(function () {
           if (slot.gen !== gen) {
             clearInterval(slot.watchIv);
             return;
           }
           checks += 1;
-          var state = peekFill(iframe);
-          if (state === "filled" || state === "unknown") {
-            clearInterval(slot.watchIv);
-            slot.filled = true;
-            setSlotStatus(slot, "filled", true, false);
-            paintFills();
+          if (verifying) return;
+
+          var creative = null;
+          try {
+            creative = findCreative(iframe.contentDocument);
+          } catch (_) {}
+
+          if (!creative) {
+            if (checks >= 20) {
+              clearInterval(slot.watchIv);
+              setSlotStatus(slot, "no fill", false, true);
+              paintFills();
+              setTimeout(function () {
+                if (slot.gen === gen) remountSlot(slot, true);
+              }, 200);
+            }
             return;
           }
-          if (checks >= 18) {
-            clearInterval(slot.watchIv);
-            slot.filled = false;
-            setSlotStatus(slot, "no fill", false, true);
-            paintFills();
-            // Quick remount for empty inventory
-            setTimeout(function () {
-              if (slot.gen === gen) remountSlot(slot, true);
-            }, 250);
-          }
-        }, 350);
+
+          verifying = true;
+          verifyCreative(iframe).then(function (ok) {
+            if (slot.gen !== gen) return;
+            if (ok) {
+              clearInterval(slot.watchIv);
+              slot.filled = true;
+              slot.body.classList.add("ready");
+              iframe.classList.add("show");
+              setSlotStatus(slot, "filled", true, false);
+              paintFills();
+              setStatus("filled " + slot.index + 1, "ok");
+            } else {
+              verifying = false;
+              clearInterval(slot.watchIv);
+              setSlotStatus(slot, "dead offer", false, true);
+              paintFills();
+              setTimeout(function () {
+                if (slot.gen === gen) remountSlot(slot, true);
+              }, 180);
+            }
+          });
+        }, 300);
       }
 
       function retryEmpties() {
         var n = 0;
         slots.forEach(function (s) {
           if (s.kind === "popunder" || s.filled) return;
-          if (s.mountedAt && Date.now() - s.mountedAt < 2000) return;
+          if (s.mountedAt && Date.now() - s.mountedAt < 1600) return;
           remountSlot(s, true);
           n += 1;
         });
@@ -441,10 +539,9 @@
               watchIv: null,
             };
             slots.push(slot);
-            // Stagger so each srcdoc gets its own Adsterra request
             setTimeout(function () {
               if (slot.gen === gen) remountSlot(slot, true);
-            }, index * 280);
+            }, index * 350);
           })(i);
         }
 
@@ -476,11 +573,7 @@
 
         paintFills();
         meta.innerHTML =
-          "<strong>" +
-          location.host +
-          "</strong> /testing/ · <strong>" +
-          n +
-          "</strong> banners · srcdoc";
+          "<strong>" + location.host + "</strong> /testing/ · <strong>" + n + "</strong> banners";
         scheduleLoops();
       }
 
