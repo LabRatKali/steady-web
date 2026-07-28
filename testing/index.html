@@ -453,7 +453,7 @@
   <section id="help">
     <p><strong>/testing/</strong> — every display unit is a fitted <strong>300×250</strong> (your working Adsterra banner zone).</p>
     <p>Default wall is <strong>24</strong> cards; when the reload timer hits, the page does a <strong>hard reload</strong> (every card, even filled ones). Empty slots also retry in between.</p>
-    <p>Works in system <strong>Chrome, Edge, Firefox, Safari</strong> and on phones — not inside Cursor’s IDE browser (it blocks ad hosts). Each card reports fill from inside the unit so Safari/Firefox don’t get stuck on “loading”.</p>
+    <p>If cards stay on <strong>loading</strong> with no image, hard-refresh once (Ctrl+F5) so old service-worker caches clear. Prefer system Chrome/Edge/Firefox/Safari — not Cursor’s IDE browser.</p>
     <p><strong>Smartlink</strong> = same banner + tap. <strong>Popunder</strong> = arm only. If creatives stay blank, run <code>scripts/fix_adsterra_dns.ps1</code> as admin.</p>
   </section>
 
@@ -478,21 +478,19 @@
       })();
       var WORKERS_LAB = "https://steady.less-phone.workers.dev/testing/";
       var PAGES_LAB = "https://labratkali.github.io/steady-web/testing/";
-      var LAB_BUILD = "2026-07-28j";
+      var LAB_BUILD = "2026-07-28k";
 
       var W = 300;
       var H = 250;
-      // Defaults: 24-card wall, full reload every 20s. Fills only on real painted creatives.
+      // Defaults: 24-card wall, full hard reload every 20s.
       var DEFAULT_CARDS = 24;
       var DEFAULT_RELOAD = 20;
       var DEFAULT_RETRY = 5;
-      var FILL_WAIT_MS = 18000;
+      var FILL_WAIT_MS = 16000;
       var CHECK_MS = 250;
       var BETWEEN_MS = 80;
       var MAX_CARDS = 120;
-      // unit.html + postMessage fill reports — works across Chrome/Edge/Firefox/Safari/mobile.
-      // srcdoc is only a one-shot fallback after an empty unit mount.
-      var USE_UNIT_PAGE = true;
+      // Primary loader: srcdoc (fewest moving parts). Alternate: unit.html once if empty.
 
       var grid = document.getElementById("grid");
       var statusEl = document.getElementById("status");
@@ -846,7 +844,7 @@
       }
 
       function bannerSrcdoc(cb) {
-        // Chromium desktop fallback — in-page iframe document.
+        // In-page unit — also self-reports fill so slow parent detection isn't required.
         return (
           "<!DOCTYPE html><html><head><meta charset=\"utf-8\" />" +
           "<meta name=\"referrer\" content=\"no-referrer-when-downgrade\" />" +
@@ -858,37 +856,35 @@
           "iframe,img{display:block;margin:0;border:0;max-width:" +
           W +
           "px}</style></head><body>" +
-          "<script>window.atOptions={key:'" +
+          "<script>(function(){var KEY='" +
           BANNER_KEY +
-          "',format:'iframe',height:" +
+          "';var reported='';function ping(m){try{parent.postMessage(m,'*')}catch(e){}}function report(state,how){if(reported==='filled')return;if(state==='filled')reported='filled';else if(state===reported&&state!=='pending')return;else reported=state;ping({steadyLab:'unit',state:state,how:how||''})}function painted(root){if(!root)return null;var imgs=root.querySelectorAll('img');for(var i=0;i<imgs.length;i++){var img=imgs[i],w=img.naturalWidth||0,h=img.naturalHeight||0;if(w>=40&&h>=40)return img;if(img.complete&&(img.width>=40||img.offsetWidth>=40)){var s=img.currentSrc||img.src||'';if(s&&s.indexOf('data:')!==0)return img}}return null}function scan(){try{if(painted(document)){report('filled','img');return}var frames=document.querySelectorAll('iframe');for(var i=0;i<frames.length;i++){var f=frames[i];if((f.offsetWidth||0)<100)continue;try{var d=f.contentDocument;if(d&&painted(d)){report('filled','nested');return}if(d&&d.body&&d.body.innerHTML&&d.body.innerHTML.length>80&&/<img|<a |atContainer/i.test(d.body.innerHTML)){report('filled','html');return}if(d&&d.querySelector&&d.querySelector('img[src],a[href]')){report('pending','media');return}}catch(e){report('pending','shell')}}}catch(e){}}window.atOptions={key:KEY,format:'iframe',height:" +
           H +
           ",width:" +
           W +
-          ",params:{}};<" +
-          "/script>" +
-          "<script src=\"" +
+          ",params:{}};var s=document.createElement('script');s.async=true;s.setAttribute('data-cfasync','false');s.src='" +
           INVOKE +
           "?cb=" +
           encodeURIComponent(cb) +
-          "\" onload=\"try{parent.postMessage({steadyLab:'invoke',ok:true},'*')}catch(e){}\" " +
-          "onerror=\"try{parent.postMessage({steadyLab:'invoke',ok:false},'*')}catch(e){}\"><" +
+          "';s.onload=function(){ping({steadyLab:'invoke',ok:true})};s.onerror=function(){ping({steadyLab:'invoke',ok:false});report('error','script')};document.body.appendChild(s);var n=0;var iv=setInterval(function(){n++;scan();if(reported==='filled'||n>=80)clearInterval(iv)},200);})();<" +
           "/script>" +
           "</body></html>"
         );
       }
 
-      function mountFrame(iframe, cb, forceSrcdoc) {
+      function mountFrame(iframe, cb, forceUnit) {
         var token = String(cb);
-        if (forceSrcdoc) {
-          iframe.srcdoc = bannerSrcdoc(token);
+        if (forceUnit) {
+          iframe.src = unitHref(token);
           try {
-            iframe.removeAttribute("src");
+            iframe.removeAttribute("srcdoc");
           } catch (_) {}
           return;
         }
-        iframe.src = unitHref(token);
+        // Default: srcdoc — no extra navigation, works in Chrome/Edge; unit.html is fallback.
+        iframe.srcdoc = bannerSrcdoc(token);
         try {
-          iframe.removeAttribute("srcdoc");
+          iframe.removeAttribute("src");
         } catch (_) {}
       }
 
@@ -1047,10 +1043,10 @@
         slot.filled = false;
         slot.mounting = false;
         slot.watching = false;
-        // One automatic remount with the alternate loader (srcdoc) before giving up.
-        if (slot && !slot.triedSrcdocFallback && slot.gen === gen) {
-          slot.triedSrcdocFallback = true;
-          slot.watching = true; // block duplicate queue while we bounce
+        // One automatic remount with unit.html before giving up (helps Safari/Firefox).
+        if (slot && !slot.triedAltLoader && slot.gen === gen) {
+          slot.triedAltLoader = true;
+          slot.watching = true;
           setSlotStatus(slot, "retry", false, false);
           setOverlay(slot, "loading");
           setTimeout(function () {
@@ -1058,7 +1054,7 @@
               if (slot) slot.watching = false;
               return;
             }
-            slot.forceSrcdoc = true;
+            slot.forceUnit = true;
             slot.watching = false;
             if (waitQueue.indexOf(slot) < 0) waitQueue.unshift(slot);
             pumpQueue();
@@ -1129,7 +1125,7 @@
         mountFrame(
           iframe,
           Date.now() + "-" + slot.index + "-" + slot.attempts,
-          !!slot.forceSrcdoc
+          !!slot.forceUnit
         );
         host.appendChild(iframe);
         slot.iframe = iframe;
@@ -1278,8 +1274,9 @@
           watchIv: null,
           mounting: false,
           watching: false,
-          triedSrcdocFallback: false,
-          forceSrcdoc: false,
+          triedAltLoader: false,
+          forceUnit: false,
+          revealTimer: null,
         };
         slots.push(slot);
         enqueueMount(slot);
@@ -1423,14 +1420,30 @@
         loadPref("steady-lab-retry", 2, 60, DEFAULT_RETRY)
       );
 
-      // Cache ad CDN responses so holding a wall open doesn't keep hammering new hosts.
-      if ("serviceWorker" in navigator) {
+      // Kill legacy ad-lab service workers — they cached failed opaque responses and
+      // left some browsers stuck on "loading" with no creatives.
+      (function purgeBrokenWorkers() {
         try {
-          navigator.serviceWorker.register(new URL("sw.js", location.href).href, {
-            scope: new URL("./", location.href).href,
-          }).catch(function () {});
+          if ("serviceWorker" in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function (regs) {
+              for (var i = 0; i < regs.length; i++) {
+                try {
+                  regs[i].unregister();
+                } catch (_) {}
+              }
+            });
+          }
+          if (window.caches && caches.keys) {
+            caches.keys().then(function (keys) {
+              for (var i = 0; i < keys.length; i++) {
+                try {
+                  caches.delete(keys[i]);
+                } catch (_) {}
+              }
+            });
+          }
         } catch (_) {}
-      }
+      })();
 
       runDiag();
       render();
