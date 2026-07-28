@@ -4,82 +4,28 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="robots" content="noindex,nofollow" />
-  <title>ad unit</title>
+  <title>Steady</title>
   <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      background: #fff;
-    }
-    #stage {
-      width: 100%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #fff;
-      overflow: hidden;
-    }
+    html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #fff; }
+    #stage { width: 300px; height: 250px; margin: 0 auto; overflow: hidden; background: #fff; }
   </style>
 </head>
 <body>
-  <div id="stage"></div>
+  <div id="stage">
+    <script>
+      atOptions = {
+        key: "d737196962ef25449dcb66c5655248f1",
+        format: "iframe",
+        height: 250,
+        width: 300,
+        params: {}
+      };
+    </script>
+    <script src="https://www.highperformanceformat.com/d737196962ef25449dcb66c5655248f1/invoke.js"></script>
+  </div>
   <script>
     (function () {
-      var BANNER_KEY = "d737196962ef25449dcb66c5655248f1";
-      var NATIVE_ID = "aa9f63337d56fa208fd27e208e22774a";
-      var REWARD_SRC =
-        "https://pl30566396.effectivecpmnetwork.com/75/7d/b0/757db01b5a07eb68043c6fd140726fed.js";
-
-      var q = new URLSearchParams(location.search);
-      var kind = (q.get("kind") || "banner").toLowerCase();
-      var w = Math.max(120, parseInt(q.get("w") || "300", 10) || 300);
-      var h = Math.max(50, parseInt(q.get("h") || "250", 10) || 250);
-      var slot = q.get("slot") || String(Date.now());
-      var stage = document.getElementById("stage");
-
-      function bust(url) {
-        return url + (url.indexOf("?") >= 0 ? "&" : "?") + "cb=" + Date.now() + "s" + encodeURIComponent(slot);
-      }
-
-      if (kind === "native") {
-        var box = document.createElement("div");
-        box.id = "container-" + NATIVE_ID;
-        box.style.cssText = "width:100%;min-height:" + h + "px;background:#fff";
-        stage.appendChild(box);
-        var ns = document.createElement("script");
-        ns.async = true;
-        ns.setAttribute("data-cfasync", "false");
-        ns.src = bust("https://pl30566397.effectivecpmnetwork.com/" + NATIVE_ID + "/invoke.js");
-        document.body.appendChild(ns);
-      } else {
-        window.atOptions = {
-          key: BANNER_KEY,
-          format: "iframe",
-          height: h,
-          width: w,
-          params: { slot: slot },
-        };
-        var hold = document.createElement("div");
-        hold.style.cssText =
-          "width:" + w + "px;height:" + h + "px;max-width:100%;overflow:hidden;background:#fff;margin:0 auto";
-        stage.appendChild(hold);
-        var s = document.createElement("script");
-        s.setAttribute("data-cfasync", "false");
-        s.src = bust("https://www.highperformanceformat.com/" + BANNER_KEY + "/invoke.js");
-        hold.appendChild(s);
-        if (kind === "reward") {
-          var rs = document.createElement("script");
-          rs.async = true;
-          rs.setAttribute("data-cfasync", "false");
-          rs.src = bust(REWARD_SRC);
-          document.body.appendChild(rs);
-        }
-      }
-
+      var slot = new URLSearchParams(location.search).get("slot") || "";
       var tries = 0;
       var t = setInterval(function () {
         tries++;
@@ -87,13 +33,17 @@
           document.querySelectorAll("iframe").length > 0 ||
           document.querySelectorAll("img").length > 0;
         if (filled) {
-          try { parent.postMessage({ type: "steady-unit-filled", slot: slot, kind: kind }, "*"); } catch (_) {}
+          try {
+            parent.postMessage({ type: "steady-unit-filled", slot: slot }, "*");
+          } catch (_) {}
           clearInterval(t);
-        } else if (tries > 50) {
-          try { parent.postMessage({ type: "steady-unit-empty", slot: slot, kind: kind }, "*"); } catch (_) {}
+        } else if (tries > 40) {
+          try {
+            parent.postMessage({ type: "steady-unit-empty", slot: slot }, "*");
+          } catch (_) {}
           clearInterval(t);
         }
-      }, 400);
+      }, 250);
     })();
   </script>
 </body>
