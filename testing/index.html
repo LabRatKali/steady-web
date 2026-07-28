@@ -186,7 +186,7 @@
   </div>
 
   <section id="help">
-    <p>Only path: <strong>/testing/</strong>. Every slot remounts until an ad appears. Dead Adsterra hosts are rewritten onto live creative servers.</p>
+    <p>Only path: <strong>/testing/</strong>. Every slot remounts until an ad appears. Creatives are loaded through a same-origin proxy so ISP DNS blocks (e.g. Optimum sinkholing Adsterra domains) do not blank the slots. If ads still fail, set DNS to 1.1.1.1.</p>
   </section>
 
   <div id="grid" aria-live="polite"></div>
@@ -286,6 +286,31 @@
         } catch (_) {
           return src;
         }
+      }
+
+      /** Route creative URLs through worker /adp/ to bypass ISP DNS sinkholes (Optimum). */
+      function proxifyCreative(src) {
+        try {
+          var u = new URL(src);
+          if (u.hostname === location.hostname) return src;
+          if (u.protocol !== "http:" && u.protocol !== "https:") return src;
+          return (
+            location.origin +
+            "/adp/" +
+            u.protocol.replace(":", "") +
+            "/" +
+            u.hostname +
+            u.pathname +
+            u.search
+          );
+        } catch (_) {
+          return src;
+        }
+      }
+
+      function fixCreativeSrc(src) {
+        // Prefer proxy (real DNS via Cloudflare). Also rewrite known-dead sinkholes.
+        return proxifyCreative(rewriteIfDead(src));
       }
 
       function directWatchSrc(slotId) {
@@ -398,29 +423,13 @@
         iframe.setAttribute("referrerpolicy", "strict-origin-when-cross-origin");
         iframe.title = "banner " + (slot.index + 1);
 
-        // Alternate invoke srcdoc vs direct live-host watch — both can paint ads.
-        var mode = slot.attempts % 2 === 0 ? "direct" : "invoke";
+        // Alternate: only use invoke (then proxy). Direct watch skips Adsterra auction.
+        var mode = "invoke";
         slot.mode = mode;
-        if (mode === "direct") {
-          iframe.src = directWatchSrc("s" + slot.index + "a" + slot.attempts);
-          // Direct cross-origin watch pages: count as filled once loaded.
-          iframe.addEventListener("load", function () {
-            if (slot.gen !== gen || slot.filled) return;
-            markFilled(slot, "filled");
-          });
-          // Fallback if load is quiet
-          setTimeout(function () {
-            if (slot.gen !== gen || slot.filled) return;
-            markFilled(slot, "filled");
-          }, 2500);
-        } else {
-          iframe.srcdoc = bannerSrcdoc(now + "-" + slot.index + "-" + slot.attempts);
-        }
+        iframe.srcdoc = bannerSrcdoc(now + "-" + slot.index + "-" + slot.attempts);
 
         slot.body.appendChild(iframe);
         slot.iframe = iframe;
-
-        if (mode === "direct") return;
 
         var checks = 0;
         slot.watchIv = setInterval(function () {
@@ -437,11 +446,11 @@
           if (creative) {
             clearInterval(slot.watchIv);
             if (creative.kind === "iframe" && creative.src) {
-              var fixed = rewriteIfDead(creative.src);
+              var fixed = fixCreativeSrc(creative.src);
               if (fixed !== creative.src) {
                 try {
                   creative.el.src = fixed;
-                  setSlotStatus(slot, "rewrote host", false, false);
+                  setSlotStatus(slot, "proxying", false, false);
                 } catch (_) {}
               }
             }
