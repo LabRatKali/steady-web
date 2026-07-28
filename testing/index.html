@@ -277,59 +277,46 @@
         if (filled === total && total > 0) setStatus("all slots filled", "ok");
       }
 
-      function rewriteIfDead(src) {
+      var adpReady = null; // null=unknown, true/false after probe
+
+      function probeAdp() {
+        if (adpReady !== null) return Promise.resolve(adpReady);
+        return fetch(location.origin + "/adp/https/kettledroopingcontinuation.com/", {
+          method: "GET",
+          cache: "no-store",
+        })
+          .then(function (r) {
+            adpReady = r.status > 0 && r.status !== 404;
+            return adpReady;
+          })
+          .catch(function () {
+            adpReady = false;
+            return false;
+          });
+      }
+
+      function fixCreativeSrc(src) {
         try {
           var u = new URL(src);
-          if (!DEAD_HOST_RE.test(u.hostname)) return src;
-          u.hostname = nextLiveHost();
+          // If ISP sinkholed this host, try live CDN hostname as soft fallback.
+          if (DEAD_HOST_RE.test(u.hostname) && !adpReady) {
+            u.hostname = nextLiveHost();
+          }
+          if (adpReady) {
+            return (
+              location.origin +
+              "/adp/" +
+              u.protocol.replace(":", "") +
+              "/" +
+              u.hostname +
+              u.pathname +
+              u.search
+            );
+          }
           return u.toString();
         } catch (_) {
           return src;
         }
-      }
-
-      /** Route creative URLs through worker /adp/ to bypass ISP DNS sinkholes (Optimum). */
-      function proxifyCreative(src) {
-        try {
-          var u = new URL(src);
-          if (u.hostname === location.hostname) return src;
-          if (u.protocol !== "http:" && u.protocol !== "https:") return src;
-          return (
-            location.origin +
-            "/adp/" +
-            u.protocol.replace(":", "") +
-            "/" +
-            u.hostname +
-            u.pathname +
-            u.search
-          );
-        } catch (_) {
-          return src;
-        }
-      }
-
-      function fixCreativeSrc(src) {
-        // Prefer proxy (real DNS via Cloudflare). Also rewrite known-dead sinkholes.
-        return proxifyCreative(rewriteIfDead(src));
-      }
-
-      function directWatchSrc(slotId) {
-        var host = nextLiveHost();
-        var id = Date.now() + Math.floor(Math.random() * 1e6);
-        return (
-          "https://" +
-          host +
-          "/watch." +
-          id +
-          "?key=" +
-          BANNER_KEY +
-          "&refer=" +
-          encodeURIComponent(location.origin + "/") +
-          "&tz=" +
-          -new Date().getTimezoneOffset() / 60 +
-          "&slot=" +
-          encodeURIComponent(slotId)
-        );
       }
 
       function bannerSrcdoc(cb) {
@@ -402,6 +389,13 @@
 
       function remountSlot(slot, force) {
         if (!slot || slot.kind === "popunder") return;
+        probeAdp().then(function () {
+          remountSlotInner(slot, force);
+        });
+      }
+
+      function remountSlotInner(slot, force) {
+        if (!slot || slot.kind === "popunder") return;
         var now = Date.now();
         if (!force && slot.mountedAt && now - slot.mountedAt < 2800) return;
         if (slot.watchIv) clearInterval(slot.watchIv);
@@ -450,7 +444,7 @@
               if (fixed !== creative.src) {
                 try {
                   creative.el.src = fixed;
-                  setSlotStatus(slot, "proxying", false, false);
+                  setSlotStatus(slot, adpReady ? "proxying" : "rewrote host", false, false);
                 } catch (_) {}
               }
             }
