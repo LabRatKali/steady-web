@@ -366,9 +366,56 @@
             if (!creative) return resolve(false);
             if (creative.kind === "img") return resolve(true);
             if (isKnownDead(creative.src)) return resolve(false);
-            // Nested ad hosts often refuse to connect — probe before showing.
+
+            // Prefer resource timing: responseStatus 0 = refused / failed.
+            var timed = false;
+            try {
+              var entries = performance.getEntriesByName(creative.src) || [];
+              for (var i = 0; i < entries.length; i++) {
+                var e = entries[i];
+                if (typeof e.responseStatus === "number") {
+                  timed = true;
+                  if (e.responseStatus === 0) {
+                    markDeadHost(creative.src);
+                    return resolve(false);
+                  }
+                  if (e.responseStatus >= 200 && e.responseStatus < 400) return resolve(true);
+                }
+                if (e.transferSize > 500) return resolve(true);
+              }
+            } catch (_) {}
+
+            // Fallback probe. If fetch can't tell, keep the creative visible
+            // briefly — live ads sometimes block no-cors fetch.
             probeUrl(creative.src).then(function (ok) {
-              resolve(ok);
+              if (ok) return resolve(true);
+              // Give the nested iframe a moment; if still present with size, accept.
+              setTimeout(function () {
+                try {
+                  var again = findCreative(iframe.contentDocument);
+                  if (again && again.el && again.el.offsetWidth >= 40) {
+                    // Still might be chrome-error; check timing once more.
+                    var ents = performance.getEntriesByName(again.src) || [];
+                    for (var j = 0; j < ents.length; j++) {
+                      if (ents[j].responseStatus === 0) {
+                        markDeadHost(again.src);
+                        return resolve(false);
+                      }
+                    }
+                    // Optimistic keep — remount cycle will replace if user sees sad-face empty.
+                    // Prefer rejecting known parking / refuse hosts by hostname patterns.
+                    var h = hostOf(again.src);
+                    if (
+                      /detachment|deadline|zoology|fibre|spends|workdead/i.test(h)
+                    ) {
+                      markDeadHost(again.src);
+                      return resolve(false);
+                    }
+                    return resolve(true);
+                  }
+                } catch (_) {}
+                resolve(false);
+              }, 900);
             });
           } catch (_) {
             resolve(false);
@@ -399,7 +446,16 @@
         iframe.setAttribute("frameborder", "0");
         iframe.setAttribute("referrerpolicy", "strict-origin-when-cross-origin");
         iframe.title = "banner " + (slot.index + 1);
-        iframe.srcdoc = bannerSrcdoc(now + "-" + slot.index + "-" + slot.attempts);
+        // Alternate srcdoc vs same-origin unit.html — both give Adsterra a real document.
+        if (slot.attempts % 2 === 0) {
+          iframe.src =
+            "unit.html?slot=" +
+            encodeURIComponent(now + "-" + slot.index + "-" + slot.attempts) +
+            "&cb=" +
+            now;
+        } else {
+          iframe.srcdoc = bannerSrcdoc(now + "-" + slot.index + "-" + slot.attempts);
+        }
         slot.body.appendChild(iframe);
         slot.iframe = iframe;
 
@@ -419,7 +475,7 @@
           } catch (_) {}
 
           if (!creative) {
-            if (checks >= 20) {
+            if (checks >= 22) {
               clearInterval(slot.watchIv);
               setSlotStatus(slot, "no fill", false, true);
               paintFills();
@@ -430,25 +486,27 @@
             return;
           }
 
+          // Show immediately so live creatives appear (like before).
+          // Then probe — remount only if the offer host is dead.
+          clearInterval(slot.watchIv);
+          slot.body.classList.add("ready");
+          iframe.classList.add("show");
+          setSlotStatus(slot, "checking", false, false);
+
           verifying = true;
           verifyCreative(iframe).then(function (ok) {
             if (slot.gen !== gen) return;
             if (ok) {
-              clearInterval(slot.watchIv);
               slot.filled = true;
-              slot.body.classList.add("ready");
-              iframe.classList.add("show");
               setSlotStatus(slot, "filled", true, false);
               paintFills();
-              setStatus("filled " + slot.index + 1, "ok");
             } else {
-              verifying = false;
-              clearInterval(slot.watchIv);
+              slot.filled = false;
               setSlotStatus(slot, "dead offer", false, true);
               paintFills();
               setTimeout(function () {
                 if (slot.gen === gen) remountSlot(slot, true);
-              }, 180);
+              }, 200);
             }
           });
         }, 300);
