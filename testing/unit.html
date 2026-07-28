@@ -36,8 +36,15 @@
       }
 
       function report(state, extra) {
-        if (state === reported && state !== "pending") return;
-        reported = state;
+        if (state === "filled") {
+          reported = "filled";
+        } else if (reported === "filled") {
+          return;
+        } else if (state === reported && state !== "pending") {
+          return;
+        } else {
+          reported = state;
+        }
         var payload = { steadyLab: "unit", state: state };
         if (extra) {
           for (var k in extra) payload[k] = extra[k];
@@ -53,7 +60,6 @@
           var w = img.naturalWidth || 0;
           var h = img.naturalHeight || 0;
           if (w >= 40 && h >= 40) return img;
-          // Safari sometimes lags naturalWidth; attribute/layout size still counts once complete.
           if (img.complete && (img.width >= 40 || img.offsetWidth >= 40)) {
             var src = img.currentSrc || img.src || "";
             if (src && src.indexOf("data:") !== 0) return img;
@@ -62,53 +68,53 @@
         return null;
       }
 
-      function structuralFill(root) {
+      function hasVisibleCreative(root) {
         if (!root) return null;
-        if (root.querySelector("[id^='atContainer'], [id^='atLink'], a[id*='atLink']")) {
-          var img = root.querySelector("img[src], img[srcset]");
-          if (img) return { kind: "at-structure" };
+        if (paintedImg(root)) return { kind: "img" };
+
+        // Adsterra banner shell with image or link creative.
+        var box = root.querySelector("[id^='atContainer'], [id^='atLink'], a[id*='atLink']");
+        if (box) {
+          if (box.querySelector("img[src], img[srcset]")) return { kind: "at-img" };
+          if (box.querySelector("a[href]")) return { kind: "at-link" };
         }
+
         var frames = root.querySelectorAll("iframe");
         for (var i = 0; i < frames.length; i++) {
           var f = frames[i];
           if ((f.offsetWidth || 0) < 100 || (f.offsetHeight || 0) < 100) continue;
           try {
             var doc = f.contentDocument;
-            if (!doc || !doc.body) continue;
+            if (!doc || !doc.body) {
+              // Sized shell present — tell parent to uncover while it settles.
+              return { kind: "shell", pending: true };
+            }
             if (paintedImg(doc)) return { kind: "nested-img" };
-            if (doc.querySelector("img[src], a[href], canvas, video, object, embed")) {
+            if (doc.querySelector("img[src], a[href] img, canvas, video, object, embed")) {
               return { kind: "nested-media" };
             }
             var html = doc.body.innerHTML || "";
             if (html.length > 80 && /<img|<a |atContainer|atLink/i.test(html)) {
               return { kind: "nested-html" };
             }
-          } catch (_) {}
+            if (html.length > 20) return { kind: "shell", pending: true };
+          } catch (_) {
+            return { kind: "shell", pending: true };
+          }
         }
         return null;
       }
 
       function scan() {
         try {
-          if (paintedImg(document)) {
-            report("filled", { how: "img" });
+          var hit = hasVisibleCreative(document);
+          if (!hit) return;
+          if (hit.pending) {
+            report("pending", { how: hit.kind });
             return;
           }
-          var frames = document.querySelectorAll("iframe");
-          for (var i = 0; i < frames.length; i++) {
-            try {
-              var d = frames[i].contentDocument;
-              if (d && paintedImg(d)) {
-                report("filled", { how: "nested-img" });
-                return;
-              }
-            } catch (_) {}
-          }
-          var struct = structuralFill(document);
-          if (struct) {
-            report("pending", { how: struct.kind });
-            return;
-          }
+          // Visible creative structure — report filled so parent removes overlays.
+          report("filled", { how: hit.kind });
         } catch (_) {}
       }
 
