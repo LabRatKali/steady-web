@@ -40,7 +40,7 @@
       z-index: 40;
       background: rgba(7, 11, 9, 0.95);
       border-bottom: 1px solid var(--line);
-      padding: 0.7rem 1rem 0.8rem;
+      padding: 0.7rem 1rem 0.85rem;
       backdrop-filter: blur(14px);
     }
     .row {
@@ -68,7 +68,7 @@
     label.chk input { accent-color: var(--accent); }
     label:not(.chk) { color: var(--muted); font-size: 12px; }
     input[type="number"] {
-      width: 3.4rem;
+      width: 3.5rem;
       background: var(--panel);
       color: var(--text);
       border: 1px solid var(--line);
@@ -107,7 +107,7 @@
       background: var(--panel);
       color: var(--muted);
       font-size: 12.5px;
-      max-width: 52rem;
+      max-width: 54rem;
     }
     #help.show { display: block; }
     #help p { margin: 0.35rem 0; }
@@ -116,7 +116,7 @@
       display: grid;
       gap: 0.85rem;
       padding: 0.9rem 1rem 1.4rem;
-      grid-template-columns: repeat(auto-fill, minmax(312px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
       align-items: start;
     }
     .card {
@@ -126,7 +126,6 @@
       padding: 0.5rem;
       display: flex;
       flex-direction: column;
-      min-height: 310px;
       overflow: hidden;
       transition: border-color 0.2s ease, box-shadow 0.2s ease;
     }
@@ -134,7 +133,8 @@
       border-color: rgba(61, 207, 138, 0.5);
       box-shadow: 0 0 0 1px rgba(61, 207, 138, 0.14);
     }
-    .card.is-pop { min-height: 150px; }
+    .card.is-wide { grid-column: 1 / -1; }
+    .card.is-pop, .card.is-smart { min-height: 140px; }
     .card-head {
       display: flex;
       justify-content: space-between;
@@ -156,17 +156,13 @@
       justify-content: center;
       background: var(--stage);
       border-radius: 10px;
-      min-height: 258px;
       position: relative;
       overflow: hidden;
+      min-height: 60px;
     }
-    .card.is-pop .card-body {
-      background: transparent;
-      min-height: 100px;
-    }
+    .card.is-pop .card-body,
+    .card.is-smart .card-body { background: transparent; }
     .adframe {
-      width: 300px;
-      height: 250px;
       border: 0;
       background: #fff;
       display: block;
@@ -204,7 +200,7 @@
       0% { background-position: 100% 0; }
       100% { background-position: -100% 0; }
     }
-    .pop-arm {
+    .arm-btn {
       width: 100%;
       text-align: left;
       padding: 0.9rem;
@@ -215,73 +211,86 @@
       border-radius: 10px;
       color: var(--text);
     }
-    .pop-arm strong { color: var(--accent); display: block; margin-bottom: 0.3rem; }
-    .pop-arm span { color: var(--muted); font-size: 12px; display: block; }
+    .arm-btn strong { color: var(--accent); display: block; margin-bottom: 0.3rem; }
+    .arm-btn span { color: var(--muted); font-size: 12px; display: block; }
+    .smart-wrap {
+      position: relative;
+      display: inline-flex;
+    }
+    .smart-wrap .hit {
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      cursor: pointer;
+      background: transparent;
+      border: 0;
+      padding: 0;
+    }
   </style>
-  <script>
-    (function () {
-      var LAB_BUILD = "b12";
-      var q = new URLSearchParams(location.search);
-      var path = location.pathname;
-      // Bare /testing/ is often stuck on a Cloudflare HIT of an old lab.
-      // /testing/index.html is a different cache key and stays fresh.
-      if (!/index\.html$/i.test(path)) {
-        if (path.endsWith("/")) path += "index.html";
-        else path += "/index.html";
-      }
-      if (q.get("v") === LAB_BUILD && /index\.html$/i.test(location.pathname)) return;
-      q.set("v", LAB_BUILD);
-      q.delete("chrome");
-      location.replace(path + "?" + q.toString() + location.hash);
-    })();
-  </script>
 </head>
 <body>
   <div class="lab-chrome">
     <div class="row">
       <span class="title">AD LAB</span>
       <span id="meta">...</span>
-      <span id="tick">retry <strong>-</strong></span>
+      <span id="tick">reload <strong>-</strong></span>
       <span id="fills">ok <strong>0</strong>/<strong>0</strong></span>
       <span id="status"></span>
     </div>
     <div class="row">
-      <label>cards <input id="count" type="number" min="1" max="12" value="6" /></label>
-      <label>retry empties <input id="retry" type="number" min="4" max="90" value="8" /> s</label>
-      <label class="chk"><input type="checkbox" id="auto" checked /> auto retry</label>
+      <label>cards <input id="count" type="number" min="1" max="24" value="12" /></label>
+      <label>reload all <input id="reload" type="number" min="10" max="300" value="30" /> s</label>
+      <label>retry empty <input id="retry" type="number" min="3" max="90" value="6" /> s</label>
+      <label class="chk"><input type="checkbox" id="mix" checked /> mix sizes</label>
+      <label class="chk"><input type="checkbox" id="t-native" checked /> native</label>
+      <label class="chk"><input type="checkbox" id="t-smart" checked /> smartlink</label>
       <label class="chk"><input type="checkbox" id="t-popunder" /> popunder</label>
+      <label class="chk"><input type="checkbox" id="auto" checked /> auto</label>
       <label class="chk"><input type="checkbox" id="ads-only" /> ads only</label>
       <button type="button" class="primary" id="btn-refresh">reload all</button>
       <button type="button" id="btn-retry">retry empties</button>
       <button type="button" id="btn-help">help</button>
     </div>
-    <div class="row">
-      <span id="diag">checking ad network…</span>
-    </div>
+    <div class="row"><span id="diag">checking ad network…</span></div>
   </div>
 
   <section id="help">
-    <p><strong>Path:</strong> <code>/testing/index.html?v=b12</code> — use this exact URL if ads look stuck on an old cached page.</p>
-    <p>Each card loads one Adsterra <strong>300×250</strong> banner in its own iframe (required so <code>atOptions</code> does not collide). Ads mount <strong>one at a time</strong>, then the next starts — this fills more reliably than blasting 12 at once.</p>
-    <p><strong>Popunder</strong> is optional and off by default. It is not a box on the page; after arming, a later click may open a tab behind this one.</p>
-    <p>If cards stay empty, Optimum/ISP DNS may sinkhole Adsterra hosts. Use Cloudflare DNS <strong>1.1.1.1</strong>, or run <code>scripts/fix_adsterra_dns.ps1</code> as admin.</p>
+    <p><strong>URL:</strong> <code>/testing/</code> only. Hard-refresh (Ctrl+F5) if you ever see an old lab.</p>
+    <p><strong>Banners</strong> use your Adsterra 300×250 zone. With <strong>mix sizes</strong> on, the lab also requests 336×280, 728×90, 160×600, 320×50, etc. Those extra sizes fill when inventory allows — 300×250 stays the most reliable.</p>
+    <p><strong>Native</strong> is your second Adsterra unit. <strong>Smartlink</strong> shows a real banner; clicking it opens the smartlink. <strong>Popunder</strong> is not an on-page box — arm it, then a later click may open a tab behind this one.</p>
+    <p>Ads mount a couple at a time so the wall fills fast without starving Adsterra. Empty slots retry; the whole wall reloads on the timer.</p>
   </section>
 
   <div id="grid" aria-live="polite"></div>
 
   <script>
     (function () {
-      var LAB_BUILD = "b12";
       var BANNER_KEY = "d737196962ef25449dcb66c5655248f1";
-      var INVOKE =
-        "https://www.highperformanceformat.com/" + BANNER_KEY + "/invoke.js";
+      var INVOKE = "https://www.highperformanceformat.com/" + BANNER_KEY + "/invoke.js";
+      var NATIVE_ID = "aa9f63337d56fa208fd27e208e22774a";
+      var NATIVE_SRC =
+        "https://pl30566397.effectivecpmnetwork.com/aa9f63337d56fa208fd27e208e22774a/invoke.js";
+      var SMARTLINK =
+        "https://www.effectivecpmnetwork.com/s889n4i77?key=38aa37c91a94f34912a4a89f8b27799d";
       var POPUNDER_SRC =
         "https://pl30567774.effectivecpmnetwork.com/3c/91/ea/3c91ea5fe0936ca26b9cc5cebf036f9f.js";
-      // One at a time — Adsterra inventory + invoke.js hate stampedes.
-      var CONCURRENCY = 1;
-      var FILL_WAIT_MS = 16000;
+
+      // Proven fast wall: a couple at a time + about:blank creative detection.
+      var CONCURRENCY = 2;
+      var FILL_WAIT_MS = 14000;
       var CHECK_MS = 250;
-      var BETWEEN_MS = 350;
+      var BETWEEN_MS = 280;
+
+      var BANNER_SIZES = [
+        { w: 300, h: 250, name: "300×250" },
+        { w: 336, h: 280, name: "336×280" },
+        { w: 728, h: 90, name: "728×90", wide: true },
+        { w: 320, h: 50, name: "320×50" },
+        { w: 468, h: 60, name: "468×60" },
+        { w: 160, h: 600, name: "160×600" },
+        { w: 120, h: 600, name: "120×600" },
+        { w: 300, h: 250, name: "300×250" },
+      ];
 
       var grid = document.getElementById("grid");
       var statusEl = document.getElementById("status");
@@ -292,9 +301,10 @@
       var diagEl = document.getElementById("diag");
 
       var popunderLoaded = false;
+      var reloadTimer = null;
       var retryTimer = null;
       var countdownTimer = null;
-      var nextRetryAt = 0;
+      var nextReloadAt = 0;
       var gen = 0;
       var slots = [];
       var activeMounts = 0;
@@ -326,13 +336,12 @@
         })
           .then(function () {
             clearTimeout(t);
-            diagEl.textContent = "ad network reachable · mount 1 at a time · build " + LAB_BUILD;
+            diagEl.textContent = "ad network reachable · dual mount · /testing/";
             diagEl.className = "ok";
           })
           .catch(function () {
             clearTimeout(t);
-            diagEl.textContent =
-              "ad network blocked or slow — check DNS (1.1.1.1) / ad blocker";
+            diagEl.textContent = "ad network blocked or slow — check DNS (1.1.1.1) / ad blocker";
             diagEl.className = "bad";
           });
       }
@@ -357,10 +366,12 @@
 
       function setOverlay(slot, mode) {
         if (!slot || !slot.overlay) return;
-        slot.overlay.className = "overlay";
         if (mode === "loading") {
           slot.overlay.className = "overlay loading show";
           slot.overlay.textContent = "loading ad…";
+        } else if (mode === "waiting") {
+          slot.overlay.className = "overlay loading show";
+          slot.overlay.textContent = "waiting…";
         } else if (mode === "empty") {
           slot.overlay.className = "overlay empty show";
           slot.overlay.innerHTML = "<strong>no fill</strong><span>will retry</span>";
@@ -384,35 +395,39 @@
         var filled = 0;
         slots.forEach(function (s) {
           if (s.kind === "popunder") return;
+          if (s.kind === "smart" && !s.iframe) return;
           total++;
           if (s.filled) filled++;
         });
         fillsEl.innerHTML = "ok <strong>" + filled + "</strong>/<strong>" + total + "</strong>";
         if (total > 0 && filled === total) setStatus("all slots filled", "ok");
-        else if (total > 0 && filled === 0 && activeMounts === 0 && !waitQueue.length) {
-          setStatus("no fills yet — retrying", "warn");
-        }
       }
 
-      function bannerSrcdoc(cb) {
+      function bannerSrcdoc(w, h, cb) {
         return (
           "<!DOCTYPE html><html><head><meta charset=\"utf-8\" />" +
           "<meta name=\"referrer\" content=\"no-referrer-when-downgrade\" />" +
-          "<base href=\"" +
-          location.origin +
-          "/\" />" +
-          "<style>html,body{margin:0;padding:0;background:#fff;overflow:hidden;width:300px;height:250px}" +
+          "<base href=\"" + location.origin + "/\" />" +
+          "<style>html,body{margin:0;padding:0;background:#fff;overflow:hidden;width:" +
+          w + "px;height:" + h + "px}" +
           "iframe,img{display:block;margin:0 auto;border:0;max-width:100%}</style></head><body>" +
-          "<script>window.atOptions={key:'" +
-          BANNER_KEY +
-          "',format:'iframe',height:250,width:300,params:{}};<" +
-          "/script>" +
-          "<script src=\"" +
-          INVOKE +
-          "?cb=" +
-          encodeURIComponent(cb) +
-          "\"><" +
-          "/script>" +
+          "<script>window.atOptions={key:'" + BANNER_KEY +
+          "',format:'iframe',height:" + h + ",width:" + w + ",params:{}};<" + "/script>" +
+          "<script src=\"" + INVOKE + "?cb=" + encodeURIComponent(cb) + "\"><" + "/script>" +
+          "</body></html>"
+        );
+      }
+
+      function nativeSrcdoc(cb) {
+        return (
+          "<!DOCTYPE html><html><head><meta charset=\"utf-8\" />" +
+          "<base href=\"" + location.origin + "/\" />" +
+          "<style>html,body{margin:0;padding:8px;background:#fff;overflow:hidden;min-height:250px}" +
+          "#container-" + NATIVE_ID + "{min-height:220px;display:flex;align-items:center;justify-content:center}" +
+          "iframe,img{display:block;margin:0 auto;border:0;max-width:100%}</style></head><body>" +
+          "<div id=\"container-" + NATIVE_ID + "\"></div>" +
+          "<script async data-cfasync=\"false\" src=\"" + NATIVE_SRC + "?cb=" +
+          encodeURIComponent(cb) + "\"><" + "/script>" +
           "</body></html>"
         );
       }
@@ -434,41 +449,40 @@
 
         if (hasPaintedImg(doc)) return { kind: "img" };
 
+        var box = doc.getElementById("container-" + NATIVE_ID);
+        if (box && (hasPaintedImg(box) || (box.children.length > 0 && box.offsetHeight >= 40))) {
+          return { kind: "native" };
+        }
+
         var frames = doc.querySelectorAll("iframe");
         for (var j = 0; j < frames.length; j++) {
           var f = frames[j];
           var src = (f.getAttribute("src") || f.src || "").trim();
-          var sized = (f.offsetWidth || parseInt(f.width, 10) || 0) >= 40 &&
+          var sized =
+            (f.offsetWidth || parseInt(f.width, 10) || 0) >= 40 &&
             (f.offsetHeight || parseInt(f.height, 10) || 0) >= 40;
 
-          // Adsterra often injects about:blank then document.writes the creative into it.
           if (!src || src === "about:blank") {
             try {
               var nested = f.contentDocument;
-              if (nested && (hasPaintedImg(nested) || nested.body && nested.body.childElementCount > 0 && nested.body.innerHTML.length > 40)) {
+              if (
+                nested &&
+                (hasPaintedImg(nested) ||
+                  (nested.body &&
+                    nested.body.childElementCount > 0 &&
+                    nested.body.innerHTML.length > 40))
+              ) {
                 return { kind: "blank-filled" };
               }
             } catch (_) {}
-            // Sized blank iframe after invoke ran = slot is alive; wait a bit more via caller,
-            // but count as fill once secondary script + iframe exist (creative chain started).
-            if (sized && doc.querySelectorAll("script[src*='highperformanceformat'],script[src*='invoke'],script[src*='0a/9d']").length) {
-              // Only accept blank iframe as fill if it has stayed sized and invoke chain present
-              // AND either nested content OR a real http(s) src later — handled below.
-            }
             continue;
           }
-
-          if (/^https?:\/\//i.test(src) && sized) {
-            return { kind: "iframe", src: src };
-          }
-          if (/^https?:\/\//i.test(src)) {
-            return { kind: "iframe", src: src };
-          }
+          if (/^https?:\/\//i.test(src)) return { kind: "iframe", src: src };
         }
 
-        // Secondary Adsterra script present + any iframe (incl about:blank) sized 300x250
-        // means the creative frame is up — treat as filled so we don't thrash remounts.
-        var chain = doc.querySelectorAll("script[src*='0a/9d'],script[src*='spendsdetachment'],script[src*='zoologyfibre'],script[src*='workdeadline'],script[src*='newestfangs']");
+        var chain = doc.querySelectorAll(
+          "script[src*='0a/9d'],script[src*='spendsdetachment'],script[src*='zoologyfibre'],script[src*='workdeadline'],script[src*='newestfangs']"
+        );
         var anyFrame = doc.querySelector("iframe");
         if (chain.length && anyFrame) {
           var aw = anyFrame.offsetWidth || parseInt(anyFrame.width, 10) || 0;
@@ -507,10 +521,7 @@
         if (waitQueue.indexOf(slot) >= 0) return;
         waitQueue.push(slot);
         setSlotStatus(slot, "queued", false, false);
-        if (slot.overlay) {
-          slot.overlay.className = "overlay loading show";
-          slot.overlay.textContent = "waiting…";
-        }
+        setOverlay(slot, "waiting");
         pumpQueue();
       }
 
@@ -544,6 +555,8 @@
         setOverlay(slot, "loading");
         paintFills();
 
+        var w = slot.size ? slot.size.w : 300;
+        var h = slot.size ? slot.size.h : 250;
         slot.body.innerHTML = "";
         var overlay = document.createElement("div");
         overlay.className = "overlay loading show";
@@ -551,17 +564,40 @@
         slot.overlay = overlay;
         slot.body.appendChild(overlay);
 
+        var host = slot.body;
+        if (slot.kind === "smart") {
+          var wrap = document.createElement("div");
+          wrap.className = "smart-wrap";
+          wrap.style.width = w + "px";
+          wrap.style.height = h + "px";
+          var hit = document.createElement("button");
+          hit.type = "button";
+          hit.className = "hit";
+          hit.title = "Open smartlink";
+          hit.addEventListener("click", function () {
+            window.open(SMARTLINK, "_blank", "noopener,noreferrer");
+          });
+          wrap.appendChild(hit);
+          slot.body.appendChild(wrap);
+          host = wrap;
+          host.appendChild(overlay);
+        }
+
         var iframe = document.createElement("iframe");
         iframe.className = "adframe";
-        iframe.width = 300;
-        iframe.height = 250;
+        iframe.width = w;
+        iframe.height = h;
+        iframe.style.width = w + "px";
+        iframe.style.height = h + "px";
         iframe.setAttribute("scrolling", "no");
         iframe.setAttribute("frameborder", "0");
         iframe.setAttribute("referrerpolicy", "no-referrer-when-downgrade");
         iframe.setAttribute("allow", "attribution-reporting");
-        iframe.title = "banner " + (slot.index + 1);
-        iframe.srcdoc = bannerSrcdoc(Date.now() + "-" + slot.index + "-" + slot.attempts);
-        slot.body.appendChild(iframe);
+        iframe.title = (slot.kind || "banner") + " " + (slot.index + 1);
+        var cb = Date.now() + "-" + slot.index + "-" + slot.attempts;
+        iframe.srcdoc =
+          slot.kind === "native" ? nativeSrcdoc(cb) : bannerSrcdoc(w, h, cb);
+        host.appendChild(iframe);
         slot.iframe = iframe;
 
         var checks = 0;
@@ -577,14 +613,11 @@
           try {
             creative = findCreative(iframe.contentDocument);
           } catch (_) {}
-
           if (creative) {
             markFilled(slot);
             return;
           }
-          if (checks >= maxChecks) {
-            markEmpty(slot);
-          }
+          if (checks >= maxChecks) markEmpty(slot);
         }, CHECK_MS);
       }
 
@@ -592,19 +625,18 @@
         var n = 0;
         slots.forEach(function (s) {
           if (s.kind === "popunder" || s.filled || s.mounting) return;
-          // avoid thrashing a slot that just failed
-          if (s.mountedAt && Date.now() - s.mountedAt < 3000) return;
+          if (s.mountedAt && Date.now() - s.mountedAt < 2500) return;
           enqueueMount(s);
           n += 1;
         });
         if (n) setStatus("retrying " + n + " empty", "ok");
-        scheduleLoops();
       }
 
       function clearTimers() {
         if (countdownTimer) clearInterval(countdownTimer);
-        if (retryTimer) clearTimeout(retryTimer);
-        countdownTimer = retryTimer = null;
+        if (reloadTimer) clearTimeout(reloadTimer);
+        if (retryTimer) clearInterval(retryTimer);
+        countdownTimer = reloadTimer = retryTimer = null;
       }
 
       function scheduleLoops() {
@@ -613,40 +645,68 @@
           tickEl.innerHTML = "auto <strong>off</strong>";
           return;
         }
-        var secs = num("retry", 4, 90, 8);
-        nextRetryAt = Date.now() + secs * 1000;
+        var retrySecs = num("retry", 3, 90, 6);
+        var reloadSecs = num("reload", 10, 300, 30);
+        nextReloadAt = Date.now() + reloadSecs * 1000;
+        retryTimer = setInterval(retryEmpties, retrySecs * 1000);
         function paintTick() {
-          var left = Math.max(0, Math.ceil((nextRetryAt - Date.now()) / 1000));
-          tickEl.innerHTML = "retry <strong>" + left + "s</strong>";
+          var left = Math.max(0, Math.ceil((nextReloadAt - Date.now()) / 1000));
+          tickEl.innerHTML = "reload <strong>" + left + "s</strong>";
         }
         paintTick();
         countdownTimer = setInterval(paintTick, 250);
-        retryTimer = setTimeout(function () {
-          retryEmpties();
-        }, secs * 1000);
+        reloadTimer = setTimeout(function () {
+          popunderLoaded = false;
+          var old = document.getElementById("steady-lab-popunder");
+          if (old) old.remove();
+          render();
+        }, reloadSecs * 1000);
       }
 
-      function makeBannerCard(index, my) {
+      function pickSize(i, mix) {
+        if (!mix) return BANNER_SIZES[0];
+        return BANNER_SIZES[i % BANNER_SIZES.length];
+      }
+
+      function makeMountCard(spec, my) {
         var card = document.createElement("article");
         card.className = "card";
+        if (spec.size && spec.size.wide) card.classList.add("is-wide");
+        if (spec.kind === "smart") card.classList.add("is-smart");
+
         var head = document.createElement("div");
         head.className = "card-head";
         var left = document.createElement("span");
-        left.innerHTML = "<b>banner</b> #" + (index + 1) + " · 300×250";
+        var label =
+          spec.kind === "native"
+            ? "native"
+            : spec.kind === "smart"
+              ? "smartlink"
+              : "banner";
+        var sizeLabel = spec.size ? spec.size.name : "300×250";
+        left.innerHTML = "<b>" + label + "</b> #" + (spec.index + 1) + " · " + sizeLabel;
         var st = document.createElement("span");
         st.className = "st wait";
         st.textContent = "queued";
         head.appendChild(left);
         head.appendChild(st);
+
         var body = document.createElement("div");
         body.className = "card-body";
+        if (spec.size) {
+          body.style.minHeight = Math.max(60, spec.size.h + 8) + "px";
+        } else {
+          body.style.minHeight = "258px";
+        }
+
         card.appendChild(head);
         card.appendChild(body);
         grid.appendChild(card);
 
         var slot = {
-          kind: "banner",
-          index: index,
+          kind: spec.kind,
+          index: spec.index,
+          size: spec.size,
           card: card,
           body: body,
           st: st,
@@ -667,19 +727,49 @@
         var my = ++gen;
         waitQueue = [];
         activeMounts = 0;
-        var n = num("count", 1, 12, 6);
+        var n = num("count", 1, 24, 12);
+        var mix = document.getElementById("mix").checked;
+        var wantNative = document.getElementById("t-native").checked;
+        var wantSmart = document.getElementById("t-smart").checked;
         var wantPop = document.getElementById("t-popunder").checked;
+
         slots.forEach(function (s) {
           stopWatch(s);
         });
         slots = [];
         grid.innerHTML = "";
-        // Never auto-load popunder on every render — only when armed checkbox + card click.
         if (!wantPop) ensurePopunder(false);
 
-        for (var i = 0; i < n; i++) {
-          makeBannerCard(i, my);
+        var plan = [];
+        var i = 0;
+        while (plan.length < n) {
+          // Prefer proven 300×250; mix other sizes + optional native/smart.
+          if (wantNative && plan.length > 0 && plan.length % 5 === 4) {
+            plan.push({
+              kind: "native",
+              index: plan.length,
+              size: { w: 300, h: 250, name: "native" },
+            });
+            continue;
+          }
+          if (wantSmart && plan.length > 0 && plan.length % 7 === 6) {
+            plan.push({
+              kind: "smart",
+              index: plan.length,
+              size: pickSize(i++, mix),
+            });
+            continue;
+          }
+          plan.push({
+            kind: "banner",
+            index: plan.length,
+            size: pickSize(i++, mix),
+          });
         }
+
+        plan.forEach(function (spec) {
+          makeMountCard(spec, my);
+        });
 
         if (wantPop) {
           var card = document.createElement("article");
@@ -692,9 +782,9 @@
           body.style.background = "transparent";
           var btn = document.createElement("button");
           btn.type = "button";
-          btn.className = "pop-arm";
+          btn.className = "arm-btn";
           btn.innerHTML =
-            "<strong>Arm popunder</strong><span>Loads the script once. A later click may open a tab behind this one (often blocked). Not an on-page banner.</span>";
+            "<strong>Arm popunder</strong><span>Not an on-page ad. After arming, a later click may open a tab behind this one (often blocked).</span>";
           btn.addEventListener("click", function () {
             popunderLoaded = false;
             ensurePopunder(true);
@@ -713,10 +803,8 @@
           location.host +
           "</strong> /testing/ · <strong>" +
           n +
-          "</strong> banners · build <strong>" +
-          LAB_BUILD +
-          "</strong>";
-        setStatus("mounting one at a time…", "warn");
+          "</strong> cards";
+        setStatus("mounting…", "warn");
         scheduleLoops();
       }
 
@@ -734,18 +822,29 @@
         document.body.classList.toggle("ads-only", this.checked);
       });
       document.getElementById("auto").addEventListener("change", scheduleLoops);
-      document.getElementById("t-popunder").addEventListener("change", function () {
-        render();
+      ["reload", "retry"].forEach(function (id) {
+        document.getElementById(id).addEventListener("change", scheduleLoops);
       });
-      document.getElementById("count").addEventListener("change", function () {
-        render();
+      ["count", "mix", "t-native", "t-smart", "t-popunder"].forEach(function (id) {
+        document.getElementById(id).addEventListener("change", function () {
+          render();
+        });
       });
-      document.getElementById("retry").addEventListener("change", scheduleLoops);
+
+      // Drop leftover ?v= / ?chrome= junk so the URL stays clean /testing/
+      (function cleanUrl() {
+        var q = new URLSearchParams(location.search);
+        if (!q.has("v") && !q.has("chrome") && !q.has("nocache") && !q.has("t")) return;
+        q.delete("v");
+        q.delete("chrome");
+        q.delete("nocache");
+        q.delete("t");
+        var next = location.pathname + (q.toString() ? "?" + q.toString() : "") + location.hash;
+        history.replaceState(null, "", next);
+      })();
 
       runDiag();
-      if (new URLSearchParams(location.search).get("v") === LAB_BUILD) {
-        render();
-      }
+      render();
     })();
   </script>
 </body>
