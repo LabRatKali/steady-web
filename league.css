@@ -14,8 +14,8 @@
   --gold: #e2cba6;
   --silver: #b8c4bc;
   --bronze: #c4894a;
-  --display: "Fraunces", Georgia, serif;
-  --body: "Manrope", system-ui, sans-serif;
+  --display: "Fraunces", "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
+  --body: "Manrope", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --max: 960px;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
