@@ -310,78 +310,103 @@
         if (!slot || slot.kind === "popunder") return;
         var now = Date.now();
         if (!force && slot.mountedAt && now - slot.mountedAt < 3500) return;
-        if (slot.watchIv) clearInterval(slot.watchIv);
+        if (slot.mounting) return; // already queued/running
 
         slot.attempts = (slot.attempts || 0) + 1;
         slot.filled = false;
         slot.mountedAt = now;
         slot.gen = gen;
-        setSlotStatus(slot, "loading", false, false);
+        slot.mounting = true;
+        setSlotStatus(slot, "queued", false, false);
         paintFills();
 
-        mountChain = mountChain.then(function () {
-          if (slot.gen !== gen) return;
-          slot.body.innerHTML = "";
-          var iframe = document.createElement("iframe");
-          iframe.className = "adframe";
-          iframe.width = 300;
-          iframe.height = 250;
-          iframe.setAttribute("scrolling", "no");
-          iframe.setAttribute("frameborder", "0");
-          iframe.setAttribute("referrerpolicy", "strict-origin-when-cross-origin");
-          iframe.title = "banner " + (slot.index + 1);
-          iframe.srcdoc = bannerSrcdoc(now + "-" + slot.index + "-" + slot.attempts);
-          slot.body.appendChild(iframe);
-          slot.iframe = iframe;
-
-          var checks = 0;
-          return new Promise(function (resolve) {
-            slot.watchIv = setInterval(function () {
-              if (slot.gen !== gen) {
-                clearInterval(slot.watchIv);
-                resolve();
-                return;
-              }
-              checks += 1;
-              var creative = null;
+        mountChain = mountChain
+          .catch(function () {})
+          .then(function () {
+            if (slot.gen !== gen) {
+              slot.mounting = false;
+              return;
+            }
+            setSlotStatus(slot, "loading", false, false);
+            if (slot.watchIv) {
+              clearInterval(slot.watchIv);
+              slot.watchIv = null;
+            }
+            if (slot._resolveWatch) {
               try {
-                creative = findCreative(iframe.contentDocument);
+                slot._resolveWatch();
               } catch (_) {}
+              slot._resolveWatch = null;
+            }
 
-              if (creative) {
-                clearInterval(slot.watchIv);
-                slot.filled = true;
-                setSlotStatus(slot, "filled", true, false);
-                paintFills();
-                // Give creative host time to paint before next slot mounts.
-                setTimeout(resolve, 900);
-                return;
-              }
+            slot.body.innerHTML = "";
+            var iframe = document.createElement("iframe");
+            iframe.className = "adframe";
+            iframe.width = 300;
+            iframe.height = 250;
+            iframe.setAttribute("scrolling", "no");
+            iframe.setAttribute("frameborder", "0");
+            iframe.setAttribute("referrerpolicy", "strict-origin-when-cross-origin");
+            iframe.title = "banner " + (slot.index + 1);
+            iframe.srcdoc = bannerSrcdoc(Date.now() + "-" + slot.index + "-" + slot.attempts);
+            slot.body.appendChild(iframe);
+            slot.iframe = iframe;
 
-              // ~7s for invoke + nested creative
-              if (checks >= 24) {
-                clearInterval(slot.watchIv);
-                setSlotStatus(slot, "empty", false, true);
+            var checks = 0;
+            return new Promise(function (resolve) {
+              var done = false;
+              var finish = function () {
+                if (done) return;
+                done = true;
+                slot.mounting = false;
+                slot._resolveWatch = null;
+                if (slot.watchIv) {
+                  clearInterval(slot.watchIv);
+                  slot.watchIv = null;
+                }
                 resolve();
-              }
-            }, 300);
+              };
+              slot._resolveWatch = finish;
+
+              slot.watchIv = setInterval(function () {
+                if (slot.gen !== gen) {
+                  finish();
+                  return;
+                }
+                checks += 1;
+                var creative = null;
+                try {
+                  creative = findCreative(iframe.contentDocument);
+                } catch (_) {}
+
+                if (creative) {
+                  slot.filled = true;
+                  setSlotStatus(slot, "filled", true, false);
+                  paintFills();
+                  setTimeout(finish, 800);
+                  return;
+                }
+
+                if (checks >= 22) {
+                  setSlotStatus(slot, "empty", false, true);
+                  finish();
+                }
+              }, 300);
+            });
           });
-        });
       }
 
       function retryEmpties() {
         var list = [];
         slots.forEach(function (s) {
-          if (s.kind === "popunder" || s.filled) return;
-          if (s.mountedAt && Date.now() - s.mountedAt < 3500) return;
+          if (s.kind === "popunder" || s.filled || s.mounting) return;
+          if (s.mountedAt && Date.now() - s.mountedAt < 5000) return;
           list.push(s);
         });
         if (!list.length) return;
         setStatus("retrying " + list.length, "ok");
-        list.forEach(function (s, i) {
-          setTimeout(function () {
-            if (s.gen === gen && !s.filled) remountSlot(s, true);
-          }, i * 400);
+        list.forEach(function (s) {
+          remountSlot(s, true);
         });
       }
 
@@ -399,7 +424,7 @@
           tickEl.innerHTML = "auto <strong>off</strong>";
           return;
         }
-        var secs = num("secs", 5, 120, 15);
+        var secs = num("secs", 5, 120, 40);
         nextAt = Date.now() + secs * 1000;
         function paintTick() {
           var left = Math.max(0, Math.ceil((nextAt - Date.now()) / 1000));
