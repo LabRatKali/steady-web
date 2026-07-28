@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="robots" content="noindex, nofollow, noarchive" />
+  <meta name="googlebot" content="noindex, nofollow" />
+  <title>lab</title>
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml" />
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0a0f0d;
+      --panel: #121a16;
+      --line: rgba(244, 248, 245, 0.14);
+      --text: #e8f0eb;
+      --muted: #8fa398;
+      --accent: #3dcf8a;
+      --danger: #e8a0a0;
+      --card-w: 320px;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font: 13px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    body.ads-only .lab-chrome { display: none !important; }
+    .lab-chrome {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      background: rgba(10, 15, 13, 0.96);
+      border-bottom: 1px solid var(--line);
+      padding: 0.7rem 1rem 0.85rem;
+      backdrop-filter: blur(10px);
+    }
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem 0.75rem;
+      align-items: center;
+      margin: 0.3rem 0;
+    }
+    label.chk {
+      display: inline-flex;
+      gap: 0.3rem;
+      align-items: center;
+      color: var(--muted);
+      cursor: pointer;
+      user-select: none;
+    }
+    label.chk input { accent-color: var(--accent); }
+    input[type="number"] {
+      width: 3.6rem;
+      background: var(--panel);
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 0.3rem 0.4rem;
+      font: inherit;
+    }
+    button {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--text);
+      border-radius: 6px;
+      padding: 0.35rem 0.65rem;
+      font: inherit;
+      cursor: pointer;
+    }
+    button.primary {
+      background: var(--accent);
+      color: #042316;
+      border-color: transparent;
+      font-weight: 700;
+    }
+    #meta, #status, #tick { color: var(--muted); }
+    #meta strong, #tick strong { color: var(--text); font-weight: 600; }
+    #status.ok { color: var(--accent); }
+    #status.err { color: var(--danger); }
+    .note {
+      color: var(--muted);
+      font-size: 11px;
+      max-width: 60rem;
+      margin: 0.25rem 0 0;
+    }
+    #grid {
+      display: grid;
+      gap: 1rem;
+      padding: 1rem;
+      grid-template-columns: repeat(auto-fill, minmax(var(--card-w), 1fr));
+      align-items: stretch;
+    }
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--panel);
+      padding: 0.65rem;
+      min-height: 300px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      isolation: isolate;
+    }
+    .card-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .card-head b { color: var(--text); font-weight: 600; }
+    .card-body {
+      flex: 1;
+      min-height: 250px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+      background: rgba(0, 0, 0, 0.18);
+      border-radius: 8px;
+    }
+    .card-body iframe {
+      width: 100%;
+      height: 260px;
+      border: 0;
+      background: transparent;
+      display: block;
+    }
+    .smartlink {
+      display: inline-block;
+      padding: 0.85rem 1.1rem;
+      border-radius: 10px;
+      background: #1b2a22;
+      color: var(--accent);
+      text-decoration: none;
+      border: 1px solid rgba(61, 207, 138, 0.35);
+      font-size: 13px;
+    }
+    .muted { color: var(--muted); font-size: 12px; text-align: center; padding: 1rem; }
+  </style>
+  <script src="../js/runtime-config.js"></script>
+</head>
+<body>
+  <div class="lab-chrome">
+    <div class="row">
+      <span id="meta">…</span>
+      <span id="tick">next reload <strong>—</strong></span>
+      <span id="status"></span>
+    </div>
+    <div class="row">
+      <label>cards <input id="count" type="number" min="1" max="24" value="8" /></label>
+      <label>every <input id="secs" type="number" min="10" max="300" value="30" /> s</label>
+      <label class="chk"><input type="checkbox" id="t-banner" checked /> banner</label>
+      <label class="chk"><input type="checkbox" id="t-native" checked /> native</label>
+      <label class="chk"><input type="checkbox" id="t-reward" checked /> reward</label>
+      <label class="chk"><input type="checkbox" id="t-smartlink" checked /> smartlink</label>
+      <label class="chk"><input type="checkbox" id="t-popunder" checked /> popunder</label>
+      <label class="chk"><input type="checkbox" id="auto" checked /> auto reload</label>
+      <label class="chk"><input type="checkbox" id="ads-only" /> ads only</label>
+      <button type="button" class="primary" id="btn-refresh">reload now</button>
+      <button type="button" id="btn-clear">clear</button>
+    </div>
+    <p class="note">
+      Direct URL only (no site links). Uses live website/app Adsterra units + smartlink/popunder.
+      Auto reload remounts cards for fresh fills. Real clicks must be yours — fake auto-clicks are blocked by Adsterra and can get the account banned.
+    </p>
+  </div>
+  <div id="grid" aria-live="polite"></div>
+
+  <script>
+    (function () {
+      var RT = window.STEADY_RUNTIME || {};
+
+      // Existing website/app units (also in runtime-config) + new testing-only units.
+      var FALLBACK_BANNER =
+        "<script>\n  atOptions = {\n    'key' : 'd737196962ef25449dcb66c5655248f1',\n    'format' : 'iframe',\n    'height' : 250,\n    'width' : 300,\n    'params' : {}\n  };\n</scr" +
+        "ipt>\n<script src=\"https://www.highperformanceformat.com/d737196962ef25449dcb66c5655248f1/invoke.js\"></scr" +
+        "ipt>";
+      var FALLBACK_NATIVE =
+        '<script async="async" data-cfasync="false" src="https://pl30566397.effectivecpmnetwork.com/aa9f63337d56fa208fd27e208e22774a/invoke.js"></scr' +
+        'ipt><div id="container-aa9f63337d56fa208fd27e208e22774a"></div>';
+      var FALLBACK_REWARD =
+        '<script src="https://pl30566396.effectivecpmnetwork.com/75/7d/b0/757db01b5a07eb68043c6fd140726fed.js"></scr' +
+        "ipt>";
+      var SMARTLINK =
+        "https://www.effectivecpmnetwork.com/s889n4i77?key=38aa37c91a94f34912a4a89f8b27799d";
+      var POPUNDER_SRC =
+        "https://pl30567774.effectivecpmnetwork.com/3c/91/ea/3c91ea5fe0936ca26b9cc5cebf036f9f.js";
+
+      var grid = document.getElementById("grid");
+      var statusEl = document.getElementById("status");
+      var meta = document.getElementById("meta");
+      var tickEl = document.getElementById("tick");
+      var popunderLoaded = false;
+      var reloadTimer = null;
+      var countdownTimer = null;
+      var nextAt = 0;
+      var gen = 0;
+
+      function bannerBundle() {
+        return String(RT.monetizeBannerHtml || RT.websiteBannerHtml || "").trim();
+      }
+      function rewardBundle() {
+        return String(RT.monetizeRewardHtml || "").trim();
+      }
+
+      function setStatus(msg, kind) {
+        statusEl.textContent = msg || "";
+        statusEl.className = kind || "";
+      }
+
+      function bust(html) {
+        if (!html) return html;
+        var b = String(Date.now()) + String(Math.floor(Math.random() * 1e6));
+        return html.replace(
+          /(<script[^>]+src=["'])([^"']+)(["'])/gi,
+          function (_, a, src, c) {
+            if (/^(https?:)?\/\//i.test(src) || src.indexOf("/") === 0) {
+              var sep = src.indexOf("?") >= 0 ? "&" : "?";
+              return a + src + sep + "cb=" + b + c;
+            }
+            return _;
+          }
+        );
+      }
+
+      function splitParts() {
+        var raw = bannerBundle();
+        var banner = "";
+        var native = "";
+        var at = raw.match(
+          /<script>\s*atOptions[\s\S]*?<\/script>\s*<script[^>]+highperformanceformat\.com[^>]*><\/script>/i
+        );
+        var nat = raw.match(
+          /<script[^>]+pl\d+\.effectivecpmnetwork\.com[^>]*><\/script>\s*<div[^>]*id=["']container-[^"']+["'][^>]*><\/div>/i
+        );
+        if (at) banner = at[0];
+        if (nat) native = nat[0];
+        if (!banner) banner = FALLBACK_BANNER;
+        if (!native) native = FALLBACK_NATIVE;
+
+        var reward = rewardBundle();
+        // Prefer social-bar / reward script from config; fall back to known unit.
+        var rewardScript = "";
+        var rs = reward.match(/<script[^>]+pl\d+\.effectivecpmnetwork\.com[^>]+><\/script>/i);
+        if (rs) rewardScript = rs[0];
+        if (!rewardScript) rewardScript = FALLBACK_REWARD;
+        // Also keep 300x250 from reward bundle if present (app watch page).
+        var rewardBanner = "";
+        var rb = reward.match(
+          /<script>\s*atOptions[\s\S]*?<\/script>\s*<script[^>]+highperformanceformat\.com[^>]*><\/script>/i
+        );
+        if (rb) rewardBanner = rb[0];
+
+        return {
+          banner: banner,
+          native: native,
+          reward: rewardScript,
+          rewardBanner: rewardBanner || banner,
+        };
+      }
+
+      function makeCard(kind, index) {
+        var card = document.createElement("article");
+        card.className = "card";
+        card.dataset.kind = kind;
+        var head = document.createElement("div");
+        head.className = "card-head";
+        head.innerHTML = "<span><b>" + kind + "</b> #" + index + "</span><span>live</span>";
+        var body = document.createElement("div");
+        body.className = "card-body";
+        card.appendChild(head);
+        card.appendChild(body);
+        return { card: card, body: body, head: head };
+      }
+
+      function mountFrame(body, html, height) {
+        var frame = document.createElement("iframe");
+        frame.setAttribute("title", "ad");
+        frame.setAttribute("loading", "eager");
+        frame.style.height = (height || 260) + "px";
+        // sandbox without allow-popups so ad clicks inside stay contained when possible
+        frame.setAttribute(
+          "sandbox",
+          "allow-scripts allow-same-origin allow-forms allow-popups-to-escape-sandbox"
+        );
+        body.appendChild(frame);
+        var doc = frame.contentDocument || (frame.contentWindow && frame.contentWindow.document);
+        if (!doc) {
+          body.innerHTML = '<p class="muted">frame blocked</p>';
+          return;
+        }
+        doc.open();
+        doc.write(
+          "<!DOCTYPE html><html><head><meta charset='utf-8'>" +
+            "<base target='_blank'>" +
+            "<style>html,body{margin:0;padding:8px;background:transparent;display:flex;align-items:center;justify-content:center;min-height:100%;overflow:hidden}" +
+            "iframe,ins,div{max-width:100%!important}</style></head><body>" +
+            bust(html) +
+            "</body></html>"
+        );
+        doc.close();
+      }
+
+      function ensurePopunder(on) {
+        var existing = document.getElementById("steady-lab-popunder");
+        if (!on) {
+          if (existing) existing.remove();
+          popunderLoaded = false;
+          return;
+        }
+        if (popunderLoaded && existing) return;
+        if (existing) existing.remove();
+        var s = document.createElement("script");
+        s.id = "steady-lab-popunder";
+        s.async = true;
+        s.src = POPUNDER_SRC + (POPUNDER_SRC.indexOf("?") >= 0 ? "&" : "?") + "cb=" + Date.now();
+        document.head.appendChild(s);
+        popunderLoaded = true;
+      }
+
+      function num(id, min, max, fallback) {
+        var n = parseInt(document.getElementById(id).value, 10);
+        if (!isFinite(n)) n = fallback;
+        if (n < min) n = min;
+        if (n > max) n = max;
+        document.getElementById(id).value = String(n);
+        return n;
+      }
+
+      function unitQueue(parts) {
+        var q = [];
+        if (document.getElementById("t-banner").checked) q.push({ kind: "banner", html: parts.banner, h: 270 });
+        if (document.getElementById("t-native").checked) q.push({ kind: "native", html: parts.native, h: 300 });
+        if (document.getElementById("t-reward").checked) {
+          q.push({ kind: "reward", html: parts.reward, h: 280 });
+          q.push({ kind: "banner-app", html: parts.rewardBanner, h: 270 });
+        }
+        if (document.getElementById("t-smartlink").checked) q.push({ kind: "smartlink", html: null, h: 120 });
+        return q;
+      }
+
+      function render() {
+        var my = ++gen;
+        var n = num("count", 1, 24, 8);
+        var parts = splitParts();
+        var units = unitQueue(parts);
+        var wantPop = document.getElementById("t-popunder").checked;
+
+        grid.innerHTML = "";
+        ensurePopunder(wantPop);
+
+        if (!units.length && !wantPop) {
+          setStatus("pick at least one ad type", "err");
+          return;
+        }
+
+        var made = 0;
+        for (var i = 0; i < n; i++) {
+          if (!units.length) break;
+          var u = units[i % units.length];
+          var idx = Math.floor(i / units.length) + 1;
+          var c = makeCard(u.kind, idx);
+          if (u.kind === "smartlink") {
+            var a = document.createElement("a");
+            a.className = "smartlink";
+            a.href = SMARTLINK;
+            a.target = "_blank";
+            a.rel = "noopener noreferrer sponsored";
+            a.textContent = "smartlink " + idx;
+            c.body.appendChild(a);
+          } else {
+            mountFrame(c.body, u.html, u.h);
+          }
+          grid.appendChild(c.card);
+          made++;
+        }
+
+        if (wantPop) {
+          var p = makeCard("popunder", 1);
+          p.body.innerHTML =
+            '<p class="muted">Popunder script in page head (1×). Interact with the page after load — Adsterra opens under, not a forced new tab from us.</p>';
+          grid.appendChild(p.card);
+          made++;
+        }
+
+        if (my !== gen) return;
+        setStatus(made + " cards · " + new Date().toLocaleTimeString(), "ok");
+        scheduleNext();
+      }
+
+      function clearCountdown() {
+        if (countdownTimer) {
+          clearInterval(countdownTimer);
+          countdownTimer = null;
+        }
+        if (reloadTimer) {
+          clearTimeout(reloadTimer);
+          reloadTimer = null;
+        }
+      }
+
+      function scheduleNext() {
+        clearCountdown();
+        if (!document.getElementById("auto").checked) {
+          tickEl.innerHTML = "auto <strong>off</strong>";
+          return;
+        }
+        var secs = num("secs", 10, 300, 30);
+        nextAt = Date.now() + secs * 1000;
+        function paintTick() {
+          var left = Math.max(0, Math.ceil((nextAt - Date.now()) / 1000));
+          tickEl.innerHTML = "next reload <strong>" + left + "s</strong>";
+        }
+        paintTick();
+        countdownTimer = setInterval(paintTick, 250);
+        reloadTimer = setTimeout(function () {
+          // Full remount = fresh inventory requests
+          popunderLoaded = false;
+          var old = document.getElementById("steady-lab-popunder");
+          if (old) old.remove();
+          render();
+        }, secs * 1000);
+      }
+
+      function paintMeta() {
+        meta.innerHTML =
+          "<strong>" +
+          location.host +
+          "</strong> " +
+          location.pathname +
+          " · " +
+          String(RT.monetizeProvider || "adsterra");
+      }
+
+      document.getElementById("btn-refresh").addEventListener("click", function () {
+        popunderLoaded = false;
+        var old = document.getElementById("steady-lab-popunder");
+        if (old) old.remove();
+        render();
+      });
+      document.getElementById("btn-clear").addEventListener("click", function () {
+        clearCountdown();
+        grid.innerHTML = "";
+        ensurePopunder(false);
+        setStatus("cleared", "");
+        tickEl.innerHTML = "auto <strong>paused</strong>";
+      });
+      document.getElementById("ads-only").addEventListener("change", function (e) {
+        document.body.classList.toggle("ads-only", !!e.target.checked);
+      });
+      document.getElementById("auto").addEventListener("change", function () {
+        if (document.getElementById("auto").checked) scheduleNext();
+        else {
+          clearCountdown();
+          tickEl.innerHTML = "auto <strong>off</strong>";
+        }
+      });
+      ["t-banner", "t-native", "t-reward", "t-smartlink", "t-popunder", "count", "secs"].forEach(
+        function (id) {
+          document.getElementById(id).addEventListener("change", function () {
+            if (id === "secs" && document.getElementById("auto").checked) {
+              scheduleNext();
+              return;
+            }
+            if (id !== "secs") {
+              popunderLoaded = false;
+              var old = document.getElementById("steady-lab-popunder");
+              if (old) old.remove();
+              render();
+            }
+          });
+        }
+      );
+
+      // Keep reloading if the tab becomes visible again
+      document.addEventListener("visibilitychange", function () {
+        if (!document.hidden && document.getElementById("auto").checked) {
+          popunderLoaded = false;
+          var old = document.getElementById("steady-lab-popunder");
+          if (old) old.remove();
+          render();
+        }
+      });
+
+      paintMeta();
+      render();
+    })();
+  </script>
+</body>
+</html>
