@@ -201,15 +201,17 @@
 
       var BANNER_SIZES = [
         { w: 300, h: 250, label: "300×250" },
-        { w: 336, h: 280, label: "336×280" },
-        { w: 320, h: 50, label: "320×50" },
-        { w: 468, h: 60, label: "468×60" },
-        { w: 728, h: 90, label: "728×90" },
-        { w: 160, h: 600, label: "160×600" },
         { w: 300, h: 250, label: "300×250b" },
-        { w: 320, h: 100, label: "320×100" },
-        { w: 250, h: 250, label: "250×250" },
+        { w: 336, h: 280, label: "336×280" },
+        { w: 300, h: 250, label: "300×250c" },
+        { w: 728, h: 90, label: "728×90" },
+        { w: 320, h: 50, label: "320×50" },
+        { w: 160, h: 600, label: "160×600" },
+        { w: 300, h: 250, label: "300×250d" },
+        { w: 468, h: 60, label: "468×60" },
         { w: 300, h: 600, label: "300×600" },
+        { w: 250, h: 250, label: "250×250" },
+        { w: 320, h: 100, label: "320×100" },
       ];
 
       var grid = document.getElementById("grid");
@@ -438,17 +440,16 @@
             c.body.appendChild(a);
             return;
           }
-          if (item.kind === "banner") {
-            mountSrcdoc(c.body, bannerHtml(item.w, item.h), item.h);
-            return;
-          }
-          if (item.kind === "native") {
-            mountSrcdoc(c.body, nativeHtml(), 300);
-            return;
-          }
-          if (item.kind === "reward") {
-            mountSrcdoc(c.body, rewardHtml(), 260);
-          }
+
+          // Stagger frame mounts so Adsterra is less likely to drop concurrent fills.
+          (function (cardBody, kind, w, h, delay) {
+            setTimeout(function () {
+              if (my !== gen) return;
+              if (kind === "banner") mountSrcdoc(cardBody, bannerHtml(w, h), h);
+              else if (kind === "native") mountSrcdoc(cardBody, nativeHtml(), 300);
+              else if (kind === "reward") mountSrcdoc(cardBody, rewardHtml(), 260);
+            }, delay);
+          })(c.body, item.kind, item.w || 300, item.h || 250, idx * 180);
         });
 
         if (wantPop) {
