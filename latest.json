@@ -1,9 +1,9 @@
 {
-  "version": "2.21.11",
-  "versionCode": 158,
+  "version": "2.21.12",
+  "versionCode": 159,
   "apkUrl": "https://github.com/LabRatKali/steady-web/releases/latest/download/steady-latest.apk",
-  "sha256": "0374ff00303c27dba8504dde7662d58dfcb0f2f9b007303dba820eed4a34536e",
+  "sha256": "d120cbf6f930000ac0136e901e98f03e4cb19a2f80e041e7679b8d4e0820a076",
   "sizeBytes": 53387426,
-  "notes": "# Steady 2.21.11\n\n## What's new\n- **Day off opens the web** \u2014 sunny day off keeps inappropriate sites blocked (adult / gambling / dating / malware) but no longer locks normal browsing behind the age filter.\n- **Always-allow covers all subdomains** \u2014 approving `www.news.com` allows `amp.news.com` and every other subdomain automatically.\n- **Steady sites stay allowed** \u2014 `labratkali.github.io` and `*.less-phone.workers.dev` (including study/steady) are on the allow list.\n\n## For parents\nTake a day off again after updating if the VPN still felt locked from an earlier session.",
+  "notes": "# Steady 2.21.12\n\n## What's new\n- **ANR hard-lockdown** \u2014 fixes \u201cSteady isn\u2019t responding\u201d under load:\n  - Accessibility tree walks are capped, debounced, and never stacked\n  - Allow/block package cache is in-memory (no SharedPreferences StringSet stalls on every event)\n  - Day off / profile / Device Owner Binder work runs off the UI thread\n  - Web filter list changes no longer restart the VPN tunnel\n  - Gray-out refresh no longer re-applies the full Device Owner restriction storm\n  - Sentry init and VPN establish moved off the critical main path\n  - Privilege checks are cached briefly\n\n## For parents\nInstall this build if you ever saw Close app / Wait. The app should stay light and responsive even with Accessibility + web filter on.\n",
   "assetId": 0
 }
