@@ -8,18 +8,6 @@
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
   <title>Steady ad lab</title>
-  <script>
-    // One-shot escape from stale browser/CDN copies of the old "native" lab.
-    (function () {
-      var REV = "15";
-      var q = new URLSearchParams(location.search);
-      if (q.get("r") === REV) return;
-      q.set("r", REV);
-      var path = location.pathname.replace(/index\.html$/i, "");
-      if (!path.endsWith("/")) path += "/";
-      location.replace(path + "?" + q.toString() + location.hash);
-    })();
-  </script>
   <script>(function(){var p=location.pathname;if(p.length>1&&!p.endsWith("/")&&!/\.[a-z0-9]{1,8}$/i.test(p))location.replace(p+"/"+location.search+location.hash)})();</script>
   <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml" />
   <style>
@@ -384,8 +372,8 @@
 
   <section id="help">
     <p><strong>/testing/</strong> — every display unit is a fitted <strong>300×250</strong> (your working Adsterra banner zone).</p>
-    <p>The old <strong>native</strong> unit used a host many ISPs sinkhole, so those cards never filled. This lab uses the working banner for every ad slot. <strong>Smartlink</strong> = same 300×250 + tap to open. <strong>Popunder</strong> = arm only.</p>
-    <p>Use the wall presets (12–96) or type up to 120 cards. Slots mount in parallel for speed.</p>
+    <p>A slot is only marked <strong>filled</strong> when a real ad image is visible — not a blank white frame. <strong>Smartlink</strong> = same banner + tap. <strong>Popunder</strong> = arm only.</p>
+    <p>Wall presets 12–96 (or up to 120). If almost everything stays empty, run <code>scripts/fix_adsterra_dns.ps1</code> as admin (ISP sinkholes creative image hosts).</p>
   </section>
 
   <div id="grid" aria-live="polite"></div>
@@ -401,10 +389,10 @@
 
       var W = 300;
       var H = 250;
-      // Proven sweet spot — too much parallel = Adsterra no-fills / sinkhole thrash.
-      var FILL_WAIT_MS = 18000;
-      var CHECK_MS = 280;
-      var BETWEEN_MS = 250;
+      // Strict visible creatives only — never mark white/empty frames as filled.
+      var FILL_WAIT_MS = 20000;
+      var CHECK_MS = 300;
+      var BETWEEN_MS = 300;
       var MAX_CARDS = 120;
 
       var grid = document.getElementById("grid");
@@ -425,7 +413,7 @@
       var slots = [];
       var activeMounts = 0;
       var waitQueue = [];
-      var concurrency = 3;
+      var concurrency = 2;
 
       function setStatus(msg, kind) {
         statusEl.textContent = msg || "";
@@ -442,10 +430,9 @@
       }
 
       function concurrencyFor(n) {
-        // Keep inventory healthy — stampeding Adsterra causes forever-loading / no-fill.
-        if (n <= 8) return 2;
-        if (n <= 16) return 3;
-        if (n <= 32) return 4;
+        if (n <= 12) return 2;
+        if (n <= 24) return 3;
+        if (n <= 48) return 4;
         return 5;
       }
 
@@ -572,52 +559,38 @@
       function findCreative(doc) {
         if (!doc) return null;
 
-        function hasPaintedImg(root) {
-          if (!root) return false;
+        // ONLY count a real painted image. Empty about:blank shells used to
+        // trip "filled" while the card stayed white.
+        function paintedImg(root) {
+          if (!root) return null;
           var imgs = root.querySelectorAll("img");
           for (var i = 0; i < imgs.length; i++) {
             var img = imgs[i];
-            var w = img.naturalWidth || img.width || 0;
-            var h = img.naturalHeight || img.height || 0;
-            if (w >= 20 && h >= 20) return true;
+            var w = img.naturalWidth || 0;
+            var h = img.naturalHeight || 0;
+            if (img.complete && w >= 40 && h >= 40) return img;
           }
-          return false;
+          return null;
         }
 
-        if (hasPaintedImg(doc)) return { kind: "img" };
-
-        var frames = doc.querySelectorAll("iframe");
-        for (var j = 0; j < frames.length; j++) {
-          var f = frames[j];
-          var src = (f.getAttribute("src") || f.src || "").trim();
-          if (!src || src === "about:blank") {
+        function walk(root, depth) {
+          if (!root || depth > 4) return null;
+          if (paintedImg(root)) return { kind: "img" };
+          var frames = root.querySelectorAll("iframe");
+          for (var j = 0; j < frames.length; j++) {
+            var f = frames[j];
             try {
               var nested = f.contentDocument;
-              if (
-                nested &&
-                (hasPaintedImg(nested) ||
-                  (nested.body &&
-                    nested.body.childElementCount > 0 &&
-                    nested.body.innerHTML.length > 40))
-              ) {
-                return { kind: "blank-filled" };
+              if (nested) {
+                var hit = walk(nested, depth + 1);
+                if (hit) return hit;
               }
             } catch (_) {}
-            continue;
           }
-          if (/^https?:\/\//i.test(src)) return { kind: "iframe", src: src };
+          return null;
         }
 
-        var chain = doc.querySelectorAll(
-          "script[src*='0a/9d'],script[src*='spendsdetachment'],script[src*='zoologyfibre'],script[src*='workdeadline'],script[src*='newestfangs'],script[src*='continuation']"
-        );
-        var anyFrame = doc.querySelector("iframe");
-        if (chain.length && anyFrame) {
-          var aw = anyFrame.offsetWidth || parseInt(anyFrame.width, 10) || 0;
-          var ah = anyFrame.offsetHeight || parseInt(anyFrame.height, 10) || 0;
-          if (aw >= 40 && ah >= 40) return { kind: "chain-iframe" };
-        }
-        return null;
+        return walk(doc, 0);
       }
 
       function stopWatch(slot) {
@@ -945,12 +918,9 @@
         var path = location.pathname.replace(/index\.html$/i, "");
         if (!path.endsWith("/")) path += "/";
         if (path.indexOf("/testing") === -1) return;
-        var q = new URLSearchParams(location.search);
-        ["v", "chrome", "nocache", "t", "_", "cb", "fresh", "x", "r", "force"].forEach(function (k) {
-          q.delete(k);
-        });
-        var next = path + (q.toString() ? "?" + q.toString() : "") + location.hash;
-        if (next !== location.pathname + location.search + location.hash) {
+        // Always prefer clean /testing/ with no query junk.
+        var next = path + location.hash;
+        if (location.search || location.pathname !== path) {
           history.replaceState(null, "", next);
         }
       })();
@@ -962,4 +932,4 @@
   </script>
 </body>
 </html>
-<!-- r15-1785255988 -->
+<!-- visible-only 1785256327 -->
