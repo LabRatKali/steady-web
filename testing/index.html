@@ -179,8 +179,8 @@
     </div>
     <div class="row">
       <label>cards <input id="count" type="number" min="4" max="16" value="8" /></label>
-      <label>reload <input id="secs" type="number" min="5" max="120" value="10" /> s</label>
-      <label>retry <input id="retry" type="number" min="2" max="60" value="3" /> s</label>
+      <label>reload <input id="secs" type="number" min="5" max="120" value="12" /> s</label>
+      <label>retry <input id="retry" type="number" min="2" max="60" value="4" /> s</label>
       <label class="chk"><input type="checkbox" id="t-popunder" checked /> popunder</label>
       <label class="chk"><input type="checkbox" id="auto" checked /> auto</label>
       <label class="chk"><input type="checkbox" id="ads-only" /> ads only</label>
@@ -366,57 +366,33 @@
             if (!creative) return resolve(false);
             if (creative.kind === "img") return resolve(true);
             if (isKnownDead(creative.src)) return resolve(false);
+            var host = hostOf(creative.src);
+            if (/detachment|deadline|zoology|fibre|spends|workdead/i.test(host)) {
+              markDeadHost(creative.src);
+              return resolve(false);
+            }
 
-            // Prefer resource timing: responseStatus 0 = refused / failed.
-            var timed = false;
             try {
               var entries = performance.getEntriesByName(creative.src) || [];
               for (var i = 0; i < entries.length; i++) {
                 var e = entries[i];
-                if (typeof e.responseStatus === "number") {
-                  timed = true;
-                  if (e.responseStatus === 0) {
-                    markDeadHost(creative.src);
-                    return resolve(false);
-                  }
-                  if (e.responseStatus >= 200 && e.responseStatus < 400) return resolve(true);
+                if (typeof e.responseStatus === "number" && e.responseStatus === 0) {
+                  markDeadHost(creative.src);
+                  return resolve(false);
                 }
                 if (e.transferSize > 500) return resolve(true);
+                if (typeof e.responseStatus === "number" && e.responseStatus >= 200 && e.responseStatus < 400) {
+                  return resolve(true);
+                }
               }
             } catch (_) {}
 
-            // Fallback probe. If fetch can't tell, keep the creative visible
-            // briefly — live ads sometimes block no-cors fetch.
-            probeUrl(creative.src).then(function (ok) {
-              if (ok) return resolve(true);
-              // Give the nested iframe a moment; if still present with size, accept.
-              setTimeout(function () {
-                try {
-                  var again = findCreative(iframe.contentDocument);
-                  if (again && again.el && again.el.offsetWidth >= 40) {
-                    // Still might be chrome-error; check timing once more.
-                    var ents = performance.getEntriesByName(again.src) || [];
-                    for (var j = 0; j < ents.length; j++) {
-                      if (ents[j].responseStatus === 0) {
-                        markDeadHost(again.src);
-                        return resolve(false);
-                      }
-                    }
-                    // Optimistic keep — remount cycle will replace if user sees sad-face empty.
-                    // Prefer rejecting known parking / refuse hosts by hostname patterns.
-                    var h = hostOf(again.src);
-                    if (
-                      /detachment|deadline|zoology|fibre|spends|workdead/i.test(h)
-                    ) {
-                      markDeadHost(again.src);
-                      return resolve(false);
-                    }
-                    return resolve(true);
-                  }
-                } catch (_) {}
-                resolve(false);
-              }, 900);
-            });
+            // Non-parking host with a sized iframe — treat as live.
+            // (Fetch probes often false-fail on real ad CDNs.)
+            if (creative.el && creative.el.offsetWidth >= 40 && creative.el.offsetHeight >= 40) {
+              return resolve(true);
+            }
+            resolve(false);
           } catch (_) {
             resolve(false);
           }
@@ -426,7 +402,9 @@
       function remountSlot(slot, force) {
         if (!slot || slot.kind === "popunder") return;
         var now = Date.now();
-        if (!force && slot.mountedAt && now - slot.mountedAt < 1600) return;
+        // Slow remounts — hammering Adsterra returns empty slots.
+        if (!force && slot.mountedAt && now - slot.mountedAt < 4000) return;
+        if (force && slot.mountedAt && now - slot.mountedAt < 2500) return;
         if (slot.watchIv) clearInterval(slot.watchIv);
 
         slot.attempts = (slot.attempts || 0) + 1;
@@ -446,16 +424,7 @@
         iframe.setAttribute("frameborder", "0");
         iframe.setAttribute("referrerpolicy", "strict-origin-when-cross-origin");
         iframe.title = "banner " + (slot.index + 1);
-        // Alternate srcdoc vs same-origin unit.html — both give Adsterra a real document.
-        if (slot.attempts % 2 === 0) {
-          iframe.src =
-            "unit.html?slot=" +
-            encodeURIComponent(now + "-" + slot.index + "-" + slot.attempts) +
-            "&cb=" +
-            now;
-        } else {
-          iframe.srcdoc = bannerSrcdoc(now + "-" + slot.index + "-" + slot.attempts);
-        }
+        iframe.srcdoc = bannerSrcdoc(now + "-" + slot.index + "-" + slot.attempts);
         slot.body.appendChild(iframe);
         slot.iframe = iframe;
 
@@ -475,25 +444,31 @@
           } catch (_) {}
 
           if (!creative) {
-            if (checks >= 22) {
+            // ~8s wait for inventory before giving up
+            if (checks >= 26) {
               clearInterval(slot.watchIv);
               setSlotStatus(slot, "no fill", false, true);
               paintFills();
-              setTimeout(function () {
-                if (slot.gen === gen) remountSlot(slot, true);
-              }, 200);
             }
             return;
           }
 
-          // Show immediately so live creatives appear (like before).
-          // Then probe — remount only if the offer host is dead.
           clearInterval(slot.watchIv);
+          verifying = true;
+
+          var host = hostOf(creative.src);
+          if (/detachment|deadline|zoology|fibre|spends|workdead/i.test(host)) {
+            markDeadHost(creative.src);
+            setSlotStatus(slot, "dead offer", false, true);
+            paintFills();
+            return; // retry timer will remount — don't hammer now
+          }
+
+          // Show while verifying
           slot.body.classList.add("ready");
           iframe.classList.add("show");
           setSlotStatus(slot, "checking", false, false);
 
-          verifying = true;
           verifyCreative(iframe).then(function (ok) {
             if (slot.gen !== gen) return;
             if (ok) {
@@ -502,11 +477,10 @@
               paintFills();
             } else {
               slot.filled = false;
+              iframe.classList.remove("show");
+              slot.body.classList.remove("ready");
               setSlotStatus(slot, "dead offer", false, true);
               paintFills();
-              setTimeout(function () {
-                if (slot.gen === gen) remountSlot(slot, true);
-              }, 200);
             }
           });
         }, 300);
@@ -514,10 +488,16 @@
 
       function retryEmpties() {
         var n = 0;
+        var delay = 0;
         slots.forEach(function (s) {
           if (s.kind === "popunder" || s.filled) return;
-          if (s.mountedAt && Date.now() - s.mountedAt < 1600) return;
-          remountSlot(s, true);
+          if (s.mountedAt && Date.now() - s.mountedAt < 4000) return;
+          (function (slot, d) {
+            setTimeout(function () {
+              if (slot.gen === gen && !slot.filled) remountSlot(slot, true);
+            }, d);
+          })(s, delay);
+          delay += 450;
           n += 1;
         });
         if (n) setStatus("retrying " + n, "ok");
@@ -599,7 +579,7 @@
             slots.push(slot);
             setTimeout(function () {
               if (slot.gen === gen) remountSlot(slot, true);
-            }, index * 350);
+            }, index * 550);
           })(i);
         }
 
