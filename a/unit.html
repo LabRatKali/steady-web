@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex,nofollow" />
+  <title>ad unit</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 10px;
+      min-height: 100%;
+      background: #ffffff;
+      color: #333;
+      font: 12px/1.3 system-ui, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #stage {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 250px;
+    }
+    .wait { color: #888; }
+  </style>
+</head>
+<body>
+  <div id="stage"><span class="wait">loading ad…</span></div>
+  <script>
+    (function () {
+      var BANNER_KEY = "d737196962ef25449dcb66c5655248f1";
+      var NATIVE_ID = "aa9f63337d56fa208fd27e208e22774a";
+      var REWARD_SRC =
+        "https://pl30566396.effectivecpmnetwork.com/75/7d/b0/757db01b5a07eb68043c6fd140726fed.js";
+
+      var q = new URLSearchParams(location.search);
+      var kind = (q.get("kind") || "banner").toLowerCase();
+      var w = Math.max(120, parseInt(q.get("w") || "300", 10) || 300);
+      var h = Math.max(50, parseInt(q.get("h") || "250", 10) || 250);
+      var stage = document.getElementById("stage");
+      stage.innerHTML = "";
+
+      function addScript(src) {
+        var s = document.createElement("script");
+        s.async = true;
+        s.setAttribute("data-cfasync", "false");
+        s.src = src + (src.indexOf("?") >= 0 ? "&" : "?") + "cb=" + Date.now() + Math.floor(Math.random() * 1e5);
+        document.body.appendChild(s);
+        return s;
+      }
+
+      if (kind === "native") {
+        var box = document.createElement("div");
+        box.id = "container-" + NATIVE_ID;
+        box.style.cssText = "min-height:" + h + "px;width:100%;max-width:100%;background:#fff";
+        stage.appendChild(box);
+        addScript("https://pl30566397.effectivecpmnetwork.com/" + NATIVE_ID + "/invoke.js");
+        return;
+      }
+
+      window.atOptions = {
+        key: BANNER_KEY,
+        format: "iframe",
+        height: h,
+        width: w,
+        params: {},
+      };
+      var hold = document.createElement("div");
+      hold.style.cssText =
+        "width:" + w + "px;max-width:100%;min-height:" + h + "px;margin:0 auto;background:#fff";
+      stage.appendChild(hold);
+      var s = document.createElement("script");
+      s.setAttribute("data-cfasync", "false");
+      s.src =
+        "https://www.highperformanceformat.com/" +
+        BANNER_KEY +
+        "/invoke.js?cb=" +
+        Date.now() +
+        Math.floor(Math.random() * 1e5);
+      hold.appendChild(s);
+
+      if (kind === "reward") addScript(REWARD_SRC);
+
+      // Tell parent when a creative iframe appears
+      var tries = 0;
+      var t = setInterval(function () {
+        tries++;
+        if (document.querySelectorAll("iframe").length > 0 || document.querySelectorAll("img").length > 0) {
+          try {
+            parent.postMessage({ type: "steady-unit-filled", kind: kind }, "*");
+          } catch (_) {}
+          clearInterval(t);
+        } else if (tries > 40) {
+          clearInterval(t);
+        }
+      }, 500);
+    })();
+  </script>
+</body>
+</html>
