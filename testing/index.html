@@ -204,7 +204,7 @@
     // Plain /testing/ often kept a stale cached lab; ?chrome=1 worked because it was uncached.
     // Always land on the current build query so normal browsers pick up this HTML.
     (function () {
-      var LAB_BUILD = "b9";
+      var LAB_BUILD = "b10";
       var q = new URLSearchParams(location.search);
       if (q.get("v") === LAB_BUILD) return;
       q.set("v", LAB_BUILD);
@@ -236,7 +236,7 @@
   </div>
 
   <section id="help">
-    <p><strong>Only path:</strong> <code>/testing/</code> (auto-jumps to <code>?v=b9</code> so your browser drops stale cache).</p>
+    <p><strong>Only path:</strong> <code>/testing/</code> (auto-jumps to <code>?v=b10</code> so your browser drops stale cache).</p>
     <p>Each card is a real Adsterra <strong>300×250</strong> banner. Two–three mount at a time so inventory isn’t flooded. Empties retry; filled slots stay until soft rotate.</p>
     <p><strong>Popunder</strong> is not an on-page box — after arming, a later click may open a tab <em>behind</em> this one (browsers often block it).</p>
     <p>If almost everything stays empty, your ISP may be sinkholing Adsterra creative DNS. Prefer Cloudflare DNS (1.1.1.1) and open this in normal Chrome, not an embedded preview.</p>
@@ -246,17 +246,14 @@
 
   <script>
     (function () {
-      var LAB_BUILD = "b9";
+      var LAB_BUILD = "b10";
       var BANNER_KEY = "d737196962ef25449dcb66c5655248f1";
-      var NATIVE_ID = "aa9f63337d56fa208fd27e208e22774a";
-      var NATIVE_SRC =
-        "https://pl30566397.effectivecpmnetwork.com/aa9f63337d56fa208fd27e208e22774a/invoke.js";
       var POPUNDER_SRC =
         "https://pl30567774.effectivecpmnetwork.com/3c/91/ea/3c91ea5fe0936ca26b9cc5cebf036f9f.js";
       var CONCURRENCY = 3;
-      var FILL_WAIT_MS = 7000;
+      var FILL_WAIT_MS = 8500;
       var CHECK_MS = 280;
-      var STAGGER_MS = 220;
+      var STAGGER_MS = 180;
 
       var grid = document.getElementById("grid");
       var statusEl = document.getElementById("status");
@@ -329,20 +326,7 @@
         else if (total > 0 && filled === 0) setStatus("waiting on inventory…", "warn");
       }
 
-      function bannerSrcdoc(cb, useNative) {
-        if (useNative) {
-          return (
-            "<!DOCTYPE html><html><head><meta charset=\"utf-8\" />" +
-            "<base href=\"" + location.origin + "/\" />" +
-            "<style>html,body{margin:0;padding:0;background:#fff;overflow:hidden;min-height:250px}" +
-            "#container-" + NATIVE_ID + "{min-height:250px;display:flex;align-items:center;justify-content:center}" +
-            "iframe,img{display:block;margin:0 auto;border:0;max-width:100%}</style></head><body>" +
-            "<div id=\"container-" + NATIVE_ID + "\"></div>" +
-            "<script async data-cfasync=\"false\" src=\"" + NATIVE_SRC + "?cb=" +
-            encodeURIComponent(cb) + "\"><" + "/script>" +
-            "</body></html>"
-          );
-        }
+      function bannerSrcdoc(cb) {
         return (
           "<!DOCTYPE html><html><head><meta charset=\"utf-8\" />" +
           "<base href=\"" + location.origin + "/\" />" +
@@ -373,11 +357,6 @@
           if (f.offsetWidth >= 40 && f.offsetHeight >= 40) {
             return { kind: "iframe", el: f, src: src };
           }
-        }
-        // native container may inject markup without iframe yet
-        var box = doc.getElementById("container-" + NATIVE_ID);
-        if (box && box.children.length > 0 && box.offsetHeight >= 40) {
-          return { kind: "native", el: box };
         }
         return null;
       }
@@ -446,11 +425,7 @@
         iframe.setAttribute("referrerpolicy", "strict-origin-when-cross-origin");
         iframe.setAttribute("allow", "attribution-reporting");
         iframe.title = "banner " + (slot.index + 1);
-        var useNative = slot.unit === "native";
-        iframe.srcdoc = bannerSrcdoc(
-          Date.now() + "-" + slot.index + "-" + slot.attempts,
-          useNative
-        );
+        iframe.srcdoc = bannerSrcdoc(Date.now() + "-" + slot.index + "-" + slot.attempts);
         slot.body.appendChild(iframe);
         slot.iframe = iframe;
 
@@ -556,8 +531,7 @@
         var head = document.createElement("div");
         head.className = "card-head";
         var left = document.createElement("span");
-        var label = unit === "native" ? "native" : "banner";
-        left.innerHTML = "<b>" + label + "</b> #" + (index + 1) + " · 300×250";
+        left.innerHTML = "<b>banner</b> #" + (index + 1) + " · 300×250";
         var st = document.createElement("span");
         st.className = "st wait";
         st.textContent = "queued";
@@ -605,10 +579,9 @@
         grid.innerHTML = "";
         ensurePopunder(wantPop);
 
-        // Mostly iframe banners (proven fills); sprinkle a couple native units.
+        // Stick to the proven iframe 300×250 zone — native units wasted queue slots.
         for (var i = 0; i < n; i++) {
-          var unit = i > 0 && i % 5 === 0 ? "native" : "iframe";
-          makeBannerCard(i, my, unit);
+          makeBannerCard(i, my, "iframe");
         }
 
         if (wantPop) {
