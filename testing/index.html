@@ -45,7 +45,7 @@
       z-index: 40;
       background: rgba(6, 10, 8, 0.92);
       border-bottom: 1px solid var(--line);
-      padding: 0.75rem 1.1rem 0.85rem;
+      padding: 0.75rem 1.1rem 0.9rem;
       backdrop-filter: blur(16px);
     }
     .row {
@@ -73,7 +73,7 @@
     label.chk input { accent-color: var(--accent); }
     label:not(.chk) { color: var(--muted); font-size: 12px; }
     input[type="number"] {
-      width: 3.4rem;
+      width: 3.6rem;
       background: var(--panel);
       color: var(--text);
       border: 1px solid var(--line);
@@ -81,6 +81,43 @@
       padding: 0.28rem 0.35rem;
       font: inherit;
     }
+    input#count { width: 4.2rem; font-weight: 700; }
+
+    .presets {
+      display: inline-flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      align-items: center;
+    }
+    .presets .lbl {
+      color: var(--muted);
+      font-size: 12px;
+      margin-right: 0.1rem;
+    }
+    .preset {
+      border: 1px solid var(--line);
+      background: #121c17;
+      color: var(--text);
+      border-radius: 999px;
+      padding: 0.32rem 0.7rem;
+      font: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.02em;
+      transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+    }
+    .preset:hover { border-color: rgba(61, 207, 138, 0.45); }
+    .preset.on {
+      background: var(--accent);
+      color: #042316;
+      border-color: transparent;
+    }
+    .preset.big {
+      padding: 0.4rem 0.85rem;
+      font-size: 13px;
+    }
+
     button {
       border: 1px solid var(--line);
       background: #15201a;
@@ -115,7 +152,7 @@
       background: var(--panel);
       color: var(--muted);
       font-size: 12.5px;
-      max-width: 42rem;
+      max-width: 44rem;
     }
     #help.show { display: block; }
     #help p { margin: 0.35rem 0; }
@@ -125,7 +162,6 @@
       display: grid;
       gap: 1rem;
       padding: 1rem 1.1rem 1.6rem;
-      /* Exact fit for 300×250 stages + card chrome */
       grid-template-columns: repeat(auto-fill, minmax(312px, 312px));
       justify-content: start;
       align-items: start;
@@ -147,17 +183,12 @@
       border-color: rgba(61, 207, 138, 0.55);
       box-shadow: 0 0 0 1px rgba(61, 207, 138, 0.12), 0 8px 24px rgba(0, 0, 0, 0.25);
     }
-    .card.is-filled.is-fresh {
-      animation: popIn 0.35s ease;
-    }
+    .card.is-filled.is-fresh { animation: popIn 0.35s ease; }
     @keyframes popIn {
-      from { transform: scale(0.985); box-shadow: 0 0 0 0 transparent; }
+      from { transform: scale(0.985); }
       to { transform: scale(1); }
     }
-    .card.is-pop {
-      width: 312px;
-      min-height: auto;
-    }
+    .card.is-pop { width: 312px; }
 
     .card-head {
       display: flex;
@@ -187,7 +218,6 @@
       color: var(--accent);
     }
     .tag.smart { background: rgba(230, 195, 106, 0.14); color: var(--warn); }
-    .tag.native { background: rgba(140, 180, 255, 0.14); color: #9db7ff; }
     .tag.pop { background: rgba(232, 160, 160, 0.12); color: var(--danger); }
 
     .st { font-variant-numeric: tabular-nums; font-size: 11px; }
@@ -195,7 +225,6 @@
     .st.bad { color: var(--danger); }
     .st.wait { color: var(--warn); }
 
-    /* Exact creative stage — no leftover white / overflow */
     .card-body {
       width: var(--banner-w);
       height: var(--banner-h);
@@ -212,7 +241,6 @@
     .card.is-pop .card-body {
       width: 100%;
       height: auto;
-      min-height: 0;
       background: transparent;
       overflow: visible;
     }
@@ -272,10 +300,6 @@
       padding: 0;
       background: transparent;
     }
-    .smart-wrap .hit:focus-visible {
-      outline: 2px solid var(--accent);
-      outline-offset: -2px;
-    }
     .smart-caption {
       position: absolute;
       left: 0;
@@ -323,10 +347,17 @@
       <span id="status"></span>
     </div>
     <div class="row">
-      <label>cards <input id="count" type="number" min="1" max="24" value="12" /></label>
+      <span class="presets" id="presets" aria-label="Card count presets">
+        <span class="lbl">wall</span>
+        <button type="button" class="preset" data-n="12">12</button>
+        <button type="button" class="preset" data-n="24">24</button>
+        <button type="button" class="preset big" data-n="48">48</button>
+        <button type="button" class="preset big" data-n="72">72</button>
+        <button type="button" class="preset big" data-n="96">96</button>
+      </span>
+      <label>cards <input id="count" type="number" min="1" max="120" value="12" /></label>
       <label>reload all <input id="reload" type="number" min="8" max="300" value="18" /> s</label>
       <label>retry empty <input id="retry" type="number" min="2" max="60" value="4" /> s</label>
-      <label class="chk"><input type="checkbox" id="t-native" checked /> native</label>
       <label class="chk"><input type="checkbox" id="t-smart" checked /> smartlink</label>
       <label class="chk"><input type="checkbox" id="t-popunder" /> popunder</label>
       <label class="chk"><input type="checkbox" id="auto" checked /> auto</label>
@@ -339,9 +370,9 @@
   </div>
 
   <section id="help">
-    <p><strong>/testing/</strong> — every display unit is a true <strong>300×250</strong> frame so creatives fit cleanly (your Adsterra banner zone).</p>
-    <p><strong>Native</strong> uses its own unit in the same fitted stage. <strong>Smartlink</strong> is a 300×250 banner you can tap to open the link. <strong>Popunder</strong> is arm-only (not an on-page size).</p>
-    <p>Slots mount together for speed. Empties retry; the wall reloads on the timer.</p>
+    <p><strong>/testing/</strong> — every display unit is a fitted <strong>300×250</strong> (your working Adsterra banner zone).</p>
+    <p>The old <strong>native</strong> unit used a host many ISPs sinkhole, so those cards never filled. This lab uses the working banner for every ad slot. <strong>Smartlink</strong> = same 300×250 + tap to open. <strong>Popunder</strong> = arm only.</p>
+    <p>Use the wall presets (12–96) or type up to 120 cards. Slots mount in parallel for speed.</p>
   </section>
 
   <div id="grid" aria-live="polite"></div>
@@ -350,22 +381,17 @@
     (function () {
       var BANNER_KEY = "d737196962ef25449dcb66c5655248f1";
       var INVOKE = "https://www.highperformanceformat.com/" + BANNER_KEY + "/invoke.js";
-      var NATIVE_ID = "aa9f63337d56fa208fd27e208e22774a";
-      var NATIVE_SRC =
-        "https://pl30566397.effectivecpmnetwork.com/aa9f63337d56fa208fd27e208e22774a/invoke.js";
       var SMARTLINK =
         "https://www.effectivecpmnetwork.com/s889n4i77?key=38aa37c91a94f34912a4a89f8b27799d";
       var POPUNDER_SRC =
         "https://pl30567774.effectivecpmnetwork.com/3c/91/ea/3c91ea5fe0936ca26b9cc5cebf036f9f.js";
 
-      // Zone size only — creatives fit the frame.
       var W = 300;
       var H = 250;
-      // Parallel mounts — detection is solid; fill the wall fast.
-      var CONCURRENCY = 8;
       var FILL_WAIT_MS = 12000;
       var CHECK_MS = 220;
-      var BETWEEN_MS = 40;
+      var BETWEEN_MS = 30;
+      var MAX_CARDS = 120;
 
       var grid = document.getElementById("grid");
       var statusEl = document.getElementById("status");
@@ -374,6 +400,7 @@
       var fillsEl = document.getElementById("fills");
       var helpEl = document.getElementById("help");
       var diagEl = document.getElementById("diag");
+      var countInput = document.getElementById("count");
 
       var popunderLoaded = false;
       var reloadTimer = null;
@@ -384,6 +411,7 @@
       var slots = [];
       var activeMounts = 0;
       var waitQueue = [];
+      var concurrency = 8;
 
       function setStatus(msg, kind) {
         statusEl.textContent = msg || "";
@@ -399,6 +427,33 @@
         return n;
       }
 
+      function concurrencyFor(n) {
+        if (n <= 8) return Math.max(4, n);
+        if (n <= 24) return 8;
+        if (n <= 48) return 12;
+        return 16;
+      }
+
+      function syncPresets(n) {
+        document.querySelectorAll(".preset").forEach(function (btn) {
+          btn.classList.toggle("on", parseInt(btn.getAttribute("data-n"), 10) === n);
+        });
+      }
+
+      function saveCount(n) {
+        try {
+          localStorage.setItem("steady-lab-count", String(n));
+        } catch (_) {}
+      }
+
+      function loadCount() {
+        try {
+          var v = parseInt(localStorage.getItem("steady-lab-count"), 10);
+          if (isFinite(v) && v >= 1 && v <= MAX_CARDS) return v;
+        } catch (_) {}
+        return 12;
+      }
+
       function runDiag() {
         var ctrl = typeof AbortController !== "undefined" ? new AbortController() : null;
         var t = setTimeout(function () {
@@ -411,7 +466,7 @@
         })
           .then(function () {
             clearTimeout(t);
-            diagEl.textContent = "ad network reachable · parallel mount · /testing/";
+            diagEl.textContent = "ad network reachable · parallel · /testing/";
             diagEl.className = "ok";
           })
           .catch(function () {
@@ -499,22 +554,6 @@
         );
       }
 
-      function nativeSrcdoc(cb) {
-        return (
-          "<!DOCTYPE html><html><head><meta charset=\"utf-8\" />" +
-          "<base href=\"" + location.origin + "/\" />" +
-          "<style>html,body{margin:0;padding:0;background:#fff;overflow:hidden;width:" +
-          W + "px;height:" + H + "px}" +
-          "#container-" + NATIVE_ID + "{width:" + W + "px;height:" + H +
-          "px;display:flex;align-items:center;justify-content:center;overflow:hidden}" +
-          "iframe,img{display:block;margin:0 auto;border:0;max-width:100%;max-height:100%}</style></head><body>" +
-          "<div id=\"container-" + NATIVE_ID + "\"></div>" +
-          "<script async data-cfasync=\"false\" src=\"" + NATIVE_SRC + "?cb=" +
-          encodeURIComponent(cb) + "\"><" + "/script>" +
-          "</body></html>"
-        );
-      }
-
       function findCreative(doc) {
         if (!doc) return null;
 
@@ -532,16 +571,10 @@
 
         if (hasPaintedImg(doc)) return { kind: "img" };
 
-        var box = doc.getElementById("container-" + NATIVE_ID);
-        if (box && (hasPaintedImg(box) || (box.children.length > 0 && box.offsetHeight >= 40))) {
-          return { kind: "native" };
-        }
-
         var frames = doc.querySelectorAll("iframe");
         for (var j = 0; j < frames.length; j++) {
           var f = frames[j];
           var src = (f.getAttribute("src") || f.src || "").trim();
-
           if (!src || src === "about:blank") {
             try {
               var nested = f.contentDocument;
@@ -587,7 +620,7 @@
       }
 
       function pumpQueue() {
-        while (activeMounts < CONCURRENCY && waitQueue.length) {
+        while (activeMounts < concurrency && waitQueue.length) {
           var slot = waitQueue.shift();
           if (!slot || slot.gen !== gen) continue;
           if (slot.filled || slot.mounting) continue;
@@ -673,8 +706,7 @@
         iframe.setAttribute("referrerpolicy", "no-referrer-when-downgrade");
         iframe.setAttribute("allow", "attribution-reporting");
         iframe.title = slot.kind + " " + (slot.index + 1);
-        var cb = Date.now() + "-" + slot.index + "-" + slot.attempts;
-        iframe.srcdoc = slot.kind === "native" ? nativeSrcdoc(cb) : bannerSrcdoc(cb);
+        iframe.srcdoc = bannerSrcdoc(Date.now() + "-" + slot.index + "-" + slot.attempts);
         host.appendChild(iframe);
         slot.iframe = iframe;
 
@@ -703,7 +735,7 @@
         var n = 0;
         slots.forEach(function (s) {
           if (s.kind === "popunder" || s.filled || s.mounting) return;
-          if (s.mountedAt && Date.now() - s.mountedAt < 1500) return;
+          if (s.mountedAt && Date.now() - s.mountedAt < 1200) return;
           enqueueMount(s);
           n += 1;
         });
@@ -743,7 +775,6 @@
 
       function kindMeta(kind) {
         if (kind === "smart") return { label: "smartlink", tag: "smart", tagText: "link" };
-        if (kind === "native") return { label: "native", tag: "native", tagText: "native" };
         return { label: "banner", tag: "", tagText: "ad" };
       }
 
@@ -774,7 +805,6 @@
 
         var body = document.createElement("div");
         body.className = "card-body";
-
         card.appendChild(head);
         card.appendChild(body);
         grid.appendChild(card);
@@ -802,8 +832,11 @@
         var my = ++gen;
         waitQueue = [];
         activeMounts = 0;
-        var n = num("count", 1, 24, 12);
-        var wantNative = document.getElementById("t-native").checked;
+        var n = num("count", 1, MAX_CARDS, 12);
+        concurrency = concurrencyFor(n);
+        saveCount(n);
+        syncPresets(n);
+
         var wantSmart = document.getElementById("t-smart").checked;
         var wantPop = document.getElementById("t-popunder").checked;
 
@@ -815,15 +848,11 @@
         var plan = [];
         while (plan.length < n) {
           var i = plan.length;
-          if (wantNative && i > 0 && i % 5 === 4) {
-            plan.push({ kind: "native", index: i });
-            continue;
-          }
           if (wantSmart && i > 0 && i % 6 === 5) {
             plan.push({ kind: "smart", index: i });
-            continue;
+          } else {
+            plan.push({ kind: "banner", index: i });
           }
-          plan.push({ kind: "banner", index: i });
         }
 
         plan.forEach(function (spec) {
@@ -858,10 +887,23 @@
 
         paintFills();
         meta.innerHTML =
-          "<strong>" + location.host + "</strong> /testing/ · <strong>" + n + "</strong> cards";
+          "<strong>" +
+          location.host +
+          "</strong> /testing/ · <strong>" +
+          n +
+          "</strong> cards · ×" +
+          concurrency;
         setStatus("loading wall…", "warn");
         scheduleLoops();
       }
+
+      document.getElementById("presets").addEventListener("click", function (e) {
+        var btn = e.target.closest(".preset");
+        if (!btn) return;
+        var n = parseInt(btn.getAttribute("data-n"), 10);
+        countInput.value = String(n);
+        render();
+      });
 
       document.getElementById("btn-refresh").addEventListener("click", function () {
         popunderLoaded = false;
@@ -880,7 +922,7 @@
       ["reload", "retry"].forEach(function (id) {
         document.getElementById(id).addEventListener("change", scheduleLoops);
       });
-      ["count", "t-native", "t-smart", "t-popunder"].forEach(function (id) {
+      ["count", "t-smart", "t-popunder"].forEach(function (id) {
         document.getElementById(id).addEventListener("change", render);
       });
 
@@ -898,9 +940,11 @@
         }
       })();
 
+      countInput.value = String(loadCount());
       runDiag();
       render();
     })();
   </script>
 </body>
 </html>
+<!-- pages-fast 1785255490 -->
