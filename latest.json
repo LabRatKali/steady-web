@@ -1,9 +1,9 @@
 {
-  "version": "2.21.10",
-  "versionCode": 157,
+  "version": "2.21.11",
+  "versionCode": 158,
   "apkUrl": "https://github.com/LabRatKali/steady-web/releases/latest/download/steady-latest.apk",
-  "sha256": "eca3519afad757877f3a5a2464cf09d20fc4edf1b1c80978da0a4a489c797db3",
-  "sizeBytes": 53387298,
-  "notes": "# Steady 2.21.10\n\n## What's new\n- **Fix stuck update on 2.21.8** \u2014 Check for updates no longer treats `steady-2.21.9.apk` as versionCode `21` and wrongly says you're up to date.\n- Update check prefers the public `latest.json` (real versionCode + download URL).\n- Download keeps the public APK URL from that channel instead of forcing a missing versioned filename.\n\n## For parents\nIf you were stuck on 2.21.8 seeing 2.21.9 notes: open Updates \u2192 Download and install again. You can install this build directly from the website if needed.",
+  "sha256": "0374ff00303c27dba8504dde7662d58dfcb0f2f9b007303dba820eed4a34536e",
+  "sizeBytes": 53387426,
+  "notes": "# Steady 2.21.11\n\n## What's new\n- **Day off opens the web** \u2014 sunny day off keeps inappropriate sites blocked (adult / gambling / dating / malware) but no longer locks normal browsing behind the age filter.\n- **Always-allow covers all subdomains** \u2014 approving `www.news.com` allows `amp.news.com` and every other subdomain automatically.\n- **Steady sites stay allowed** \u2014 `labratkali.github.io` and `*.less-phone.workers.dev` (including study/steady) are on the allow list.\n\n## For parents\nTake a day off again after updating if the VPN still felt locked from an earlier session.",
   "assetId": 0
 }
