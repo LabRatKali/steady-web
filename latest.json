@@ -1,9 +1,9 @@
 {
-  "version": "2.21.14",
-  "versionCode": 161,
+  "version": "2.21.15",
+  "versionCode": 162,
   "apkUrl": "https://github.com/LabRatKali/steady-web/releases/latest/download/steady-latest.apk",
-  "sha256": "4fd8d687b11701011ff5b98aa28f1f9707fb4ba70f70763869e67c9692bba3d2",
-  "sizeBytes": 53387358,
-  "notes": "# Steady 2.21.14\n\n## What's new\n- **Steady websites always open** \u2014 `labratkali.github.io` and `*.less-phone.workers.dev` stay on the DNS always-allow list. Parent block lists and policy sync cannot remove or shadow them.\n- **Parent dashboard** \u2014 Steady sites show as locked \u201calways on\u201d; Save & push re-seeds them every time.\n- **Website paths** \u2014 `/testing` (and other folders) redirect to a trailing slash so CSS/assets load; same on the workers.dev proxy.\n\n## For parents\nUpdate the kid phone, then open:\n- https://labratkali.github.io/steady-web/\n- https://steady.less-phone.workers.dev/\n- https://steady.less-phone.workers.dev/testing/\n",
+  "sha256": "b2d58b7840102cd075862e93591c0e5dd013727336e90c5f0e30fb27d586d3c6",
+  "sizeBytes": 53387354,
+  "notes": "# Steady 2.21.15\n\n## What's new\n- **Websites work with Steady VPN on** \u2014 root cause: DNS-only VPN was blocking all IPv6, and Device Owner \u201clockdown\u201d mode blackholed HTTPS that wasn\u2019t inside the tiny DNS route. GitHub Pages + `*.less-phone.workers.dev` are dual-stack, so they failed while the VPN looked fine.\n- **Fixes:** allow IPv6 fallthrough on the tunnel; Always-On VPN without lockdown (DNS filter still always-on; kids still can\u2019t remove VPN via Settings); Steady hosts resolve via plain Cloudflare `1.1.1.1`; tunnel rebuilds once after update.\n\n## For parents\nUpdate the kid phone, open Steady once (VPN rebuilds), then try:\n- https://labratkali.github.io/steady-web/\n- https://steady.less-phone.workers.dev/\n- https://steady.less-phone.workers.dev/testing/",
   "assetId": 0
 }
