@@ -446,7 +446,7 @@
 
   <section id="help">
     <p><strong>/testing/</strong> — every display unit is a fitted <strong>300×250</strong> (your working Adsterra banner zone).</p>
-    <p>Default wall is <strong>24</strong> cards; when the reload timer hits, the <strong>whole wall</strong> remounts. Empty slots also retry in between.</p>
+    <p>Default wall is <strong>24</strong> cards; when the reload timer hits, the page does a <strong>hard reload</strong> (every card, even filled ones). Empty slots also retry in between.</p>
     <p>Works in system <strong>Chrome, Edge, Firefox, Safari</strong> and on phones — not inside Cursor’s IDE browser (it blocks ad hosts). Each card reports fill from inside the unit so Safari/Firefox don’t get stuck on “loading”.</p>
     <p><strong>Smartlink</strong> = same banner + tap. <strong>Popunder</strong> = arm only. If creatives stay blank, run <code>scripts/fix_adsterra_dns.ps1</code> as admin.</p>
   </section>
@@ -472,7 +472,7 @@
       })();
       var WORKERS_LAB = "https://steady.less-phone.workers.dev/testing/";
       var PAGES_LAB = "https://labratkali.github.io/steady-web/testing/";
-      var LAB_BUILD = "2026-07-28h";
+      var LAB_BUILD = "2026-07-28i";
 
       var W = 300;
       var H = 250;
@@ -1194,11 +1194,12 @@
         paintTick();
         countdownTimer = setInterval(paintTick, 250);
         reloadTimer = setTimeout(function () {
-          // Full wall remount when the cycle runs out (not empties-only).
-          popunderLoaded = false;
-          var old = document.getElementById("steady-lab-popunder");
-          if (old) old.remove();
-          render();
+          // Hard full-page reload every cycle — including when every slot is filled.
+          try {
+            location.reload();
+          } catch (_) {
+            location.href = location.href;
+          }
         }, reloadSecs * 1000);
       }
 
