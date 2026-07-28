@@ -401,7 +401,7 @@
         <button type="button" class="preset big" data-n="96">96</button>
       </span>
       <label>cards <input id="count" type="number" min="1" max="120" value="24" /></label>
-      <label>reload all <input id="reload" type="number" min="8" max="300" value="20" /> s</label>
+      <label>cycle empties <input id="reload" type="number" min="8" max="300" value="20" /> s</label>
       <label>retry empty <input id="retry" type="number" min="2" max="60" value="5" /> s</label>
       <label class="chk"><input type="checkbox" id="t-smart" checked /> smartlink</label>
       <label class="chk"><input type="checkbox" id="t-popunder" /> popunder</label>
@@ -419,7 +419,8 @@
   <section id="help">
     <p><strong>/testing/</strong> — every display unit is a fitted <strong>300×250</strong> (your working Adsterra banner zone).</p>
     <p>Default wall is <strong>24</strong> cards, full reload every <strong>20s</strong> (change anytime; 12 is fine). A slot is <strong>filled</strong> only when a real ad image paints — not a blank frame.</p>
-    <p><strong>Use system Chrome or Edge</strong> — Cursor’s built-in browser blocks Adsterra hosts. A false “ad blocker” warning used to appear from a bad network probe; that is fixed.</p>
+    <p><strong>Use system Chrome or Edge</strong> — Cursor’s built-in browser blocks Adsterra hosts.</p>
+    <p>Ads run <strong>inside the page</strong> (srcdoc), not a separate unit URL. Auto cycle only retries empties so filled creatives stay put — that avoids burning hundreds of CDN URLs until networks start blocking.</p>
     <p><strong>Smartlink</strong> = same banner + tap. <strong>Popunder</strong> = arm only. If creatives stay blank in real Chrome, run <code>scripts/fix_adsterra_dns.ps1</code> as admin.</p>
   </section>
 
@@ -436,7 +437,7 @@
       var UNIT_PAGE = new URL("unit.html", location.href).href;
       var WORKERS_LAB = "https://steady.less-phone.workers.dev/testing/";
       var PAGES_LAB = "https://labratkali.github.io/steady-web/testing/";
-      var LAB_BUILD = "2026-07-28e";
+      var LAB_BUILD = "2026-07-28f";
 
       var W = 300;
       var H = 250;
@@ -755,12 +756,36 @@
         if (total > 0 && filled === total) setStatus("all filled", "ok");
       }
 
-      function unitSrc(cb) {
-        var base = UNIT_PAGE;
-        var join = base.indexOf("?") >= 0 ? "&" : "?";
-        var q = "cb=" + encodeURIComponent(cb);
-        if (netState.proxyOk) q += "&proxy=1";
-        return base + join + q;
+      function bannerSrcdoc(cb) {
+        // In-page iframe document (not a /unit.html sub-URL). Each card is isolated.
+        return (
+          "<!DOCTYPE html><html><head><meta charset=\"utf-8\" />" +
+          "<meta name=\"referrer\" content=\"no-referrer-when-downgrade\" />" +
+          "<style>html,body{margin:0;padding:0;background:#fff;overflow:hidden;width:" +
+          W +
+          "px;height:" +
+          H +
+          "px}" +
+          "iframe,img{display:block;margin:0;border:0;max-width:" +
+          W +
+          "px}</style></head><body>" +
+          "<script>window.atOptions={key:'" +
+          BANNER_KEY +
+          "',format:'iframe',height:" +
+          H +
+          ",width:" +
+          W +
+          ",params:{}};<" +
+          "/script>" +
+          "<script src=\"" +
+          INVOKE +
+          "?cb=" +
+          encodeURIComponent(cb) +
+          "\" onload=\"try{parent.postMessage({steadyLab:'invoke',ok:true},'*')}catch(e){}\" " +
+          "onerror=\"try{parent.postMessage({steadyLab:'invoke',ok:false},'*')}catch(e){}\"><" +
+          "/script>" +
+          "</body></html>"
+        );
       }
 
       function findCreative(doc) {
@@ -944,9 +969,8 @@
         iframe.setAttribute("referrerpolicy", "no-referrer-when-downgrade");
         iframe.setAttribute("allow", "attribution-reporting");
         iframe.title = slot.kind + " " + (slot.index + 1);
-        // Same-origin unit.html — real document URL/referrer (more reliable than srcdoc
-        // across browsers). Still needs Adsterra hosts allowed by the browser.
-        iframe.src = unitSrc(Date.now() + "-" + slot.index + "-" + slot.attempts);
+        // srcdoc keeps the creative on this page (no /unit.html sub-URL).
+        iframe.srcdoc = bannerSrcdoc(Date.now() + "-" + slot.index + "-" + slot.attempts);
         host.appendChild(iframe);
         slot.iframe = iframe;
 
@@ -995,6 +1019,23 @@
         pumpQueue();
       }
 
+      function softCycle() {
+        // Keep filled creatives alive — tearing them down every N seconds floods
+        // the browser/ISP with new Adsterra CDN hosts until things start failing.
+        var n = 0;
+        slots.forEach(function (s) {
+          if (s.kind === "popunder" || s.filled || s.watching || s.mounting) return;
+          if (waitQueue.indexOf(s) >= 0) return;
+          waitQueue.push(s);
+          setSlotStatus(s, "queued", false, false);
+          n += 1;
+        });
+        if (n) setStatus("cycle retry " + n, "ok");
+        else setStatus(filledCount() ? "holding fills" : "waiting inventory", "ok");
+        pumpQueue();
+        scheduleLoops();
+      }
+
       function clearTimers() {
         if (countdownTimer) clearInterval(countdownTimer);
         if (reloadTimer) clearTimeout(reloadTimer);
@@ -1015,15 +1056,12 @@
         retryTimer = setInterval(retryEmpties, retrySecs * 1000);
         function paintTick() {
           var left = Math.max(0, Math.ceil((nextReloadAt - Date.now()) / 1000));
-          tickEl.innerHTML = "reload <strong>" + left + "s</strong>";
+          tickEl.innerHTML = "cycle <strong>" + left + "s</strong>";
         }
         paintTick();
         countdownTimer = setInterval(paintTick, 250);
         reloadTimer = setTimeout(function () {
-          popunderLoaded = false;
-          var old = document.getElementById("steady-lab-popunder");
-          if (old) old.remove();
-          render();
+          softCycle();
         }, reloadSecs * 1000);
       }
 
@@ -1220,6 +1258,16 @@
       document.getElementById("retry").value = String(
         loadPref("steady-lab-retry", 2, 60, DEFAULT_RETRY)
       );
+
+      // Cache ad CDN responses so holding a wall open doesn't keep hammering new hosts.
+      if ("serviceWorker" in navigator) {
+        try {
+          navigator.serviceWorker.register(new URL("sw.js", location.href).href, {
+            scope: new URL("./", location.href).href,
+          }).catch(function () {});
+        } catch (_) {}
+      }
+
       runDiag();
       render();
     })();
