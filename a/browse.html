@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex,nofollow" />
+  <title>browse</title>
+  <style>
+    html, body { margin: 0; height: 100%; background: #fff; }
+    iframe { border: 0; width: 100%; height: 100%; display: block; }
+    .fail {
+      font: 14px/1.4 system-ui, sans-serif;
+      color: #333;
+      padding: 1.5rem;
+      max-width: 36rem;
+    }
+  </style>
+</head>
+<body>
+  <script>
+    (function () {
+      var q = new URLSearchParams(location.search);
+      var u = q.get("u") || "";
+      try { u = decodeURIComponent(u); } catch (_) {}
+      if (!/^https?:\/\//i.test(u)) {
+        document.body.innerHTML = '<div class="fail">No URL</div>';
+        return;
+      }
+      var f = document.createElement("iframe");
+      f.src = u;
+      f.title = "offer";
+      f.referrerPolicy = "no-referrer-when-downgrade";
+      f.addEventListener("load", function () {
+        // If offer blocks embedding, frame stays blank — parent shows tip.
+        try { parent.postMessage({ type: "steady-browse-loaded", url: u }, "*"); } catch (_) {}
+      });
+      document.body.appendChild(f);
+    })();
+  </script>
+</body>
+</html>
