@@ -419,7 +419,7 @@
   <section id="help">
     <p><strong>/testing/</strong> — every display unit is a fitted <strong>300×250</strong> (your working Adsterra banner zone).</p>
     <p>Default wall is <strong>24</strong> cards, full reload every <strong>20s</strong> (change anytime; 12 is fine). A slot is <strong>filled</strong> only when a real ad image paints — not a blank frame.</p>
-    <p><strong>Use system Chrome or Edge</strong> — Cursor’s built-in browser, Brave shields, and most ad blockers block Adsterra hosts, so the wall stays empty there even when the lab itself is fine.</p>
+    <p><strong>Use system Chrome or Edge</strong> — Cursor’s built-in browser blocks Adsterra hosts. A false “ad blocker” warning used to appear from a bad network probe; that is fixed.</p>
     <p><strong>Smartlink</strong> = same banner + tap. <strong>Popunder</strong> = arm only. If creatives stay blank in real Chrome, run <code>scripts/fix_adsterra_dns.ps1</code> as admin.</p>
   </section>
 
@@ -436,7 +436,7 @@
       var UNIT_PAGE = new URL("unit.html", location.href).href;
       var WORKERS_LAB = "https://steady.less-phone.workers.dev/testing/";
       var PAGES_LAB = "https://labratkali.github.io/steady-web/testing/";
-      var LAB_BUILD = "2026-07-28d";
+      var LAB_BUILD = "2026-07-28e";
 
       var W = 300;
       var H = 250;
@@ -471,7 +471,13 @@
       var startInflight = 0;
       var waitQueue = [];
       var concurrency = 8;
-      var netState = { scriptOk: null, imageOk: null, proxyOk: null, embedded: false };
+      var netState = {
+        scriptOk: null,
+        imageOk: null,
+        proxyOk: null,
+        embedded: false,
+        invokeFailedConfirmed: false,
+      };
 
       function setStatus(msg, kind) {
         statusEl.textContent = msg || "";
@@ -582,15 +588,15 @@
         parts.push("build " + LAB_BUILD);
         if (netState.embedded) parts.push("Cursor/IDE browser");
         if (netState.scriptOk === true) parts.push("invoke ok");
-        if (netState.scriptOk === false) parts.push("invoke BLOCKED");
+        if (netState.scriptOk === false) parts.push("invoke failed");
         if (netState.imageOk === true) parts.push("images ok");
-        if (netState.imageOk === false) parts.push("images BLOCKED");
+        if (netState.imageOk === false) parts.push("images failed");
         if (netState.proxyOk) parts.push("proxy on");
         diagEl.textContent = parts.join(" · ");
         diagEl.className =
-          netState.scriptOk === false || netState.imageOk === false || netState.embedded
+          netState.embedded || (netState.scriptOk === false && filledCount() === 0)
             ? "bad"
-            : netState.scriptOk
+            : filledCount() > 0 || netState.scriptOk
               ? "ok"
               : "";
       }
@@ -625,20 +631,15 @@
           );
           return;
         }
-        if (netState.scriptOk === false) {
+        // Only after unit.html reports a real script onerror (not Performance status 0 —
+        // cross-origin scripts often show status 0 even when they load fine).
+        if (netState.scriptOk === false && netState.invokeFailedConfirmed) {
           showEnvBanner(
-            "<strong>Ad script blocked</strong> — disable your ad blocker / Brave shields / tracking protection for this site, then tap <strong>reload all</strong>. " +
-              "Also try the registered domain: " +
-              '<a href="' +
+            "<strong>Ad script failed to load</strong> — usually DNS/network, not an ad blocker. " +
+              "Try <a href=\"" +
               WORKERS_LAB +
-              '" target="_blank" rel="noopener">steady.less-phone.workers.dev/testing/</a>',
-            true
-          );
-          return;
-        }
-        if (netState.imageOk === false && netState.scriptOk === true) {
-          showEnvBanner(
-            "<strong>Ad images blocked or DNS sinkholed</strong> — run <code>scripts/fix_adsterra_dns.ps1</code> as admin, or turn off Secure DNS briefly and retry.",
+              "\" target=\"_blank\" rel=\"noopener\">workers.dev/testing/</a>, " +
+              "or run <code>scripts/fix_adsterra_dns.ps1</code> as admin, then tap <strong>reload all</strong>.",
             true
           );
           return;
@@ -648,6 +649,7 @@
 
       function runDiag() {
         netState.embedded = isEmbeddedBrowser();
+        netState.invokeFailedConfirmed = false;
         paintDiag();
         updateEnvBannerFromState();
 
@@ -670,59 +672,24 @@
             });
         }
 
-        // Real script load — no-cors fetch lies and always "succeeds".
-        var s = document.createElement("script");
-        s.async = true;
-        s.setAttribute("data-cfasync", "false");
-        s.src = invokeUrl() + (invokeUrl().indexOf("?") >= 0 ? "&" : "?") + "diag=" + Date.now();
-        var done = false;
-        function finishScript(ok) {
-          if (done) return;
-          done = true;
-          netState.scriptOk = ok;
-          try {
-            s.remove();
-          } catch (_) {}
+        // unit.html posts real onload/onerror — do NOT use Performance responseStatus
+        // (cross-origin scripts report 0 even when healthy) or a parent-page script probe.
+        window.addEventListener("message", function (ev) {
+          var d = ev && ev.data;
+          if (!d || d.steadyLab !== "invoke") return;
+          if (d.ok) {
+            netState.scriptOk = true;
+            netState.invokeFailedConfirmed = false;
+          } else {
+            // Only treat as failed if nothing has filled yet.
+            if (filledCount() === 0) {
+              netState.scriptOk = false;
+              netState.invokeFailedConfirmed = true;
+            }
+          }
           paintDiag();
           updateEnvBannerFromState();
-        }
-        s.onload = function () {
-          finishScript(true);
-        };
-        s.onerror = function () {
-          finishScript(false);
-        };
-        document.head.appendChild(s);
-        // Do not timeout→false: invoke.js is obfuscated and onload can be flaky;
-        // unit iframes are the source of truth. Only onerror means blocked.
-        setTimeout(function () {
-          if (netState.scriptOk === null && filledCount() > 0) finishScript(true);
-        }, 5000);
-
-        // Watch resource timings — status 0 means blocked (Cursor/adblock), not a soft 404.
-        function scanResources() {
-          try {
-            var entries = performance.getEntriesByType("resource") || [];
-            for (var i = 0; i < entries.length; i++) {
-              var e = entries[i];
-              var name = e.name || "";
-              if (!/highperformance|storageimagedisplay|effectivecpm/i.test(name)) continue;
-              if (typeof e.responseStatus !== "number") continue;
-              if (e.responseStatus === 0) {
-                if (filledCount() > 0) continue;
-                if (/highperformance|effectivecpm|invoke/i.test(name)) netState.scriptOk = false;
-                if (/storageimagedisplay/i.test(name)) netState.imageOk = false;
-              } else if (e.responseStatus > 0) {
-                if (/storageimagedisplay/i.test(name)) netState.imageOk = true;
-                if (/highperformance|invoke/i.test(name)) netState.scriptOk = true;
-              }
-            }
-            paintDiag();
-            updateEnvBannerFromState();
-          } catch (_) {}
-        }
-        setInterval(scanResources, 1500);
-        setTimeout(scanResources, 2500);
+        });
       }
 
       function ensurePopunder(on) {
