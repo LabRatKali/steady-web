@@ -1,9 +1,9 @@
 {
   "version": "2.21.9",
   "versionCode": 156,
-  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.21.9/steady-2.21.9.apk",
+  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/latest/download/steady-latest.apk",
   "sha256": "caaaf81f6fd010ad3ba47e644a6949c7e320da7b5a89d2c7517cdeec86df73ea",
   "sizeBytes": 53387298,
-  "notes": "# Steady 2.21.9\n\n## What's new\n- **Full translations** \u2014 Hebrew, Yiddish, Spanish, and Russian string tables completed (~550 missing keys each).\n- **Crash reporting** \u2014 Optional Sentry SDK via `keys/sentry.json`; GitHub encrypted sync remains the default path.\n- **Baseline Profiles** \u2014 Startup profile module + ProfileInstaller for faster cold launch.\n- **Accessibility tests** \u2014 Unit tests for package guards, settings danger detection, and in-app browser blocking.\n\n## For parents\nNo workflow changes \u2014 same home screen, approvals, and protection. Language picker now covers the full app UI in all four locales.",
+  "notes": "# Steady 2.21.9\n\n## What's new\n- **Full translations** — Hebrew, Yiddish, Spanish, and Russian string tables completed (~550 missing keys each).\n- **Crash reporting** — Optional Sentry SDK via `keys/sentry.json`; GitHub encrypted sync remains the default path.\n- **Baseline Profiles** — Startup profile module + ProfileInstaller for faster cold launch.\n- **Accessibility tests** — Unit tests for package guards, settings danger detection, and in-app browser blocking.\n\n## For parents\nNo workflow changes — same home screen, approvals, and protection. Language picker now covers the full app UI in all four locales.\n\n## Update note\nIf Check for updates showed 2.21.9 notes but said you were already on 2.21.8, tap Download and install again — the package channel is fixed.",
   "assetId": 0
 }
