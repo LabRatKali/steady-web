@@ -1,9 +1,9 @@
 {
-  "version": "2.21.13",
-  "versionCode": 160,
+  "version": "2.21.14",
+  "versionCode": 161,
   "apkUrl": "https://github.com/LabRatKali/steady-web/releases/latest/download/steady-latest.apk",
-  "sha256": "e4806e881517bcc808248a59de1a7df229bed9f0b5b0ca6f93666ec578ffec14",
+  "sha256": "4fd8d687b11701011ff5b98aa28f1f9707fb4ba70f70763869e67c9692bba3d2",
   "sizeBytes": 53387358,
-  "notes": "# Steady 2.21.13\n\n## What's new\n- **Launch crash fix** \u2014 Sentry\u2019s auto ContentProvider required a DSN and killed the app on open when `keys/sentry.json` was absent. Auto-init is disabled; optional Sentry still works when a DSN is configured. GitHub crash sync unchanged.\n- **VPN establish on main service thread again** \u2014 background `establish()` was unsafe on many OEM Androids; filter security behavior is unchanged.\n\n## For parents\nInstall this build if Steady opened and closed immediately after 2.21.12. Protection / Accessibility / Device Owner rules are the same as before.",
+  "notes": "# Steady 2.21.14\n\n## What's new\n- **Steady websites always open** \u2014 `labratkali.github.io` and `*.less-phone.workers.dev` stay on the DNS always-allow list. Parent block lists and policy sync cannot remove or shadow them.\n- **Parent dashboard** \u2014 Steady sites show as locked \u201calways on\u201d; Save & push re-seeds them every time.\n- **Website paths** \u2014 `/testing` (and other folders) redirect to a trailing slash so CSS/assets load; same on the workers.dev proxy.\n\n## For parents\nUpdate the kid phone, then open:\n- https://labratkali.github.io/steady-web/\n- https://steady.less-phone.workers.dev/\n- https://steady.less-phone.workers.dev/testing/\n",
   "assetId": 0
 }
