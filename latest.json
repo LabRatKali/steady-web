@@ -1,9 +1,9 @@
 {
-  "version": "2.21.8",
-  "versionCode": 155,
-  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.21.8/steady-2.21.8.apk",
-  "sha256": "1a27d7adacadbcede664f190f201dbdd7faac7f972c3f039bdb288f9157ec955",
-  "sizeBytes": 48132810,
-  "notes": "# Steady 2.21.8\n\n- Home: League and Usage open as their own apps (separate Recents cards) from grid icons only \u2014 removed from the overflow menu\n- Home menu trimmed; SOS Call and Quick Focus promoted to always-visible quick actions\n- Removed third-party AppWidget hosting from Steady Home (native glance cards only)\n- App updates use the public website channel only \u2014 no embedded GitHub token for update checks/downloads\n- Stronger PIN hashing (PBKDF2 600k) with auto-upgrade of legacy/weaker hashes on successful unlock\n- Dashboard no longer injects third-party ad scripts next to signed-in session storage\n- Crash upload path uses the resolved sync token and real app version",
+  "version": "2.21.9",
+  "versionCode": 156,
+  "apkUrl": "https://github.com/LabRatKali/steady-web/releases/download/v2.21.9/steady-2.21.9.apk",
+  "sha256": "caaaf81f6fd010ad3ba47e644a6949c7e320da7b5a89d2c7517cdeec86df73ea",
+  "sizeBytes": 53387298,
+  "notes": "# Steady 2.21.9\n\n## What's new\n- **Full translations** \u2014 Hebrew, Yiddish, Spanish, and Russian string tables completed (~550 missing keys each).\n- **Crash reporting** \u2014 Optional Sentry SDK via `keys/sentry.json`; GitHub encrypted sync remains the default path.\n- **Baseline Profiles** \u2014 Startup profile module + ProfileInstaller for faster cold launch.\n- **Accessibility tests** \u2014 Unit tests for package guards, settings danger detection, and in-app browser blocking.\n\n## For parents\nNo workflow changes \u2014 same home screen, approvals, and protection. Language picker now covers the full app UI in all four locales.",
   "assetId": 0
 }
