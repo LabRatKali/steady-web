@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="robots" content="noindex, nofollow, noarchive" />
+  <meta name="googlebot" content="noindex, nofollow" />
+  <title>lab</title>
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml" />
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0a0f0d;
+      --panel: #121a16;
+      --line: rgba(244, 248, 245, 0.14);
+      --text: #e8f0eb;
+      --muted: #8fa398;
+      --accent: #3dcf8a;
+      --danger: #e8a0a0;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font: 13px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    body.ads-only .lab-chrome { display: none !important; }
+    .lab-chrome {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      background: rgba(10, 15, 13, 0.96);
+      border-bottom: 1px solid var(--line);
+      padding: 0.7rem 1rem 0.85rem;
+      backdrop-filter: blur(10px);
+    }
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem 0.75rem;
+      align-items: center;
+      margin: 0.3rem 0;
+    }
+    label.chk {
+      display: inline-flex;
+      gap: 0.3rem;
+      align-items: center;
+      color: var(--muted);
+      cursor: pointer;
+      user-select: none;
+    }
+    label.chk input { accent-color: var(--accent); }
+    input[type="number"] {
+      width: 3.6rem;
+      background: var(--panel);
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 0.3rem 0.4rem;
+      font: inherit;
+    }
+    button {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--text);
+      border-radius: 6px;
+      padding: 0.35rem 0.65rem;
+      font: inherit;
+      cursor: pointer;
+    }
+    button.primary {
+      background: var(--accent);
+      color: #042316;
+      border-color: transparent;
+      font-weight: 700;
+    }
+    #meta, #status, #tick { color: var(--muted); }
+    #meta strong, #tick strong { color: var(--text); font-weight: 600; }
+    #status.ok { color: var(--accent); }
+    #status.err { color: var(--danger); }
+    .note {
+      color: var(--muted);
+      font-size: 11px;
+      max-width: 62rem;
+      margin: 0.25rem 0 0;
+    }
+    #grid {
+      display: grid;
+      gap: 1rem;
+      padding: 1rem;
+      grid-template-columns: repeat(12, 1fr);
+      align-items: start;
+    }
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--panel);
+      padding: 0.65rem;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      grid-column: span 3;
+      min-height: 200px;
+    }
+    .card.size-300x250 { grid-column: span 3; min-height: 310px; }
+    .card.size-336x280 { grid-column: span 3; min-height: 340px; }
+    .card.size-320x50 { grid-column: span 3; min-height: 120px; }
+    .card.size-468x60 { grid-column: span 4; min-height: 130px; }
+    .card.size-728x90 { grid-column: span 6; min-height: 160px; }
+    .card.size-160x600 { grid-column: span 2; min-height: 640px; }
+    .card.size-native { grid-column: span 4; min-height: 360px; }
+    .card.size-reward { grid-column: span 3; min-height: 220px; }
+    .card.size-smart { grid-column: span 3; min-height: 140px; }
+    .card.size-pop { grid-column: span 3; min-height: 140px; }
+    @media (max-width: 1100px) {
+      .card, .card.size-300x250, .card.size-336x280, .card.size-320x50,
+      .card.size-468x60, .card.size-728x90, .card.size-160x600,
+      .card.size-native, .card.size-reward, .card.size-smart, .card.size-pop {
+        grid-column: span 6;
+      }
+    }
+    @media (max-width: 700px) {
+      .card, .card.size-300x250, .card.size-336x280, .card.size-320x50,
+      .card.size-468x60, .card.size-728x90, .card.size-160x600,
+      .card.size-native, .card.size-reward, .card.size-smart, .card.size-pop {
+        grid-column: span 12;
+      }
+    }
+    .card-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .card-head b { color: var(--text); font-weight: 600; }
+    .card-body {
+      flex: 1;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      overflow: auto;
+      position: relative;
+      background: rgba(0, 0, 0, 0.18);
+      border-radius: 8px;
+      padding: 0.5rem;
+      min-height: 80px;
+    }
+    .card-body iframe {
+      max-width: 100% !important;
+      margin: 0 auto !important;
+    }
+    .smartlink {
+      display: inline-block;
+      padding: 0.85rem 1.1rem;
+      border-radius: 10px;
+      background: #1b2a22;
+      color: var(--accent);
+      text-decoration: none;
+      border: 1px solid rgba(61, 207, 138, 0.35);
+      font-size: 13px;
+    }
+    .muted { color: var(--muted); font-size: 12px; text-align: center; padding: 0.5rem; }
+  </style>
+  <script src="../js/runtime-config.js"></script>
+</head>
+<body>
+  <div class="lab-chrome">
+    <div class="row">
+      <span id="meta">…</span>
+      <span id="tick">next reload <strong>—</strong></span>
+      <span id="status"></span>
+    </div>
+    <div class="row">
+      <label>cards <input id="count" type="number" min="1" max="36" value="16" /></label>
+      <label>every <input id="secs" type="number" min="10" max="300" value="30" /> s</label>
+      <label class="chk"><input type="checkbox" id="t-banner" checked /> banners</label>
+      <label class="chk"><input type="checkbox" id="t-native" checked /> native</label>
+      <label class="chk"><input type="checkbox" id="t-reward" checked /> reward</label>
+      <label class="chk"><input type="checkbox" id="t-smartlink" checked /> smartlink</label>
+      <label class="chk"><input type="checkbox" id="t-popunder" checked /> popunder</label>
+      <label class="chk"><input type="checkbox" id="auto" checked /> auto reload</label>
+      <label class="chk"><input type="checkbox" id="ads-only" /> ads only</label>
+      <button type="button" class="primary" id="btn-refresh">reload now</button>
+      <button type="button" id="btn-clear">clear</button>
+    </div>
+    <p class="note">
+      Direct URL only. Ads mount in-page (no iframes). Multiple banner sizes from your Adsterra key + native + reward + smartlink.
+      If a card stays empty, inventory/fill is low for that size — reload or leave auto on.
+    </p>
+  </div>
+  <div id="grid" aria-live="polite"></div>
+
+  <script>
+    (function () {
+      var BANNER_KEY = "d737196962ef25449dcb66c5655248f1";
+      var NATIVE_ID = "aa9f63337d56fa208fd27e208e22774a";
+      var REWARD_SRC =
+        "https://pl30566396.effectivecpmnetwork.com/75/7d/b0/757db01b5a07eb68043c6fd140726fed.js";
+      var SMARTLINK =
+        "https://www.effectivecpmnetwork.com/s889n4i77?key=38aa37c91a94f34912a4a89f8b27799d";
+      var POPUNDER_SRC =
+        "https://pl30567774.effectivecpmnetwork.com/3c/91/ea/3c91ea5fe0936ca26b9cc5cebf036f9f.js";
+
+      // Several shapes so the lab looks like a real ad wall.
+      var BANNER_SIZES = [
+        { w: 300, h: 250, label: "300×250" },
+        { w: 336, h: 280, label: "336×280" },
+        { w: 320, h: 50, label: "320×50" },
+        { w: 468, h: 60, label: "468×60" },
+        { w: 728, h: 90, label: "728×90" },
+        { w: 160, h: 600, label: "160×600" },
+        { w: 300, h: 250, label: "300×250b" },
+        { w: 320, h: 100, label: "320×100" },
+      ];
+
+      var grid = document.getElementById("grid");
+      var statusEl = document.getElementById("status");
+      var meta = document.getElementById("meta");
+      var tickEl = document.getElementById("tick");
+      var popunderLoaded = false;
+      var nativeUsed = false;
+      var reloadTimer = null;
+      var countdownTimer = null;
+      var nextAt = 0;
+      var gen = 0;
+      var mountChain = Promise.resolve();
+
+      function setStatus(msg, kind) {
+        statusEl.textContent = msg || "";
+        statusEl.className = kind || "";
+      }
+
+      function makeCard(kind, index, sizeClass, detail) {
+        var card = document.createElement("article");
+        card.className = "card " + (sizeClass || "");
+        var head = document.createElement("div");
+        head.className = "card-head";
+        head.innerHTML =
+          "<span><b>" +
+          kind +
+          "</b> #" +
+          index +
+          (detail ? " · " + detail : "") +
+          "</span><span>live</span>";
+        var body = document.createElement("div");
+        body.className = "card-body";
+        card.appendChild(head);
+        card.appendChild(body);
+        return { card: card, body: body };
+      }
+
+      function loadScript(src, parent) {
+        return new Promise(function (resolve, reject) {
+          var s = document.createElement("script");
+          s.async = true;
+          s.setAttribute("data-cfasync", "false");
+          s.src = src + (src.indexOf("?") >= 0 ? "&" : "?") + "cb=" + Date.now() + Math.floor(Math.random() * 1e5);
+          s.onload = function () {
+            resolve();
+          };
+          s.onerror = function () {
+            reject(new Error("script fail"));
+          };
+          (parent || document.body).appendChild(s);
+        });
+      }
+
+      /** Adsterra banner: set atOptions then invoke.js next to the host. */
+      function mountBanner(host, width, height) {
+        return new Promise(function (resolve) {
+          try {
+            window.atOptions = {
+              key: BANNER_KEY,
+              format: "iframe",
+              height: height,
+              width: width,
+              params: {},
+            };
+            // Some invoke builds also read this alias.
+            window.atOptions = window.atOptions;
+            var holder = document.createElement("div");
+            holder.style.cssText =
+              "width:" + width + "px;max-width:100%;min-height:" + height + "px;margin:0 auto;overflow:hidden;";
+            host.appendChild(holder);
+            var s = document.createElement("script");
+            s.setAttribute("data-cfasync", "false");
+            s.src =
+              "https://www.highperformanceformat.com/" +
+              BANNER_KEY +
+              "/invoke.js?cb=" +
+              Date.now() +
+              Math.floor(Math.random() * 1e5);
+            s.onload = function () {
+              resolve(true);
+            };
+            s.onerror = function () {
+              holder.innerHTML = '<p class="muted">banner script error</p>';
+              resolve(false);
+            };
+            holder.appendChild(s);
+          } catch (e) {
+            host.innerHTML = '<p class="muted">banner error</p>';
+            resolve(false);
+          }
+        });
+      }
+
+      function mountNative(host) {
+        if (nativeUsed) {
+          host.innerHTML =
+            '<p class="muted">native zone already on page (one container id). Use banners for more cards.</p>';
+          return Promise.resolve(false);
+        }
+        nativeUsed = true;
+        var box = document.createElement("div");
+        box.id = "container-" + NATIVE_ID;
+        box.style.cssText = "min-height:280px;width:100%;";
+        host.appendChild(box);
+        return loadScript(
+          "https://pl30566397.effectivecpmnetwork.com/" + NATIVE_ID + "/invoke.js",
+          host
+        )
+          .then(function () {
+            return true;
+          })
+          .catch(function () {
+            host.innerHTML += '<p class="muted">native script error</p>';
+            return false;
+          });
+      }
+
+      function mountReward(host) {
+        var tip = document.createElement("p");
+        tip.className = "muted";
+        tip.textContent = "reward / social bar script…";
+        host.appendChild(tip);
+        return loadScript(REWARD_SRC, document.body)
+          .then(function () {
+            tip.textContent = "reward script loaded (UI may appear as overlay/bar)";
+            return true;
+          })
+          .catch(function () {
+            tip.textContent = "reward script error";
+            return false;
+          });
+      }
+
+      function ensurePopunder(on) {
+        var existing = document.getElementById("steady-lab-popunder");
+        if (!on) {
+          if (existing) existing.remove();
+          popunderLoaded = false;
+          return;
+        }
+        if (popunderLoaded && existing) return;
+        if (existing) existing.remove();
+        var s = document.createElement("script");
+        s.id = "steady-lab-popunder";
+        s.async = true;
+        s.setAttribute("data-cfasync", "false");
+        s.src = POPUNDER_SRC + "?cb=" + Date.now();
+        document.head.appendChild(s);
+        popunderLoaded = true;
+      }
+
+      function num(id, min, max, fallback) {
+        var n = parseInt(document.getElementById(id).value, 10);
+        if (!isFinite(n)) n = fallback;
+        if (n < min) n = min;
+        if (n > max) n = max;
+        document.getElementById(id).value = String(n);
+        return n;
+      }
+
+      function buildPlan(n) {
+        var plan = [];
+        var wantBanner = document.getElementById("t-banner").checked;
+        var wantNative = document.getElementById("t-native").checked;
+        var wantReward = document.getElementById("t-reward").checked;
+        var wantSmart = document.getElementById("t-smartlink").checked;
+        var types = [];
+        if (wantBanner) types.push("banner");
+        if (wantNative) types.push("native");
+        if (wantReward) types.push("reward");
+        if (wantSmart) types.push("smartlink");
+        if (!types.length) return plan;
+
+        var bi = 0;
+        var nativeCount = 0;
+        var rewardCount = 0;
+        var i = 0;
+        while (plan.length < n && i < n * 4) {
+          var t = types[i % types.length];
+          i++;
+          if (t === "banner") {
+            var sz = BANNER_SIZES[bi % BANNER_SIZES.length];
+            bi++;
+            plan.push({
+              kind: "banner",
+              sizeClass: "size-" + sz.w + "x" + sz.h,
+              detail: sz.label,
+              w: sz.w,
+              h: sz.h,
+            });
+          } else if (t === "native") {
+            if (nativeCount >= 1) continue;
+            nativeCount++;
+            plan.push({ kind: "native", sizeClass: "size-native", detail: "banner" });
+          } else if (t === "reward") {
+            if (rewardCount >= 2) continue;
+            rewardCount++;
+            plan.push({ kind: "reward", sizeClass: "size-reward", detail: "social" });
+          } else if (t === "smartlink") {
+            plan.push({ kind: "smartlink", sizeClass: "size-smart", detail: "link" });
+          }
+        }
+        // If native/reward capped early, fill rest with banners/smartlinks
+        while (plan.length < n) {
+          if (wantBanner) {
+            var sz2 = BANNER_SIZES[bi % BANNER_SIZES.length];
+            bi++;
+            plan.push({
+              kind: "banner",
+              sizeClass: "size-" + sz2.w + "x" + sz2.h,
+              detail: sz2.label,
+              w: sz2.w,
+              h: sz2.h,
+            });
+          } else if (wantSmart) {
+            plan.push({ kind: "smartlink", sizeClass: "size-smart", detail: "link" });
+          } else break;
+        }
+        return plan.slice(0, n);
+      }
+
+      function render() {
+        var my = ++gen;
+        nativeUsed = false;
+        var n = num("count", 1, 36, 16);
+        var wantPop = document.getElementById("t-popunder").checked;
+        var plan = buildPlan(n);
+
+        grid.innerHTML = "";
+        ensurePopunder(wantPop);
+        mountChain = Promise.resolve();
+
+        if (!plan.length && !wantPop) {
+          setStatus("pick at least one ad type", "err");
+          return;
+        }
+
+        var made = 0;
+        plan.forEach(function (item, idx) {
+          var c = makeCard(item.kind, idx + 1, item.sizeClass, item.detail);
+          grid.appendChild(c.card);
+          made++;
+
+          if (item.kind === "smartlink") {
+            var a = document.createElement("a");
+            a.className = "smartlink";
+            a.href = SMARTLINK;
+            a.target = "_blank";
+            a.rel = "noopener noreferrer sponsored";
+            a.textContent = "smartlink " + (idx + 1);
+            c.body.appendChild(a);
+            return;
+          }
+
+          if (item.kind === "banner") {
+            // Queue banner mounts so atOptions does not race between cards.
+            mountChain = mountChain.then(function () {
+              if (my !== gen) return;
+              return mountBanner(c.body, item.w, item.h).then(function () {
+                return new Promise(function (r) {
+                  setTimeout(r, 120);
+                });
+              });
+            });
+            return;
+          }
+
+          if (item.kind === "native") {
+            mountChain = mountChain.then(function () {
+              if (my !== gen) return;
+              return mountNative(c.body);
+            });
+            return;
+          }
+
+          if (item.kind === "reward") {
+            mountChain = mountChain.then(function () {
+              if (my !== gen) return;
+              return mountReward(c.body);
+            });
+          }
+        });
+
+        if (wantPop) {
+          var p = makeCard("popunder", 1, "size-pop", "1×");
+          p.body.innerHTML =
+            '<p class="muted">Popunder script in &lt;head&gt;. Click empty page area after load.</p>';
+          grid.appendChild(p.card);
+          made++;
+        }
+
+        mountChain.then(function () {
+          if (my !== gen) return;
+          setStatus(made + " cards mounted · " + new Date().toLocaleTimeString(), "ok");
+        });
+
+        setStatus(made + " cards mounting…", "ok");
+        scheduleNext();
+      }
+
+      function clearCountdown() {
+        if (countdownTimer) {
+          clearInterval(countdownTimer);
+          countdownTimer = null;
+        }
+        if (reloadTimer) {
+          clearTimeout(reloadTimer);
+          reloadTimer = null;
+        }
+      }
+
+      function scheduleNext() {
+        clearCountdown();
+        if (!document.getElementById("auto").checked) {
+          tickEl.innerHTML = "auto <strong>off</strong>";
+          return;
+        }
+        var secs = num("secs", 10, 300, 30);
+        nextAt = Date.now() + secs * 1000;
+        function paintTick() {
+          var left = Math.max(0, Math.ceil((nextAt - Date.now()) / 1000));
+          tickEl.innerHTML = "next reload <strong>" + left + "s</strong>";
+        }
+        paintTick();
+        countdownTimer = setInterval(paintTick, 250);
+        reloadTimer = setTimeout(function () {
+          popunderLoaded = false;
+          var old = document.getElementById("steady-lab-popunder");
+          if (old) old.remove();
+          render();
+        }, secs * 1000);
+      }
+
+      function paintMeta() {
+        meta.innerHTML =
+          "<strong>" +
+          location.host +
+          "</strong> " +
+          location.pathname +
+          " · adsterra";
+      }
+
+      document.getElementById("btn-refresh").addEventListener("click", function () {
+        popunderLoaded = false;
+        var old = document.getElementById("steady-lab-popunder");
+        if (old) old.remove();
+        render();
+      });
+      document.getElementById("btn-clear").addEventListener("click", function () {
+        clearCountdown();
+        gen++;
+        grid.innerHTML = "";
+        ensurePopunder(false);
+        setStatus("cleared", "");
+        tickEl.innerHTML = "auto <strong>paused</strong>";
+      });
+      document.getElementById("ads-only").addEventListener("change", function (e) {
+        document.body.classList.toggle("ads-only", !!e.target.checked);
+      });
+      document.getElementById("auto").addEventListener("change", function () {
+        if (document.getElementById("auto").checked) scheduleNext();
+        else {
+          clearCountdown();
+          tickEl.innerHTML = "auto <strong>off</strong>";
+        }
+      });
+      ["t-banner", "t-native", "t-reward", "t-smartlink", "t-popunder", "count", "secs"].forEach(
+        function (id) {
+          document.getElementById(id).addEventListener("change", function () {
+            if (id === "secs" && document.getElementById("auto").checked) {
+              scheduleNext();
+              return;
+            }
+            if (id !== "secs") {
+              popunderLoaded = false;
+              var old = document.getElementById("steady-lab-popunder");
+              if (old) old.remove();
+              render();
+            }
+          });
+        }
+      );
+
+      document.addEventListener("visibilitychange", function () {
+        if (!document.hidden && document.getElementById("auto").checked) {
+          popunderLoaded = false;
+          var old = document.getElementById("steady-lab-popunder");
+          if (old) old.remove();
+          render();
+        }
+      });
+
+      paintMeta();
+      render();
+    })();
+  </script>
+</body>
+</html>
