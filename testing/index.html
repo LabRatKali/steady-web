@@ -831,16 +831,21 @@
         });
       });
 
-      // Drop leftover ?v= / ?chrome= junk so the URL stays clean /testing/
+      // Prefer a clean /testing/ address bar (no index.html, no ?v= junk).
       (function cleanUrl() {
+        var path = location.pathname.replace(/index\.html$/i, "");
+        if (!path.endsWith("/")) path += "/";
         var q = new URLSearchParams(location.search);
-        if (!q.has("v") && !q.has("chrome") && !q.has("nocache") && !q.has("t")) return;
         q.delete("v");
         q.delete("chrome");
         q.delete("nocache");
         q.delete("t");
-        var next = location.pathname + (q.toString() ? "?" + q.toString() : "") + location.hash;
-        history.replaceState(null, "", next);
+        q.delete("_");
+        q.delete("cb");
+        var next = path + (q.toString() ? "?" + q.toString() : "") + location.hash;
+        if (next !== location.pathname + location.search + location.hash) {
+          history.replaceState(null, "", next);
+        }
       })();
 
       runDiag();
