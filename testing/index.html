@@ -144,6 +144,50 @@
     #diag.ok { color: var(--accent); }
     #diag.bad { color: var(--danger); }
 
+    #env-banner {
+      display: none;
+      margin: 0.75rem 1.1rem 0;
+      padding: 0.85rem 1rem;
+      border: 1px solid rgba(230, 195, 106, 0.45);
+      border-radius: 12px;
+      background: rgba(230, 195, 106, 0.1);
+      color: var(--text);
+      font-size: 13px;
+      line-height: 1.45;
+      max-width: 52rem;
+    }
+    #env-banner.show { display: block; }
+    #env-banner.bad {
+      border-color: rgba(232, 160, 160, 0.5);
+      background: rgba(232, 160, 160, 0.1);
+    }
+    #env-banner a {
+      color: var(--accent);
+      font-weight: 700;
+    }
+    #env-banner a.primary,
+    #env-banner .actions a {
+      display: inline-block;
+      border: 1px solid var(--line);
+      background: #15201a;
+      color: var(--text);
+      border-radius: 8px;
+      padding: 0.38rem 0.75rem;
+      text-decoration: none;
+      font-weight: 700;
+    }
+    #env-banner a.primary {
+      background: var(--accent);
+      color: #042316;
+      border-color: transparent;
+    }
+    #env-banner .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      margin-top: 0.55rem;
+    }
+
     #help {
       display: none;
       margin: 0.75rem 1.1rem 0;
@@ -370,10 +414,13 @@
     <div class="row"><span id="diag">checking ad network…</span></div>
   </div>
 
+  <div id="env-banner" role="status"></div>
+
   <section id="help">
     <p><strong>/testing/</strong> — every display unit is a fitted <strong>300×250</strong> (your working Adsterra banner zone).</p>
     <p>Default wall is <strong>24</strong> cards, full reload every <strong>20s</strong> (change anytime; 12 is fine). A slot is <strong>filled</strong> only when a real ad image paints — not a blank frame.</p>
-    <p><strong>Smartlink</strong> = same banner + tap. <strong>Popunder</strong> = arm only. If almost everything stays empty, run <code>scripts/fix_adsterra_dns.ps1</code> as admin (ISP sinkholes creative hosts).</p>
+    <p><strong>Use system Chrome or Edge</strong> — Cursor’s built-in browser, Brave shields, and most ad blockers block Adsterra hosts, so the wall stays empty there even when the lab itself is fine.</p>
+    <p><strong>Smartlink</strong> = same banner + tap. <strong>Popunder</strong> = arm only. If creatives stay blank in real Chrome, run <code>scripts/fix_adsterra_dns.ps1</code> as admin.</p>
   </section>
 
   <div id="grid" aria-live="polite"></div>
@@ -386,6 +433,10 @@
         "https://www.effectivecpmnetwork.com/s889n4i77?key=38aa37c91a94f34912a4a89f8b27799d";
       var POPUNDER_SRC =
         "https://pl30567774.effectivecpmnetwork.com/3c/91/ea/3c91ea5fe0936ca26b9cc5cebf036f9f.js";
+      var UNIT_PAGE = new URL("unit.html", location.href).href;
+      var WORKERS_LAB = "https://steady.less-phone.workers.dev/testing/";
+      var PAGES_LAB = "https://labratkali.github.io/steady-web/testing/";
+      var LAB_BUILD = "2026-07-28c";
 
       var W = 300;
       var H = 250;
@@ -405,6 +456,7 @@
       var fillsEl = document.getElementById("fills");
       var helpEl = document.getElementById("help");
       var diagEl = document.getElementById("diag");
+      var bannerEl = document.getElementById("env-banner");
       var countInput = document.getElementById("count");
 
       var popunderLoaded = false;
@@ -419,6 +471,7 @@
       var startInflight = 0;
       var waitQueue = [];
       var concurrency = 8;
+      var netState = { scriptOk: null, imageOk: null, proxyOk: null, embedded: false };
 
       function setStatus(msg, kind) {
         statusEl.textContent = msg || "";
@@ -470,6 +523,23 @@
         return DEFAULT_CARDS;
       }
 
+      function migratePrefs() {
+        try {
+          if (localStorage.getItem("steady-lab-v") === "3") return;
+          // One-time bump so old 12/40 defaults don't stick after clears that miss keys.
+          if (!localStorage.getItem("steady-lab-count")) {
+            localStorage.setItem("steady-lab-count", String(DEFAULT_CARDS));
+          }
+          if (!localStorage.getItem("steady-lab-reload")) {
+            localStorage.setItem("steady-lab-reload", String(DEFAULT_RELOAD));
+          }
+          if (!localStorage.getItem("steady-lab-retry")) {
+            localStorage.setItem("steady-lab-retry", String(DEFAULT_RETRY));
+          }
+          localStorage.setItem("steady-lab-v", "3");
+        } catch (_) {}
+      }
+
       function loadPref(key, min, max, fallback) {
         try {
           var v = parseInt(localStorage.getItem(key), 10);
@@ -478,26 +548,164 @@
         return fallback;
       }
 
+      function isEmbeddedBrowser() {
+        var ua = navigator.userAgent || "";
+        return /Electron|Cursor\/\d/i.test(ua);
+      }
+
+      function invokeUrl() {
+        if (netState.proxyOk) {
+          return (
+            location.origin +
+            "/adp/https/www.highperformanceformat.com/" +
+            BANNER_KEY +
+            "/invoke.js"
+          );
+        }
+        return INVOKE;
+      }
+
+      function showEnvBanner(html, bad) {
+        if (!bannerEl) return;
+        bannerEl.innerHTML = html;
+        bannerEl.className = "show" + (bad ? " bad" : "");
+      }
+
+      function hideEnvBanner() {
+        if (!bannerEl) return;
+        bannerEl.className = "";
+        bannerEl.innerHTML = "";
+      }
+
+      function paintDiag() {
+        var parts = [];
+        parts.push("build " + LAB_BUILD);
+        if (netState.embedded) parts.push("Cursor/IDE browser");
+        if (netState.scriptOk === true) parts.push("invoke ok");
+        if (netState.scriptOk === false) parts.push("invoke BLOCKED");
+        if (netState.imageOk === true) parts.push("images ok");
+        if (netState.imageOk === false) parts.push("images BLOCKED");
+        if (netState.proxyOk) parts.push("proxy on");
+        diagEl.textContent = parts.join(" · ");
+        diagEl.className =
+          netState.scriptOk === false || netState.imageOk === false || netState.embedded
+            ? "bad"
+            : netState.scriptOk
+              ? "ok"
+              : "";
+      }
+
+      function updateEnvBannerFromState() {
+        if (netState.embedded) {
+          showEnvBanner(
+            "<strong>You’re inside Cursor’s browser</strong> — it blocks Adsterra hosts, so cards stay empty here. " +
+              "Open the lab in <strong>system Chrome or Edge</strong> (where you’re not using the IDE browser)." +
+              '<div class="actions">' +
+              '<a class="primary" id="btn-open-pages" href="' +
+              PAGES_LAB +
+              '" target="_blank" rel="noopener">Open Pages lab</a>' +
+              '<a id="btn-open-workers" href="' +
+              WORKERS_LAB +
+              '" target="_blank" rel="noopener">Open workers.dev lab</a>' +
+              "</div>",
+            true
+          );
+          return;
+        }
+        if (netState.scriptOk === false) {
+          showEnvBanner(
+            "<strong>Ad script blocked</strong> — disable your ad blocker / Brave shields / tracking protection for this site, then tap <strong>reload all</strong>. " +
+              "Also try the registered domain: " +
+              '<a href="' +
+              WORKERS_LAB +
+              '" target="_blank" rel="noopener">steady.less-phone.workers.dev/testing/</a>',
+            true
+          );
+          return;
+        }
+        if (netState.imageOk === false && netState.scriptOk === true) {
+          showEnvBanner(
+            "<strong>Ad images blocked or DNS sinkholed</strong> — run <code>scripts/fix_adsterra_dns.ps1</code> as admin, or turn off Secure DNS briefly and retry.",
+            true
+          );
+          return;
+        }
+        hideEnvBanner();
+      }
+
       function runDiag() {
-        var ctrl = typeof AbortController !== "undefined" ? new AbortController() : null;
-        var t = setTimeout(function () {
-          if (ctrl) ctrl.abort();
-        }, 7000);
-        fetch(INVOKE + "?diag=" + Date.now(), {
-          mode: "no-cors",
-          cache: "no-store",
-          signal: ctrl && ctrl.signal,
-        })
-          .then(function () {
-            clearTimeout(t);
-            diagEl.textContent = "ad network reachable · parallel · /testing/";
-            diagEl.className = "ok";
-          })
-          .catch(function () {
-            clearTimeout(t);
-            diagEl.textContent = "ad network blocked or slow — check DNS / ad blocker";
-            diagEl.className = "bad";
-          });
+        netState.embedded = isEmbeddedBrowser();
+        paintDiag();
+        updateEnvBannerFromState();
+
+        // Probe worker ad proxy (only useful on workers.dev once deployed).
+        if (/workers\.dev$|less-phone/i.test(location.hostname)) {
+          fetch(
+            location.origin +
+              "/adp/https/www.highperformanceformat.com/" +
+              BANNER_KEY +
+              "/invoke.js?probe=1",
+            { method: "GET", cache: "no-store", mode: "cors" }
+          )
+            .then(function (r) {
+              netState.proxyOk = r.ok;
+              paintDiag();
+            })
+            .catch(function () {
+              netState.proxyOk = false;
+              paintDiag();
+            });
+        }
+
+        // Real script load — no-cors fetch lies and always "succeeds".
+        var s = document.createElement("script");
+        s.async = true;
+        s.setAttribute("data-cfasync", "false");
+        s.src = invokeUrl() + (invokeUrl().indexOf("?") >= 0 ? "&" : "?") + "diag=" + Date.now();
+        var done = false;
+        function finishScript(ok) {
+          if (done) return;
+          done = true;
+          netState.scriptOk = ok;
+          try {
+            s.remove();
+          } catch (_) {}
+          paintDiag();
+          updateEnvBannerFromState();
+        }
+        s.onload = function () {
+          finishScript(true);
+        };
+        s.onerror = function () {
+          finishScript(false);
+        };
+        document.head.appendChild(s);
+        setTimeout(function () {
+          if (netState.scriptOk === null) finishScript(false);
+        }, 8000);
+
+        // Watch resource timings — status 0 means blocked (Cursor/adblock), not a soft 404.
+        function scanResources() {
+          try {
+            var entries = performance.getEntriesByType("resource") || [];
+            for (var i = 0; i < entries.length; i++) {
+              var e = entries[i];
+              var name = e.name || "";
+              if (!/highperformance|storageimagedisplay|effectivecpm/i.test(name)) continue;
+              if (typeof e.responseStatus !== "number") continue;
+              if (e.responseStatus === 0) {
+                if (/highperformance|effectivecpm|invoke/i.test(name)) netState.scriptOk = false;
+                if (/storageimagedisplay/i.test(name)) netState.imageOk = false;
+              } else if (e.responseStatus > 0) {
+                if (/storageimagedisplay/i.test(name)) netState.imageOk = true;
+              }
+            }
+            paintDiag();
+            updateEnvBannerFromState();
+          } catch (_) {}
+        }
+        setInterval(scanResources, 1500);
+        setTimeout(scanResources, 2500);
       }
 
       function ensurePopunder(on) {
@@ -563,19 +771,12 @@
         if (total > 0 && filled === total) setStatus("all filled", "ok");
       }
 
-      function bannerSrcdoc(cb) {
-        return (
-          "<!DOCTYPE html><html><head><meta charset=\"utf-8\" />" +
-          "<meta name=\"referrer\" content=\"no-referrer-when-downgrade\" />" +
-          "<base href=\"" + location.origin + "/\" />" +
-          "<style>html,body{margin:0;padding:0;background:#fff;overflow:hidden;width:" +
-          W + "px;height:" + H + "px}" +
-          "iframe,img{display:block;margin:0;border:0;width:100%;max-width:" + W + "px}</style></head><body>" +
-          "<script>window.atOptions={key:'" + BANNER_KEY +
-          "',format:'iframe',height:" + H + ",width:" + W + ",params:{}};<" + "/script>" +
-          "<script src=\"" + INVOKE + "?cb=" + encodeURIComponent(cb) + "\"><" + "/script>" +
-          "</body></html>"
-        );
+      function unitSrc(cb) {
+        var base = UNIT_PAGE;
+        var join = base.indexOf("?") >= 0 ? "&" : "?";
+        var q = "cb=" + encodeURIComponent(cb);
+        if (netState.proxyOk) q += "&proxy=1";
+        return base + join + q;
       }
 
       function findCreative(doc) {
@@ -754,7 +955,9 @@
         iframe.setAttribute("referrerpolicy", "no-referrer-when-downgrade");
         iframe.setAttribute("allow", "attribution-reporting");
         iframe.title = slot.kind + " " + (slot.index + 1);
-        iframe.srcdoc = bannerSrcdoc(Date.now() + "-" + slot.index + "-" + slot.attempts);
+        // Same-origin unit.html — real document URL/referrer (more reliable than srcdoc
+        // across browsers). Still needs Adsterra hosts allowed by the browser.
+        iframe.src = unitSrc(Date.now() + "-" + slot.index + "-" + slot.attempts);
         host.appendChild(iframe);
         slot.iframe = iframe;
 
@@ -1020,6 +1223,7 @@
         }
       })();
 
+      migratePrefs();
       countInput.value = String(loadCount());
       document.getElementById("reload").value = String(
         loadPref("steady-lab-reload", 8, 300, DEFAULT_RELOAD)
