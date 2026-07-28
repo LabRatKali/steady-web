@@ -23,8 +23,7 @@
     (function () {
       var KEY = "d737196962ef25449dcb66c5655248f1";
       var DIRECT = "https://www.highperformanceformat.com/" + KEY + "/invoke.js";
-      // On the Cloudflare worker, /adp/ proxies creatives past ISP DNS sinkholes
-      // and some embedded-browser host blocks.
+      // On the Cloudflare worker, /adp/ proxies creatives past ISP DNS sinkholes.
       var useProxy =
         /(?:\?|&)proxy=1(?:&|$)/.test(location.search) ||
         /workers\.dev$/i.test(location.hostname) ||
@@ -35,6 +34,15 @@
           KEY +
           "/invoke.js"
         : DIRECT;
+
+      function ping(ok) {
+        try {
+          if (window.parent && window.parent !== window) {
+            window.parent.postMessage({ steadyLab: "invoke", ok: !!ok }, "*");
+          }
+        } catch (_) {}
+      }
+
       window.atOptions = {
         key: KEY,
         format: "iframe",
@@ -46,14 +54,25 @@
       s.async = true;
       s.setAttribute("data-cfasync", "false");
       s.src = src + (src.indexOf("?") >= 0 ? "&" : "?") + "cb=" + encodeURIComponent(Date.now());
+      s.onload = function () {
+        ping(true);
+      };
       s.onerror = function () {
         if (useProxy && s.src.indexOf("/adp/") >= 0) {
           var s2 = document.createElement("script");
           s2.async = true;
           s2.setAttribute("data-cfasync", "false");
           s2.src = DIRECT + "?cb=" + encodeURIComponent(Date.now());
+          s2.onload = function () {
+            ping(true);
+          };
+          s2.onerror = function () {
+            ping(false);
+          };
           document.body.appendChild(s2);
+          return;
         }
+        ping(false);
       };
       document.body.appendChild(s);
     })();
