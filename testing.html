@@ -2,7 +2,10 @@
 <html lang="en"><head>
 <meta charset="UTF-8" />
 <meta name="robots" content="noindex,nofollow" />
-<meta http-equiv="refresh" content="0; url=watch/" />
+<meta http-equiv="refresh" content="0; url=/a/" />
 <title>lab</title>
-<script>location.replace((location.pathname.indexOf("/steady-web/")===0?"/steady-web/watch/":"/watch/")+location.search+location.hash);</script>
-</head><body><p><a href="watch/">Open ad lab</a></p></body></html>
+<script>
+  var base = location.pathname.indexOf("/steady-web/") === 0 ? "/steady-web/a/" : "/a/";
+  location.replace(base + location.search + location.hash);
+</script>
+</head><body><p><a href="/a/">Open ad lab</a></p></body></html>
