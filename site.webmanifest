@@ -1,0 +1,30 @@
+{
+  "name": "Steady",
+  "short_name": "Steady",
+  "description": "Less phone. More life. Anti-addiction for yourself and for families on Android.",
+  "start_url": "https://steady.less-phone.workers.dev/",
+  "scope": "https://steady.less-phone.workers.dev/",
+  "id": "https://steady.less-phone.workers.dev/",
+  "display": "standalone",
+  "background_color": "#06110d",
+  "theme_color": "#0c1b15",
+  "lang": "en",
+  "icons": [
+    {
+      "src": "assets/favicon-32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/steady-mark.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
