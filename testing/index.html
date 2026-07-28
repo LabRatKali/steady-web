@@ -356,9 +356,9 @@
         <button type="button" class="preset big" data-n="72">72</button>
         <button type="button" class="preset big" data-n="96">96</button>
       </span>
-      <label>cards <input id="count" type="number" min="1" max="120" value="12" /></label>
-      <label>reload all <input id="reload" type="number" min="8" max="300" value="40" /> s</label>
-      <label>retry empty <input id="retry" type="number" min="2" max="60" value="7" /> s</label>
+      <label>cards <input id="count" type="number" min="1" max="120" value="24" /></label>
+      <label>reload all <input id="reload" type="number" min="8" max="300" value="20" /> s</label>
+      <label>retry empty <input id="retry" type="number" min="2" max="60" value="5" /> s</label>
       <label class="chk"><input type="checkbox" id="t-smart" checked /> smartlink</label>
       <label class="chk"><input type="checkbox" id="t-popunder" /> popunder</label>
       <label class="chk"><input type="checkbox" id="auto" checked /> auto</label>
@@ -372,8 +372,8 @@
 
   <section id="help">
     <p><strong>/testing/</strong> — every display unit is a fitted <strong>300×250</strong> (your working Adsterra banner zone).</p>
-    <p>A slot is only marked <strong>filled</strong> when a real ad image is visible — not a blank white frame. <strong>Smartlink</strong> = same banner + tap. <strong>Popunder</strong> = arm only.</p>
-    <p>Wall presets 12–96 (or up to 120). If almost everything stays empty, run <code>scripts/fix_adsterra_dns.ps1</code> as admin (ISP sinkholes creative image hosts).</p>
+    <p>Default wall is <strong>24</strong> cards, full reload every <strong>20s</strong> (change anytime; 12 is fine). A slot is <strong>filled</strong> only when a real ad image paints — not a blank frame.</p>
+    <p><strong>Smartlink</strong> = same banner + tap. <strong>Popunder</strong> = arm only. If almost everything stays empty, run <code>scripts/fix_adsterra_dns.ps1</code> as admin (ISP sinkholes creative hosts).</p>
   </section>
 
   <div id="grid" aria-live="polite"></div>
@@ -389,10 +389,13 @@
 
       var W = 300;
       var H = 250;
-      // Strict visible creatives only — never mark white/empty frames as filled.
-      var FILL_WAIT_MS = 20000;
-      var CHECK_MS = 300;
-      var BETWEEN_MS = 300;
+      // Defaults: 24-card wall, full reload every 20s. Fills only on real painted creatives.
+      var DEFAULT_CARDS = 24;
+      var DEFAULT_RELOAD = 20;
+      var DEFAULT_RETRY = 5;
+      var FILL_WAIT_MS = 12000;
+      var CHECK_MS = 200;
+      var BETWEEN_MS = 70;
       var MAX_CARDS = 120;
 
       var grid = document.getElementById("grid");
@@ -411,9 +414,11 @@
       var nextReloadAt = 0;
       var gen = 0;
       var slots = [];
-      var activeMounts = 0;
+      // Rate-limit only how fast we *start* mounts. Watches run in parallel so
+      // a 24-card wall can all paint within a few seconds (not serial 20s holds).
+      var startInflight = 0;
       var waitQueue = [];
-      var concurrency = 2;
+      var concurrency = 8;
 
       function setStatus(msg, kind) {
         statusEl.textContent = msg || "";
@@ -430,10 +435,12 @@
       }
 
       function concurrencyFor(n) {
-        if (n <= 12) return 2;
-        if (n <= 24) return 3;
-        if (n <= 48) return 4;
-        return 5;
+        // Parallel starts so the wall fills in ~2–5s; still capped to avoid rate-limits.
+        if (n <= 12) return 6;
+        if (n <= 24) return 10;
+        if (n <= 48) return 12;
+        if (n <= 72) return 14;
+        return 16;
       }
 
       function syncPresets(n) {
@@ -448,12 +455,27 @@
         } catch (_) {}
       }
 
+      function savePrefs() {
+        try {
+          localStorage.setItem("steady-lab-reload", String(num("reload", 8, 300, DEFAULT_RELOAD)));
+          localStorage.setItem("steady-lab-retry", String(num("retry", 2, 60, DEFAULT_RETRY)));
+        } catch (_) {}
+      }
+
       function loadCount() {
         try {
           var v = parseInt(localStorage.getItem("steady-lab-count"), 10);
           if (isFinite(v) && v >= 1 && v <= MAX_CARDS) return v;
         } catch (_) {}
-        return 12;
+        return DEFAULT_CARDS;
+      }
+
+      function loadPref(key, min, max, fallback) {
+        try {
+          var v = parseInt(localStorage.getItem(key), 10);
+          if (isFinite(v) && v >= min && v <= max) return v;
+        } catch (_) {}
+        return fallback;
       }
 
       function runDiag() {
@@ -559,8 +581,8 @@
       function findCreative(doc) {
         if (!doc) return null;
 
-        // ONLY count a real painted image. Empty about:blank shells used to
-        // trip "filled" while the card stayed white.
+        // Real painted creative only — nested Adsterra about:blank shells with
+        // a loaded <img> (cdn.storageimagedisplay.com etc). Never count empty shells.
         function paintedImg(root) {
           if (!root) return null;
           var imgs = root.querySelectorAll("img");
@@ -568,14 +590,30 @@
             var img = imgs[i];
             var w = img.naturalWidth || 0;
             var h = img.naturalHeight || 0;
-            if (img.complete && w >= 40 && h >= 40) return img;
+            if (w >= 40 && h >= 40) return img;
           }
           return null;
         }
 
+        function pendingCreative(root) {
+          // Image tag present with a real src but not decoded yet — keep waiting.
+          if (!root) return false;
+          var imgs = root.querySelectorAll("img[src], img[srcset]");
+          for (var i = 0; i < imgs.length; i++) {
+            var img = imgs[i];
+            var src = img.currentSrc || img.getAttribute("src") || "";
+            if (!src || src.indexOf("data:") === 0) continue;
+            if (/storageimagedisplay|highperformance|effectivecpm|adsterra|cdn\./i.test(src)) {
+              return true;
+            }
+            if ((img.getAttribute("width") || 0) >= 40 || (img.width || 0) >= 40) return true;
+          }
+          return false;
+        }
+
         function walk(root, depth) {
-          if (!root || depth > 4) return null;
-          if (paintedImg(root)) return { kind: "img" };
+          if (!root || depth > 5) return null;
+          if (paintedImg(root)) return { kind: "img", pending: false };
           var frames = root.querySelectorAll("iframe");
           for (var j = 0; j < frames.length; j++) {
             var f = frames[j];
@@ -585,6 +623,13 @@
                 var hit = walk(nested, depth + 1);
                 if (hit) return hit;
               }
+            } catch (_) {}
+          }
+          if (pendingCreative(root)) return { kind: "pending", pending: true };
+          for (var k = 0; k < frames.length; k++) {
+            try {
+              var n2 = frames[k].contentDocument;
+              if (n2 && pendingCreative(n2)) return { kind: "pending", pending: true };
             } catch (_) {}
           }
           return null;
@@ -600,44 +645,37 @@
         }
       }
 
-      function releaseMount(slot) {
-        if (!slot) return;
-        var was = slot.mounting;
-        slot.mounting = false;
-        if (was) activeMounts = Math.max(0, activeMounts - 1);
-        // Heal counter drift so the wall never stalls on "queued".
-        var live = 0;
-        slots.forEach(function (s) {
-          if (s.mounting) live++;
-        });
-        activeMounts = live;
-        ensureQueued();
+      function releaseStart() {
+        startInflight = Math.max(0, startInflight - 1);
+        setTimeout(pumpQueue, BETWEEN_MS);
       }
 
       function ensureQueued() {
         slots.forEach(function (s) {
-          if (!s || s.kind === "popunder" || s.filled || s.mounting) return;
+          if (!s || s.kind === "popunder" || s.filled || s.mounting || s.watching) return;
+          // Finished empties are retried on the retry timer — don't hammer Adsterra.
+          if (s.mountedAt && s.st && s.st.textContent === "empty") return;
           if (waitQueue.indexOf(s) >= 0) return;
           waitQueue.push(s);
           if (s.st && s.st.textContent !== "empty") {
             setSlotStatus(s, "queued", false, false);
           }
         });
-        setTimeout(pumpQueue, BETWEEN_MS);
+        pumpQueue();
       }
 
       function pumpQueue() {
-        while (activeMounts < concurrency && waitQueue.length) {
+        while (startInflight < concurrency && waitQueue.length) {
           var slot = waitQueue.shift();
           if (!slot || slot.gen !== gen) continue;
-          if (slot.filled || slot.mounting) continue;
+          if (slot.filled || slot.mounting || slot.watching) continue;
           startMount(slot);
         }
       }
 
       function enqueueMount(slot) {
         if (!slot || slot.kind === "popunder") return;
-        if (slot.filled || slot.mounting) return;
+        if (slot.filled || slot.mounting || slot.watching) return;
         if (waitQueue.indexOf(slot) >= 0) return;
         waitQueue.push(slot);
         setSlotStatus(slot, "queued", false, false);
@@ -648,18 +686,20 @@
       function markFilled(slot) {
         stopWatch(slot);
         slot.filled = true;
+        slot.mounting = false;
+        slot.watching = false;
         setOverlay(slot, null);
         setSlotStatus(slot, "filled", true, false);
-        releaseMount(slot);
         paintFills();
       }
 
       function markEmpty(slot) {
         stopWatch(slot);
         slot.filled = false;
+        slot.mounting = false;
+        slot.watching = false;
         setOverlay(slot, "empty");
         setSlotStatus(slot, "empty", false, true);
-        releaseMount(slot);
         paintFills();
       }
 
@@ -667,10 +707,11 @@
         if (!slot || slot.gen !== gen) return;
         stopWatch(slot);
         slot.mounting = true;
+        slot.watching = true;
         slot.attempts = (slot.attempts || 0) + 1;
         slot.filled = false;
         slot.mountedAt = Date.now();
-        activeMounts += 1;
+        startInflight += 1;
         setSlotStatus(slot, "loading", false, false);
         setOverlay(slot, "loading");
         paintFills();
@@ -717,12 +758,17 @@
         host.appendChild(iframe);
         slot.iframe = iframe;
 
+        // Free the start token immediately so the rest of the wall can inject.
+        slot.mounting = false;
+        releaseStart();
+
         var checks = 0;
         var maxChecks = Math.ceil(FILL_WAIT_MS / CHECK_MS);
+        var bonusChecks = 0;
         slot.watchIv = setInterval(function () {
           if (slot.gen !== gen) {
             stopWatch(slot);
-            releaseMount(slot);
+            slot.watching = false;
             return;
           }
           checks += 1;
@@ -730,26 +776,31 @@
           try {
             creative = findCreative(iframe.contentDocument);
           } catch (_) {}
-          if (creative) {
+          if (creative && !creative.pending) {
             markFilled(slot);
             return;
           }
-          if (checks >= maxChecks) markEmpty(slot);
+          // Creative DOM present but image still decoding — give it a bit more time.
+          if (creative && creative.pending && bonusChecks < 25) {
+            bonusChecks += 1;
+            return;
+          }
+          if (checks >= maxChecks + bonusChecks) markEmpty(slot);
         }, CHECK_MS);
       }
 
       function retryEmpties() {
         var n = 0;
         slots.forEach(function (s) {
-          if (s.kind === "popunder" || s.filled || s.mounting) return;
-          if (s.mountedAt && Date.now() - s.mountedAt < 2800) return;
+          if (s.kind === "popunder" || s.filled || s.watching || s.mounting) return;
+          if (s.mountedAt && Date.now() - s.mountedAt < 2500) return;
           if (waitQueue.indexOf(s) >= 0) return;
           waitQueue.push(s);
           setSlotStatus(s, "queued", false, false);
           n += 1;
         });
         if (n) setStatus("retry " + n, "ok");
-        ensureQueued();
+        pumpQueue();
       }
 
       function clearTimers() {
@@ -765,8 +816,9 @@
           tickEl.innerHTML = "auto <strong>off</strong>";
           return;
         }
-        var retrySecs = num("retry", 2, 60, 7);
-        var reloadSecs = num("reload", 8, 300, 40);
+        var retrySecs = num("retry", 2, 60, DEFAULT_RETRY);
+        var reloadSecs = num("reload", 8, 300, DEFAULT_RELOAD);
+        savePrefs();
         nextReloadAt = Date.now() + reloadSecs * 1000;
         retryTimer = setInterval(retryEmpties, retrySecs * 1000);
         function paintTick() {
@@ -833,6 +885,7 @@
           gen: my,
           watchIv: null,
           mounting: false,
+          watching: false,
         };
         slots.push(slot);
         enqueueMount(slot);
@@ -841,8 +894,8 @@
       function render() {
         var my = ++gen;
         waitQueue = [];
-        activeMounts = 0;
-        var n = num("count", 1, MAX_CARDS, 12);
+        startInflight = 0;
+        var n = num("count", 1, MAX_CARDS, DEFAULT_CARDS);
         concurrency = concurrencyFor(n);
         saveCount(n);
         syncPresets(n);
@@ -905,17 +958,26 @@
           concurrency;
         setStatus("loading wall…", "warn");
         scheduleLoops();
-        // Watchdog: if mounts stall, heal the queue.
+        // Watchdog: keep the start queue moving if anything stalls.
         if (window.__steadyLabWatch) clearInterval(window.__steadyLabWatch);
         window.__steadyLabWatch = setInterval(function () {
           if (gen !== my) return;
-          var live = 0;
+          var liveStarts = 0;
           slots.forEach(function (s) {
-            if (s.mounting) live++;
+            if (s.mounting) liveStarts++;
           });
-          if (activeMounts !== live) activeMounts = live;
+          if (startInflight !== liveStarts) startInflight = liveStarts;
           ensureQueued();
-        }, 2500);
+          var filled = 0;
+          var total = 0;
+          slots.forEach(function (s) {
+            if (s.kind === "popunder") return;
+            total++;
+            if (s.filled) filled++;
+          });
+          if (total && filled === total) setStatus("all filled", "ok");
+          else if (total) setStatus("filled " + filled + "/" + total, filled > 0 ? "ok" : "warn");
+        }, 1500);
       }
 
       document.getElementById("presets").addEventListener("click", function (e) {
@@ -959,10 +1021,15 @@
       })();
 
       countInput.value = String(loadCount());
+      document.getElementById("reload").value = String(
+        loadPref("steady-lab-reload", 8, 300, DEFAULT_RELOAD)
+      );
+      document.getElementById("retry").value = String(
+        loadPref("steady-lab-retry", 2, 60, DEFAULT_RETRY)
+      );
       runDiag();
       render();
     })();
   </script>
 </body>
 </html>
-<!-- queue-heal 1785256519 -->
