@@ -179,8 +179,8 @@
     </div>
     <div class="row">
       <label>cards <input id="count" type="number" min="4" max="16" value="8" /></label>
-      <label>reload <input id="secs" type="number" min="5" max="120" value="12" /> s</label>
-      <label>retry <input id="retry" type="number" min="2" max="60" value="4" /> s</label>
+      <label>reload <input id="secs" type="number" min="5" max="120" value="10" /> s</label>
+      <label>retry <input id="retry" type="number" min="2" max="60" value="3" /> s</label>
       <label class="chk"><input type="checkbox" id="t-popunder" checked /> popunder</label>
       <label class="chk"><input type="checkbox" id="auto" checked /> auto</label>
       <label class="chk"><input type="checkbox" id="ads-only" /> ads only</label>
@@ -259,12 +259,17 @@
       function paintFills() {
         var total = 0;
         var filled = 0;
+        var dead = 0;
         slots.forEach(function (s) {
           if (s.kind === "popunder") return;
           total++;
           if (s.filled) filled++;
+          else if (s.st && /dead/i.test(s.st.textContent)) dead++;
         });
         fillsEl.innerHTML = "ok <strong>" + filled + "</strong>/<strong>" + total + "</strong>";
+        if (filled === 0 && dead > 0) {
+          setStatus("Adsterra dead hosts — retrying", "");
+        }
       }
 
       function hostOf(url) {
