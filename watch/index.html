@@ -5,19 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="robots" content="noindex, nofollow, noarchive" />
   <meta name="googlebot" content="noindex, nofollow" />
-  <title>lab</title>
+  <title>Steady ad lab</title>
   <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml" />
   <style>
     :root {
       color-scheme: dark;
-      --bg: #0a0f0d;
-      --panel: #121a16;
-      --line: rgba(244, 248, 245, 0.14);
+      --bg: #070b09;
+      --panel: #101712;
+      --panel2: #162019;
+      --line: rgba(244, 248, 245, 0.12);
       --text: #e8f0eb;
       --muted: #8fa398;
       --accent: #3dcf8a;
       --danger: #e8a0a0;
       --warn: #e6c36a;
+      --browser-h: min(42vh, 420px);
     }
     * { box-sizing: border-box; }
     html, body {
@@ -25,24 +27,35 @@
       min-height: 100%;
       background: var(--bg);
       color: var(--text);
-      font: 13px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font: 13px/1.45 "Segoe UI", ui-sans-serif, system-ui, sans-serif;
     }
-    body.ads-only .lab-chrome { display: none !important; }
+    body.has-browser { padding-bottom: calc(var(--browser-h) + 12px); }
+    body.ads-only .lab-chrome,
+    body.ads-only #help,
+    body.ads-only #browser { display: none !important; }
+    body.ads-only { padding-bottom: 0; }
+
     .lab-chrome {
       position: sticky;
       top: 0;
-      z-index: 40;
-      background: rgba(10, 15, 13, 0.96);
+      z-index: 50;
+      background: rgba(7, 11, 9, 0.96);
       border-bottom: 1px solid var(--line);
-      padding: 0.7rem 1rem 0.85rem;
-      backdrop-filter: blur(10px);
+      padding: 0.75rem 1rem 0.9rem;
+      backdrop-filter: blur(12px);
     }
     .row {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.5rem 0.75rem;
+      gap: 0.45rem 0.7rem;
       align-items: center;
-      margin: 0.3rem 0;
+      margin: 0.28rem 0;
+    }
+    .title {
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      color: var(--accent);
+      margin-right: 0.4rem;
     }
     label.chk {
       display: inline-flex;
@@ -51,23 +64,24 @@
       color: var(--muted);
       cursor: pointer;
       user-select: none;
+      font-size: 12px;
     }
     label.chk input { accent-color: var(--accent); }
     input[type="number"] {
-      width: 3.6rem;
+      width: 3.5rem;
       background: var(--panel);
       color: var(--text);
       border: 1px solid var(--line);
       border-radius: 6px;
-      padding: 0.3rem 0.4rem;
+      padding: 0.28rem 0.35rem;
       font: inherit;
     }
-    button {
+    button, .btn {
       border: 1px solid var(--line);
-      background: var(--panel);
+      background: var(--panel2);
       color: var(--text);
-      border-radius: 6px;
-      padding: 0.35rem 0.65rem;
+      border-radius: 7px;
+      padding: 0.38rem 0.7rem;
       font: inherit;
       cursor: pointer;
     }
@@ -77,125 +91,254 @@
       border-color: transparent;
       font-weight: 700;
     }
-    #meta, #status, #tick, #fills { color: var(--muted); }
-    #meta strong, #tick strong, #fills strong { color: var(--text); font-weight: 600; }
+    #meta, #status, #tick, #fills { color: var(--muted); font-size: 12px; }
+    #meta strong, #tick strong, #fills strong { color: var(--text); }
     #status.ok { color: var(--accent); }
     #status.err { color: var(--danger); }
-    .note {
-      color: var(--muted);
-      font-size: 11px;
-      max-width: 64rem;
-      margin: 0.25rem 0 0;
+
+    #help {
+      margin: 0.75rem 1rem 0;
+      padding: 0.9rem 1rem;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: linear-gradient(165deg, #121a16, #0c1210);
     }
+    #help h2 {
+      margin: 0 0 0.45rem;
+      font-size: 0.95rem;
+      color: var(--accent);
+    }
+    #help p, #help li {
+      margin: 0.35rem 0;
+      color: var(--muted);
+      font-size: 12.5px;
+      max-width: 70rem;
+    }
+    #help strong { color: var(--text); }
+    #help summary {
+      cursor: pointer;
+      color: var(--warn);
+      font-weight: 600;
+      list-style: none;
+    }
+    #help details[open] summary { margin-bottom: 0.5rem; }
+
     #grid {
       display: grid;
-      gap: 1rem;
-      padding: 1rem;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-      align-items: start;
+      gap: 0.85rem;
+      padding: 0.85rem 1rem 1rem;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      align-items: stretch;
     }
     .card {
       border: 1px solid var(--line);
       border-radius: 12px;
       background: var(--panel);
-      padding: 0.55rem;
+      padding: 0.5rem;
       display: flex;
       flex-direction: column;
+      min-height: 292px;
       overflow: hidden;
-      min-height: 300px;
-      position: relative;
     }
-    .card.is-wide { grid-column: span 2; min-height: 160px; }
-    .card.is-tall { min-height: 620px; }
-    @media (max-width: 900px) {
-      .card.is-wide { grid-column: span 1; }
-    }
+    .card.is-wide { grid-column: 1 / -1; max-width: 760px; min-height: 140px; }
+    .card.is-pop { min-height: 200px; background: linear-gradient(160deg, #16241c, #101712); }
     .card-head {
       display: flex;
       justify-content: space-between;
       gap: 0.5rem;
-      margin-bottom: 0.45rem;
-      color: var(--muted);
+      margin-bottom: 0.4rem;
       font-size: 11px;
       text-transform: uppercase;
       letter-spacing: 0.04em;
+      color: var(--muted);
     }
-    .card-head b { color: var(--text); font-weight: 600; }
-    .card-head .st { color: var(--warn); }
+    .card-head b { color: var(--text); font-weight: 700; }
+    .card-head .st { color: var(--warn); text-transform: none; letter-spacing: 0; }
     .card-head .st.ok { color: var(--accent); }
     .card-body {
       flex: 1;
       display: flex;
       align-items: center;
       justify-content: center;
-      overflow: hidden;
-      background: #070b09;
+      background: #050807;
       border-radius: 8px;
       min-height: 250px;
       position: relative;
+      overflow: hidden;
     }
+    .card.is-wide .card-body { min-height: 100px; }
     .card-body > iframe.adframe {
       width: 100%;
       height: 100%;
       min-height: 250px;
       border: 0;
-      background: #070b09;
+      background: #050807;
       display: block;
     }
-    .card.is-wide .card-body,
     .card.is-wide .card-body > iframe.adframe { min-height: 100px; }
-    .card.is-tall .card-body,
-    .card.is-tall .card-body > iframe.adframe { min-height: 600px; }
     .hit {
       position: absolute;
       inset: 0;
-      z-index: 2;
-      display: block;
+      z-index: 3;
+      background: transparent;
+      border: 0;
+      cursor: pointer;
       text-indent: -9999px;
-      overflow: hidden;
     }
     .pop-arm {
-      width: 100%;
-      min-height: 250px;
-      border: 0;
-      border-radius: 8px;
-      background: linear-gradient(160deg, #1b2a22, #0f1713);
-      color: var(--accent);
+      width: calc(100% - 8px);
+      min-height: 180px;
+      margin: 4px;
+      border: 1px dashed rgba(61, 207, 138, 0.35);
+      border-radius: 10px;
+      background: rgba(61, 207, 138, 0.06);
+      color: var(--text);
       font: inherit;
-      font-weight: 700;
       cursor: pointer;
+      padding: 1rem;
+      text-align: left;
     }
-    .pop-arm small { display: block; margin-top: 0.4rem; color: var(--muted); font-weight: 500; }
+    .pop-arm strong { color: var(--accent); display: block; margin-bottom: 0.35rem; }
+    .pop-arm span { color: var(--muted); font-size: 12px; display: block; line-height: 1.45; }
+
+    #browser {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: var(--browser-h);
+      z-index: 60;
+      background: #0b100e;
+      border-top: 1px solid var(--line);
+      display: none;
+      flex-direction: column;
+      box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.45);
+    }
+    body.has-browser #browser { display: flex; }
+    .browser-bar {
+      display: flex;
+      gap: 0.4rem;
+      align-items: center;
+      padding: 0.45rem 0.6rem;
+      border-bottom: 1px solid var(--line);
+      background: #101712;
+    }
+    .browser-bar .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #3dcf8a;
+      flex: 0 0 auto;
+    }
+    #browser-url {
+      flex: 1;
+      min-width: 0;
+      background: #070b09;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--muted);
+      padding: 0.35rem 0.75rem;
+      font-size: 12px;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+    #browser-frame {
+      flex: 1;
+      width: 100%;
+      border: 0;
+      background: #fff;
+    }
+    .browser-empty {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      padding: 1rem;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
   <div class="lab-chrome">
     <div class="row">
+      <span class="title">AD LAB</span>
       <span id="meta">…</span>
-      <span id="tick">next reload <strong>—</strong></span>
+      <span id="tick">reload <strong>—</strong></span>
       <span id="fills">filled <strong>0</strong>/<strong>0</strong></span>
       <span id="status"></span>
     </div>
     <div class="row">
-      <label>cards <input id="count" type="number" min="1" max="36" value="18" /></label>
-      <label>reload <input id="secs" type="number" min="10" max="300" value="25" /> s</label>
-      <label>retry empty <input id="retry" type="number" min="3" max="60" value="6" /> s</label>
+      <label>cards <input id="count" type="number" min="4" max="36" value="16" /></label>
+      <label>reload <input id="secs" type="number" min="10" max="300" value="20" /> s</label>
+      <label>retry <input id="retry" type="number" min="3" max="60" value="5" /> s</label>
       <label class="chk"><input type="checkbox" id="t-banner" checked /> banners</label>
       <label class="chk"><input type="checkbox" id="t-native" checked /> native</label>
       <label class="chk"><input type="checkbox" id="t-reward" checked /> reward</label>
       <label class="chk"><input type="checkbox" id="t-smartlink" checked /> smartlink</label>
       <label class="chk"><input type="checkbox" id="t-popunder" checked /> popunder</label>
-      <label class="chk"><input type="checkbox" id="auto" checked /> auto reload</label>
+      <label class="chk"><input type="checkbox" id="auto" checked /> auto</label>
+      <label class="chk"><input type="checkbox" id="use-browser" checked /> open clicks in page browser</label>
       <label class="chk"><input type="checkbox" id="ads-only" /> ads only</label>
       <button type="button" class="primary" id="btn-refresh">reload all</button>
       <button type="button" id="btn-retry">retry empties</button>
+      <button type="button" id="btn-help">help</button>
     </div>
-    <p class="note">
-      Empty slots auto-retry. Smartlink cards show a real banner (Adsterra smartlinks are click URLs, not creatives) with the smartlink as the click layer.
-      Popunder is armed in the page — tap the popunder card once to fire it.
-    </p>
   </div>
+
+  <section id="help">
+    <details open>
+      <summary>What is this page / why /watch / what is a popunder?</summary>
+      <h2>Why there is /watch (and /testing)</h2>
+      <p>
+        Your live site is proxied by Cloudflare Worker → GitHub Pages.
+        When I first fixed ads, <strong>/testing</strong> kept showing the old broken page
+        (“frame blocked”) because Cloudflare <strong>cached</strong> it. Publishing again didn’t show up right away.
+        I created <strong>/watch</strong> as a <strong>fresh path</strong> that wasn’t stuck in that cache so you could use the fixed lab immediately.
+        Both <code>/watch/</code> and <code>/testing/</code> now serve this same improved lab.
+      </p>
+      <h2>Why ads looked broken before</h2>
+      <p>
+        1) Ads were loaded inside <strong>sandboxed iframes</strong> → every card said “frame blocked” (scripts couldn’t run).<br />
+        2) Then the worker CDN kept serving that old HTML.<br />
+        3) Even when fixed, Adsterra often leaves some slots empty (no fill for that size/moment). Empty ≠ broken — this lab <strong>retries</strong> empties.
+      </p>
+      <h2>What is a popunder?</h2>
+      <p>
+        A <strong>popunder</strong> is <strong>not</strong> a black box on this page.
+        When Adsterra’s popunder script is armed, and you <strong>click once</strong> on the page,
+        it tries to open the advertiser’s site in a <strong>new browser tab behind</strong> the one you’re using
+        (under your current tab). That’s why it’s called pop-<em>under</em>, not popup.
+      </p>
+      <p>
+        You often <strong>won’t see anything happen</strong> on this page. Check your browser tab strip for a new tab,
+        or look for a blocked-popup icon in the address bar. Chrome/Edge frequently block popunders.
+        Use the green <strong>Arm &amp; fire popunder</strong> card (real click required).
+      </p>
+      <h2>Smartlink</h2>
+      <p>
+        A smartlink is only a <strong>click URL</strong> — Adsterra does not draw a banner for it.
+        This lab puts a <strong>real banner</strong> in that card and routes your click through the smartlink
+        into the <strong>in-page browser</strong> below (or a new tab if you turn that off).
+      </p>
+    </details>
+  </section>
+
   <div id="grid" aria-live="polite"></div>
+
+  <div id="browser" aria-label="In-page browser">
+    <div class="browser-bar">
+      <span class="dot" title="page browser"></span>
+      <div id="browser-url">Click a smartlink / ad card to open it here</div>
+      <button type="button" id="btn-browser-open">open in new tab</button>
+      <button type="button" id="btn-browser-close">close</button>
+    </div>
+    <div class="browser-empty" id="browser-empty">
+      In-page browser — many offer pages block embedding (blank frame). If blank, use “open in new tab”.
+    </div>
+    <iframe id="browser-frame" title="Offer browser" hidden></iframe>
+  </div>
 
   <script>
     (function () {
@@ -208,17 +351,15 @@
       var POPUNDER_SRC =
         "https://pl30567774.effectivecpmnetwork.com/3c/91/ea/3c91ea5fe0936ca26b9cc5cebf036f9f.js";
 
-      // Bias hard toward sizes that actually fill for this key.
+      // Mostly 300x250 — this size fills best for your key.
       var BANNER_SIZES = [
+        { w: 300, h: 250, label: "300×250", cls: "" },
         { w: 300, h: 250, label: "300×250", cls: "" },
         { w: 300, h: 250, label: "300×250", cls: "" },
         { w: 300, h: 250, label: "300×250", cls: "" },
         { w: 336, h: 280, label: "336×280", cls: "" },
         { w: 300, h: 250, label: "300×250", cls: "" },
         { w: 728, h: 90, label: "728×90", cls: "is-wide" },
-        { w: 300, h: 250, label: "300×250", cls: "" },
-        { w: 320, h: 50, label: "320×50", cls: "is-wide" },
-        { w: 160, h: 600, label: "160×600", cls: "is-tall" },
         { w: 300, h: 250, label: "300×250", cls: "" },
       ];
 
@@ -227,6 +368,13 @@
       var meta = document.getElementById("meta");
       var tickEl = document.getElementById("tick");
       var fillsEl = document.getElementById("fills");
+      var helpEl = document.getElementById("help");
+      var browserEl = document.getElementById("browser");
+      var browserUrl = document.getElementById("browser-url");
+      var browserFrame = document.getElementById("browser-frame");
+      var browserEmpty = document.getElementById("browser-empty");
+      var lastOfferUrl = "";
+
       var popunderLoaded = false;
       var reloadTimer = null;
       var countdownTimer = null;
@@ -253,7 +401,7 @@
       function adPage(inner, minH) {
         return (
           "<!DOCTYPE html><html><head><meta charset='utf-8'>" +
-          "<style>html,body{margin:0;padding:6px;background:#070b09;min-height:" +
+          "<style>html,body{margin:0;padding:6px;background:#050807;min-height:" +
           (minH || 250) +
           "px;display:flex;align-items:center;justify-content:center}" +
           "iframe{margin:0 auto!important}</style></head><body>" +
@@ -334,6 +482,21 @@
         popunderLoaded = true;
       }
 
+      function openInPageBrowser(url) {
+        lastOfferUrl = url;
+        browserUrl.textContent = url;
+        document.body.classList.add("has-browser");
+        browserEmpty.hidden = true;
+        browserFrame.hidden = false;
+        browserFrame.src = url;
+        setStatus("opened in page browser", "ok");
+      }
+
+      function openOffer(url) {
+        if (document.getElementById("use-browser").checked) openInPageBrowser(url);
+        else window.open(url, "_blank", "noopener,noreferrer");
+      }
+
       function setSlotStatus(slot, text, ok) {
         if (!slot || !slot.st) return;
         slot.st.textContent = text;
@@ -347,13 +510,9 @@
           if (doc.querySelectorAll("iframe").length > 0) return true;
           if (doc.querySelectorAll("img").length > 0) return true;
           if (doc.querySelectorAll("ins,a[href]").length > 0) return true;
-          var text = (doc.body && doc.body.innerText) || "";
-          if (text && text.replace(/\s+/g, "").length > 8) return true;
-          // Some units inject into body as children beyond our scripts
           var kids = doc.body ? doc.body.children.length : 0;
           return kids > 2;
         } catch (_) {
-          // Cross-origin after fill often means the creative navigated — treat as filled
           return true;
         }
       }
@@ -365,32 +524,28 @@
         slot.filled = false;
         slot.body.innerHTML = "";
 
-        if (slot.kind === "smartlink") {
-          // Real creative + invisible smartlink hit area
-          var frame = document.createElement("iframe");
-          frame.className = "adframe";
-          frame.title = "ad";
-          frame.srcdoc = bannerHtml(300, 250);
-          slot.body.appendChild(frame);
-          slot.frame = frame;
-          var hit = document.createElement("a");
-          hit.className = "hit";
-          hit.href = SMARTLINK;
-          hit.target = "_blank";
-          hit.rel = "noopener noreferrer sponsored";
-          hit.textContent = "offer";
-          slot.body.appendChild(hit);
-          return;
-        }
+        var frame = document.createElement("iframe");
+        frame.className = "adframe";
+        frame.title = "ad";
+        if (slot.kind === "banner") frame.srcdoc = bannerHtml(slot.w, slot.h);
+        else if (slot.kind === "native") frame.srcdoc = nativeHtml();
+        else if (slot.kind === "reward") frame.srcdoc = rewardHtml();
+        else frame.srcdoc = bannerHtml(300, 250); // smartlink visual = banner
+        slot.body.appendChild(frame);
+        slot.frame = frame;
 
-        var frame2 = document.createElement("iframe");
-        frame2.className = "adframe";
-        frame2.title = "ad";
-        if (slot.kind === "banner") frame2.srcdoc = bannerHtml(slot.w, slot.h);
-        else if (slot.kind === "native") frame2.srcdoc = nativeHtml();
-        else frame2.srcdoc = rewardHtml();
-        slot.body.appendChild(frame2);
-        slot.frame = frame2;
+        if (slot.kind === "smartlink") {
+          var hit = document.createElement("button");
+          hit.type = "button";
+          hit.className = "hit";
+          hit.title = "Open smartlink";
+          hit.textContent = "open";
+          hit.addEventListener("click", function (e) {
+            e.preventDefault();
+            openOffer(SMARTLINK);
+          });
+          slot.body.appendChild(hit);
+        }
       }
 
       function paintFills() {
@@ -407,8 +562,7 @@
       function checkFills() {
         slots.forEach(function (s) {
           if (s.kind === "popunder") return;
-          if (s.filled) return;
-          if (!s.frame) return;
+          if (s.filled || !s.frame) return;
           if (frameHasFill(s.frame)) {
             s.filled = true;
             setSlotStatus(s, "filled", true);
@@ -420,12 +574,11 @@
       function retryEmpties() {
         var n = 0;
         slots.forEach(function (s) {
-          if (s.kind === "popunder") return;
-          if (s.filled) return;
+          if (s.kind === "popunder" || s.filled) return;
           remountSlot(s);
           n++;
         });
-        if (n) setStatus("retrying " + n + " empty slot(s)", "ok");
+        if (n) setStatus("retrying " + n + " empty", "ok");
         paintFills();
       }
 
@@ -444,33 +597,29 @@
 
         var bi = 0;
         var i = 0;
-        while (plan.length < n && i < n * 8) {
+        var nativeCount = 0;
+        while (plan.length < n && i < n * 10) {
           var t = types[i % types.length];
           i++;
           if (t === "banner") {
             var sz = BANNER_SIZES[bi % BANNER_SIZES.length];
             bi++;
-            plan.push({
-              kind: "banner",
-              detail: sz.label,
-              w: sz.w,
-              h: sz.h,
-              cls: sz.cls,
-            });
+            plan.push({ kind: "banner", detail: sz.label, w: sz.w, h: sz.h, cls: sz.cls });
           } else if (t === "native") {
+            if (nativeCount >= Math.max(1, Math.floor(n / 8))) continue;
+            nativeCount++;
             plan.push({ kind: "native", detail: "native", w: 300, h: 280, cls: "" });
           } else if (t === "reward") {
-            // Reward social bar is invisible; always pair with a visible 300x250
-            plan.push({ kind: "reward", detail: "300×250+social", w: 300, h: 250, cls: "" });
+            plan.push({ kind: "reward", detail: "banner+social", w: 300, h: 250, cls: "" });
           } else if (t === "smartlink") {
-            plan.push({ kind: "smartlink", detail: "banner+click", w: 300, h: 250, cls: "" });
+            plan.push({ kind: "smartlink", detail: "banner → click", w: 300, h: 250, cls: "" });
           }
         }
         while (plan.length < n) {
           var sz2 = BANNER_SIZES[bi % BANNER_SIZES.length];
           bi++;
           plan.push({
-            kind: wantBanner ? "banner" : wantSmart ? "smartlink" : "banner",
+            kind: "banner",
             detail: sz2.label,
             w: sz2.w,
             h: sz2.h,
@@ -490,19 +639,17 @@
 
       function scheduleLoops() {
         clearTimers();
-        fillTimer = setInterval(checkFills, 1000);
-        var retrySecs = num("retry", 3, 60, 6);
-        retryTimer = setInterval(retryEmpties, retrySecs * 1000);
-
+        fillTimer = setInterval(checkFills, 900);
+        retryTimer = setInterval(retryEmpties, num("retry", 3, 60, 5) * 1000);
         if (!document.getElementById("auto").checked) {
           tickEl.innerHTML = "auto <strong>off</strong>";
           return;
         }
-        var secs = num("secs", 10, 300, 25);
+        var secs = num("secs", 10, 300, 20);
         nextAt = Date.now() + secs * 1000;
         function paintTick() {
           var left = Math.max(0, Math.ceil((nextAt - Date.now()) / 1000));
-          tickEl.innerHTML = "next reload <strong>" + left + "s</strong>";
+          tickEl.innerHTML = "reload <strong>" + left + "s</strong>";
         }
         paintTick();
         countdownTimer = setInterval(paintTick, 250);
@@ -516,7 +663,7 @@
 
       function render() {
         var my = ++gen;
-        var n = num("count", 1, 36, 18);
+        var n = num("count", 4, 36, 16);
         var wantPop = document.getElementById("t-popunder").checked;
         var plan = buildPlan(n);
         slots = [];
@@ -558,33 +705,36 @@
             attempts: 0,
           };
           slots.push(slot);
-
           setTimeout(function () {
             if (my !== gen) return;
             remountSlot(slot);
-          }, idx * 120);
+          }, idx * 100);
         });
 
         if (wantPop) {
           var card = document.createElement("article");
-          card.className = "card";
+          card.className = "card is-pop";
           var head = document.createElement("div");
           head.className = "card-head";
-          head.innerHTML = "<span><b>popunder</b> · armed</span><span class='st ok'>ready</span>";
+          head.innerHTML = "<span><b>popunder</b> · not a visible ad box</span><span class='st ok'>armed</span>";
           var body = document.createElement("div");
           body.className = "card-body";
           var btn = document.createElement("button");
           btn.type = "button";
           btn.className = "pop-arm";
-          btn.innerHTML = "Tap to fire popunder<small>real click — Adsterra needs a gesture</small>";
+          btn.innerHTML =
+            "<strong>Arm &amp; fire popunder</strong>" +
+            "<span>This does not draw a black popup here. After you tap, look for a <em>new tab behind</em> this one, or a blocked-popup icon in the address bar.</span>";
           btn.addEventListener("click", function () {
-            // Re-inject script then synthetic page click so popunder can attach to gesture
             popunderLoaded = false;
             ensurePopunder(true);
             setTimeout(function () {
               document.body.click();
-              btn.innerHTML = "Popunder gestured<small>check for under-tab / blocked popup</small>";
-            }, 400);
+              btn.innerHTML =
+                "<strong>Gesture sent</strong>" +
+                "<span>Check other browser tabs now. If nothing appeared, the browser blocked it — allow popups for this site and tap again.</span>";
+              setStatus("popunder gesture sent — check tabs", "ok");
+            }, 350);
           });
           body.appendChild(btn);
           card.appendChild(head);
@@ -600,7 +750,7 @@
 
       function paintMeta() {
         meta.innerHTML =
-          "<strong>" + location.host + "</strong> " + location.pathname + " · adsterra";
+          "<strong>" + location.host + "</strong> " + location.pathname;
       }
 
       document.getElementById("btn-refresh").addEventListener("click", function () {
@@ -610,17 +760,28 @@
         render();
       });
       document.getElementById("btn-retry").addEventListener("click", retryEmpties);
+      document.getElementById("btn-help").addEventListener("click", function () {
+        helpEl.hidden = !helpEl.hidden;
+        var d = helpEl.querySelector("details");
+        if (d && !helpEl.hidden) d.open = true;
+      });
       document.getElementById("ads-only").addEventListener("change", function (e) {
         document.body.classList.toggle("ads-only", !!e.target.checked);
       });
-      document.getElementById("auto").addEventListener("change", function () {
-        if (document.getElementById("auto").checked) scheduleLoops();
-        else {
-          clearTimers();
-          tickEl.innerHTML = "auto <strong>off</strong>";
-          fillTimer = setInterval(checkFills, 1000);
-          retryTimer = setInterval(retryEmpties, num("retry", 3, 60, 6) * 1000);
+      document.getElementById("use-browser").addEventListener("change", function (e) {
+        if (!e.target.checked) {
+          document.body.classList.remove("has-browser");
         }
+      });
+      document.getElementById("btn-browser-close").addEventListener("click", function () {
+        document.body.classList.remove("has-browser");
+        browserFrame.src = "about:blank";
+      });
+      document.getElementById("btn-browser-open").addEventListener("click", function () {
+        if (lastOfferUrl) window.open(lastOfferUrl, "_blank", "noopener,noreferrer");
+      });
+      document.getElementById("auto").addEventListener("change", function () {
+        scheduleLoops();
       });
       ["t-banner", "t-native", "t-reward", "t-smartlink", "t-popunder", "count", "secs", "retry"].forEach(
         function (id) {
@@ -643,6 +804,8 @@
 
       paintMeta();
       render();
+      // Show browser dock ready (empty) so the feature is obvious
+      document.body.classList.add("has-browser");
     })();
   </script>
 </body>
