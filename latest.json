@@ -1,9 +1,9 @@
 {
-  "version": "2.21.12",
-  "versionCode": 159,
+  "version": "2.21.13",
+  "versionCode": 160,
   "apkUrl": "https://github.com/LabRatKali/steady-web/releases/latest/download/steady-latest.apk",
-  "sha256": "d120cbf6f930000ac0136e901e98f03e4cb19a2f80e041e7679b8d4e0820a076",
-  "sizeBytes": 53387426,
-  "notes": "# Steady 2.21.12\n\n## What's new\n- **ANR hard-lockdown** \u2014 fixes \u201cSteady isn\u2019t responding\u201d under load:\n  - Accessibility tree walks are capped, debounced, and never stacked\n  - Allow/block package cache is in-memory (no SharedPreferences StringSet stalls on every event)\n  - Day off / profile / Device Owner Binder work runs off the UI thread\n  - Web filter list changes no longer restart the VPN tunnel\n  - Gray-out refresh no longer re-applies the full Device Owner restriction storm\n  - Sentry init and VPN establish moved off the critical main path\n  - Privilege checks are cached briefly\n\n## For parents\nInstall this build if you ever saw Close app / Wait. The app should stay light and responsive even with Accessibility + web filter on.\n",
+  "sha256": "e4806e881517bcc808248a59de1a7df229bed9f0b5b0ca6f93666ec578ffec14",
+  "sizeBytes": 53387358,
+  "notes": "# Steady 2.21.13\n\n## What's new\n- **Launch crash fix** \u2014 Sentry\u2019s auto ContentProvider required a DSN and killed the app on open when `keys/sentry.json` was absent. Auto-init is disabled; optional Sentry still works when a DSN is configured. GitHub crash sync unchanged.\n- **VPN establish on main service thread again** \u2014 background `establish()` was unsafe on many OEM Androids; filter security behavior is unchanged.\n\n## For parents\nInstall this build if Steady opened and closed immediately after 2.21.12. Protection / Accessibility / Device Owner rules are the same as before.",
   "assetId": 0
 }
