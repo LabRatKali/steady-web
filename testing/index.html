@@ -16,6 +16,7 @@
       --muted: #8fa398;
       --accent: #3dcf8a;
       --warn: #e6c36a;
+      --danger: #e8a0a0;
     }
     * { box-sizing: border-box; }
     html, body {
@@ -27,22 +28,21 @@
     }
     body.ads-only .lab-chrome,
     body.ads-only #help { display: none !important; }
-
     .lab-chrome {
       position: sticky;
       top: 0;
       z-index: 40;
       background: rgba(10, 15, 13, 0.96);
       border-bottom: 1px solid var(--line);
-      padding: 0.7rem 1rem 0.8rem;
+      padding: 0.65rem 1rem 0.75rem;
       backdrop-filter: blur(12px);
     }
     .row {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.45rem 0.7rem;
+      gap: 0.4rem 0.65rem;
       align-items: center;
-      margin: 0.28rem 0;
+      margin: 0.22rem 0;
     }
     .title { font-weight: 800; color: var(--accent); letter-spacing: 0.04em; }
     label.chk {
@@ -56,12 +56,12 @@
     }
     label.chk input { accent-color: var(--accent); }
     input[type="number"] {
-      width: 3.5rem;
+      width: 3.4rem;
       background: var(--panel);
       color: var(--text);
       border: 1px solid var(--line);
       border-radius: 6px;
-      padding: 0.28rem 0.35rem;
+      padding: 0.25rem 0.35rem;
       font: inherit;
     }
     button {
@@ -69,7 +69,7 @@
       background: #162019;
       color: var(--text);
       border-radius: 7px;
-      padding: 0.38rem 0.7rem;
+      padding: 0.35rem 0.65rem;
       font: inherit;
       cursor: pointer;
     }
@@ -82,26 +82,24 @@
     #meta, #status, #tick, #fills { color: var(--muted); font-size: 12px; }
     #meta strong, #tick strong, #fills strong { color: var(--text); }
     #status.ok { color: var(--accent); }
-
     #help {
       display: none;
-      margin: 0.75rem 1rem 0;
-      padding: 0.85rem 1rem;
+      margin: 0.7rem 1rem 0;
+      padding: 0.8rem 1rem;
       border: 1px solid var(--line);
       border-radius: 12px;
       background: var(--panel);
       color: var(--muted);
       font-size: 12.5px;
-      max-width: 52rem;
+      max-width: 48rem;
     }
     #help.show { display: block; }
-    #help p { margin: 0.35rem 0; }
+    #help p { margin: 0.3rem 0; }
     #help strong { color: var(--text); }
-
     #grid {
       display: grid;
-      gap: 1rem;
-      padding: 1rem;
+      gap: 0.9rem;
+      padding: 0.9rem 1rem 1rem;
       grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
       align-items: start;
     }
@@ -109,23 +107,18 @@
       border: 1px solid var(--line);
       border-radius: 14px;
       background: var(--panel);
-      padding: 0.55rem;
+      padding: 0.5rem;
       display: flex;
       flex-direction: column;
-      min-height: 310px;
+      min-height: 300px;
       overflow: hidden;
     }
-    .card.is-wide {
-      grid-column: 1 / -1;
-      max-width: 780px;
-      min-height: 150px;
-    }
-    .card.is-pop { min-height: 180px; }
+    .card.is-pop { min-height: 170px; }
     .card-head {
       display: flex;
       justify-content: space-between;
       gap: 0.5rem;
-      margin-bottom: 0.45rem;
+      margin-bottom: 0.4rem;
       font-size: 11px;
       text-transform: uppercase;
       letter-spacing: 0.03em;
@@ -134,38 +127,40 @@
     .card-head b { color: var(--text); font-weight: 700; }
     .card-head .st { color: var(--warn); text-transform: none; letter-spacing: 0; }
     .card-head .st.ok { color: var(--accent); }
+    .card-head .st.bad { color: var(--danger); }
     .card-body {
       flex: 1;
-      min-height: 260px;
-      background: #ffffff;
+      min-height: 250px;
+      background: #fff;
       border-radius: 10px;
       overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .hold {
+      width: 300px;
+      height: 250px;
+      max-width: 100%;
+      overflow: hidden;
+      background: #fff;
       position: relative;
     }
-    .card.is-wide .card-body { min-height: 110px; }
-    .card-body > iframe.adframe {
-      width: 100%;
-      height: 260px;
-      border: 0;
-      display: block;
-      background: #fff;
-      overflow: hidden;
-    }
-    .card.is-wide .card-body > iframe.adframe { height: 110px; }
+    .hold iframe { display: block !important; margin: 0 auto !important; }
     .pop-arm {
       width: calc(100% - 8px);
-      min-height: 150px;
+      min-height: 140px;
       margin: 4px;
       border: 1px dashed rgba(61, 207, 138, 0.35);
       border-radius: 10px;
       background: rgba(61, 207, 138, 0.06);
       color: var(--text);
       text-align: left;
-      padding: 0.9rem;
+      padding: 0.85rem;
       font: inherit;
       cursor: pointer;
     }
-    .pop-arm strong { color: var(--accent); display: block; margin-bottom: 0.35rem; }
+    .pop-arm strong { color: var(--accent); display: block; margin-bottom: 0.3rem; }
     .pop-arm span { color: var(--muted); font-size: 12px; display: block; }
   </style>
 </head>
@@ -175,17 +170,13 @@
       <span class="title">AD LAB</span>
       <span id="meta">...</span>
       <span id="tick">reload <strong>-</strong></span>
-      <span id="fills">filled <strong>0</strong>/<strong>0</strong></span>
+      <span id="fills">ok <strong>0</strong>/<strong>0</strong></span>
       <span id="status"></span>
     </div>
     <div class="row">
-      <label>cards <input id="count" type="number" min="4" max="24" value="12" /></label>
-      <label>reload <input id="secs" type="number" min="20" max="300" value="60" /> s</label>
-      <label>retry empty <input id="retry" type="number" min="12" max="120" value="20" /> s</label>
-      <label class="chk"><input type="checkbox" id="t-banner" checked /> banners</label>
-      <label class="chk"><input type="checkbox" id="t-native" checked /> native</label>
-      <label class="chk"><input type="checkbox" id="t-reward" checked /> reward</label>
-      <label class="chk"><input type="checkbox" id="t-smartlink" /> smartlink</label>
+      <label>cards <input id="count" type="number" min="4" max="16" value="8" /></label>
+      <label>reload <input id="secs" type="number" min="5" max="120" value="10" /> s</label>
+      <label>retry <input id="retry" type="number" min="2" max="60" value="3" /> s</label>
       <label class="chk"><input type="checkbox" id="t-popunder" checked /> popunder</label>
       <label class="chk"><input type="checkbox" id="auto" checked /> auto</label>
       <label class="chk"><input type="checkbox" id="ads-only" /> ads only</label>
@@ -196,30 +187,16 @@
   </div>
 
   <section id="help">
-    <p><strong>White boxes</strong> are the ad stage (ads need a light background). If a card stays empty, Adsterra has no fill - it will retry slowly, not thrash.</p>
-    <p><strong>Popunder</strong> is not an on-page image. Tap the popunder card once, then check for a tab behind this one (browsers often block it).</p>
-    <p><strong>/ads/</strong> is the live lab path (Cloudflare sometimes caches older /testing, /watch, and /a pages).</p>
+    <p>Only path: <strong>/testing/</strong>. Sad-face / "refused to connect" means a dead Adsterra offer - those are NOT counted as filled and get replaced quickly.</p>
   </section>
 
   <div id="grid" aria-live="polite"></div>
 
   <script>
     (function () {
-      var SMARTLINK =
-        "https://www.effectivecpmnetwork.com/s889n4i77?key=38aa37c91a94f34912a4a89f8b27799d";
+      var BANNER_KEY = "d737196962ef25449dcb66c5655248f1";
       var POPUNDER_SRC =
         "https://pl30567774.effectivecpmnetwork.com/3c/91/ea/3c91ea5fe0936ca26b9cc5cebf036f9f.js";
-
-      var BANNER_SIZES = [
-        { w: 300, h: 250, label: "300Ã—250", cls: "" },
-        { w: 300, h: 250, label: "300Ã—250", cls: "" },
-        { w: 336, h: 280, label: "336Ã—280", cls: "" },
-        { w: 300, h: 250, label: "300Ã—250", cls: "" },
-        { w: 728, h: 90, label: "728Ã—90", cls: "is-wide" },
-        { w: 300, h: 250, label: "300Ã—250", cls: "" },
-        { w: 320, h: 50, label: "320Ã—50", cls: "is-wide" },
-        { w: 300, h: 250, label: "300Ã—250", cls: "" },
-      ];
 
       var grid = document.getElementById("grid");
       var statusEl = document.getElementById("status");
@@ -232,11 +209,10 @@
       var reloadTimer = null;
       var countdownTimer = null;
       var retryTimer = null;
-      var fillTimer = null;
       var nextAt = 0;
       var gen = 0;
       var slots = [];
-      var slotSeq = 0;
+      var mountQueue = Promise.resolve();
 
       function setStatus(msg, kind) {
         statusEl.textContent = msg || "";
@@ -250,21 +226,6 @@
         if (n > max) n = max;
         document.getElementById(id).value = String(n);
         return n;
-      }
-
-      function unitSrc(kind, w, h, slotId) {
-        return (
-          "u.html?kind=" +
-          encodeURIComponent(kind) +
-          "&w=" +
-          w +
-          "&h=" +
-          h +
-          "&slot=" +
-          encodeURIComponent(slotId) +
-          "&t=" +
-          Date.now()
-        );
       }
 
       function ensurePopunder(on) {
@@ -285,47 +246,10 @@
         popunderLoaded = true;
       }
 
-      function setSlotStatus(slot, text, ok) {
+      function setSlotStatus(slot, text, ok, bad) {
         if (!slot || !slot.st) return;
         slot.st.textContent = text;
-        slot.st.className = "st" + (ok ? " ok" : "");
-      }
-
-      function frameHasFill(frame) {
-        try {
-          var doc = frame.contentDocument || (frame.contentWindow && frame.contentWindow.document);
-          if (!doc) return false;
-          if (doc.querySelectorAll("iframe").length > 0) return true;
-          if (doc.querySelectorAll("img").length > 0) return true;
-          return false;
-        } catch (_) {
-          return true;
-        }
-      }
-
-      function remountSlot(slot, force) {
-        if (!slot || slot.kind === "popunder") return;
-        var now = Date.now();
-        if (!force && slot.mountedAt && now - slot.mountedAt < 15000) return;
-
-        slot.attempts = (slot.attempts || 0) + 1;
-        slot.filled = false;
-        slot.mountedAt = now;
-        slot.slotId = "s" + ++slotSeq + "-" + now + "-" + Math.floor(Math.random() * 1e6);
-        setSlotStatus(slot, "loading", false);
-        slot.body.innerHTML = "";
-
-        var kind = slot.kind === "smartlink" ? "banner" : slot.kind;
-        var frame = document.createElement("iframe");
-        frame.className = "adframe";
-        frame.title = "ad " + slot.slotId;
-        frame.loading = "eager";
-        frame.referrerPolicy = "no-referrer-when-downgrade";
-        frame.setAttribute("scrolling","no"); frame.style.overflow="hidden";
-        frame.style.height = Math.max(slot.h + 20, slot.cls === "is-wide" ? 110 : 260) + "px";
-        frame.src = unitSrc(kind, slot.w, slot.h, slot.slotId);
-        slot.body.appendChild(frame);
-        slot.frame = frame;
+        slot.st.className = "st" + (ok ? " ok" : "") + (bad ? " bad" : "");
       }
 
       function paintFills() {
@@ -336,91 +260,239 @@
           total++;
           if (s.filled) filled++;
         });
-        fillsEl.innerHTML = "filled <strong>" + filled + "</strong>/<strong>" + total + "</strong>";
+        fillsEl.innerHTML = "ok <strong>" + filled + "</strong>/<strong>" + total + "</strong>";
       }
 
-      function checkFills() {
-        slots.forEach(function (s) {
-          if (s.kind === "popunder" || s.filled || !s.frame) return;
-          if (frameHasFill(s.frame)) {
-            s.filled = true;
-            setSlotStatus(s, "filled", true);
-          }
+      /** Probe whether an ad iframe URL is actually reachable (catches sad-face / refused). */
+      function probeUrl(url) {
+        if (!url || url.indexOf("http") !== 0) return Promise.resolve(false);
+        return new Promise(function (resolve) {
+          var done = false;
+          var finish = function (ok) {
+            if (done) return;
+            done = true;
+            resolve(!!ok);
+          };
+          var timer = setTimeout(function () {
+            finish(false);
+          }, 2800);
+          fetch(url, { method: "GET", mode: "no-cors", cache: "no-store", credentials: "omit" })
+            .then(function () {
+              clearTimeout(timer);
+              finish(true);
+            })
+            .catch(function () {
+              clearTimeout(timer);
+              finish(false);
+            });
         });
+      }
+
+      function readIframeHealth(iframe) {
+        // Returns: 'dead' | 'live' | 'unknown'
+        try {
+          var href = iframe.contentWindow && iframe.contentWindow.location.href;
+          if (!href || href === "about:blank") return "unknown";
+          if (/^chrome-error:|^chrome:|^about:neterror/i.test(href)) return "dead";
+          var doc = iframe.contentDocument;
+          if (doc) {
+            var t = ((doc.body && doc.body.innerText) || "").toLowerCase();
+            if (/refused to connect|err_connection|can't be reached|this site can.t be reached|err_tunnel|not found/.test(t)) {
+              return "dead";
+            }
+          }
+          return "live";
+        } catch (_) {
+          return "unknown"; // cross-origin - need fetch probe
+        }
+      }
+
+      function verifyCreative(hold) {
+        return new Promise(function (resolve) {
+          if (!hold) return resolve(false);
+          var iframes = hold.querySelectorAll("iframe");
+          var imgs = hold.querySelectorAll("img");
+          if (!iframes.length && !imgs.length) return resolve(false);
+
+          if (imgs.length) {
+            for (var i = 0; i < imgs.length; i++) {
+              var r = imgs[i].getBoundingClientRect();
+              if (r.width > 40 && r.height > 40) return resolve(true);
+            }
+          }
+
+          if (!iframes.length) return resolve(false);
+
+          var pending = iframes.length;
+          var anyLive = false;
+          var anyDead = false;
+
+          function oneDone() {
+            pending -= 1;
+            if (pending > 0) return;
+            if (anyLive) resolve(true);
+            else if (anyDead) resolve(false);
+            else resolve(false);
+          }
+
+          iframes.forEach(function (el) {
+            var r = el.getBoundingClientRect();
+            if (r.width < 40 || r.height < 40) {
+              oneDone();
+              return;
+            }
+            var health = readIframeHealth(el);
+            if (health === "dead") {
+              anyDead = true;
+              oneDone();
+              return;
+            }
+            if (health === "live") {
+              anyLive = true;
+              oneDone();
+              return;
+            }
+            // unknown (cross-origin): probe the src
+            var src = el.currentSrc || el.src || "";
+            probeUrl(src).then(function (ok) {
+              if (ok) anyLive = true;
+              else anyDead = true;
+              oneDone();
+            });
+          });
+        });
+      }
+
+      function loadBanner(hold, slotId) {
+        return new Promise(function (resolve) {
+          window.atOptions = {
+            key: BANNER_KEY,
+            format: "iframe",
+            height: 250,
+            width: 300,
+            params: {},
+          };
+          var s = document.createElement("script");
+          s.setAttribute("data-cfasync", "false");
+          s.src =
+            "https://www.highperformanceformat.com/" +
+            BANNER_KEY +
+            "/invoke.js?cb=" +
+            Date.now() +
+            "s" +
+            encodeURIComponent(slotId);
+          s.onload = function () {
+            resolve(true);
+          };
+          s.onerror = function () {
+            resolve(false);
+          };
+          hold.appendChild(s);
+        });
+      }
+
+      function remountSlot(slot, force) {
+        if (!slot || slot.kind === "popunder") return;
+        var now = Date.now();
+        if (!force && slot.mountedAt && now - slot.mountedAt < 2500) return;
+        if (slot.watchIv) clearInterval(slot.watchIv);
+
+        slot.attempts = (slot.attempts || 0) + 1;
+        slot.filled = false;
+        slot.mountedAt = now;
+        slot.gen = gen;
+        slot.slotId = "b" + now + "r" + Math.floor(Math.random() * 1e6);
+        setSlotStatus(slot, "loading", false, false);
         paintFills();
+        slot.body.innerHTML = "";
+
+        var hold = document.createElement("div");
+        hold.className = "hold";
+        slot.body.appendChild(hold);
+        slot.hold = hold;
+
+        mountQueue = mountQueue
+          .then(function () {
+            if (slot.gen !== gen) return;
+            return loadBanner(hold, slot.slotId).then(function (ok) {
+              if (!ok) {
+                setSlotStatus(slot, "script fail", false, true);
+                return;
+              }
+              var checks = 0;
+              slot.watchIv = setInterval(function () {
+                if (slot.gen !== gen) {
+                  clearInterval(slot.watchIv);
+                  return;
+                }
+                checks += 1;
+                var hasNode =
+                  hold.querySelectorAll("iframe").length > 0 ||
+                  hold.querySelectorAll("img").length > 0;
+                if (!hasNode) {
+                  if (checks >= 16) {
+                    clearInterval(slot.watchIv);
+                    setSlotStatus(slot, "no fill", false, true);
+                    setTimeout(function () {
+                      if (slot.gen === gen) remountSlot(slot, true);
+                    }, 400);
+                  }
+                  return;
+                }
+                // Give the iframe a moment to fail/succeed, then verify
+                if (checks < 3) return;
+                clearInterval(slot.watchIv);
+                verifyCreative(hold).then(function (ok2) {
+                  if (slot.gen !== gen) return;
+                  if (ok2) {
+                    slot.filled = true;
+                    setSlotStatus(slot, "filled", true, false);
+                    paintFills();
+                  } else {
+                    setSlotStatus(slot, "dead offer", false, true);
+                    paintFills();
+                    setTimeout(function () {
+                      if (slot.gen === gen) remountSlot(slot, true);
+                    }, 350);
+                  }
+                });
+              }, 400);
+            });
+          })
+          .then(function () {
+            return new Promise(function (r) {
+              setTimeout(r, 400);
+            });
+          });
       }
 
       function retryEmpties() {
         var n = 0;
         slots.forEach(function (s) {
           if (s.kind === "popunder" || s.filled) return;
-          if (s.mountedAt && Date.now() - s.mountedAt < 15000) return;
+          if (s.mountedAt && Date.now() - s.mountedAt < 2500) return;
           remountSlot(s, true);
-          n++;
+          n += 1;
         });
-        if (n) setStatus("retrying " + n + " empty", "ok");
+        if (n) setStatus("retrying " + n, "ok");
         paintFills();
-      }
-
-      function buildPlan(n) {
-        var plan = [];
-        var wantBanner = document.getElementById("t-banner").checked;
-        var wantNative = document.getElementById("t-native").checked;
-        var wantReward = document.getElementById("t-reward").checked;
-        var wantSmart = document.getElementById("t-smartlink").checked;
-        var types = [];
-        if (wantBanner) types.push("banner");
-        if (wantNative) types.push("native");
-        if (wantReward) types.push("reward");
-        if (wantSmart) types.push("smartlink");
-        if (!types.length) return plan;
-
-        var bi = 0;
-        var i = 0;
-        var nativeCount = 0;
-        while (plan.length < n && i < n * 10) {
-          var t = types[i % types.length];
-          i++;
-          if (t === "banner") {
-            var sz = BANNER_SIZES[bi % BANNER_SIZES.length];
-            bi++;
-            plan.push({ kind: "banner", detail: sz.label, w: sz.w, h: sz.h, cls: sz.cls });
-          } else if (t === "native") {
-            if (nativeCount >= 2) continue;
-            nativeCount++;
-            plan.push({ kind: "native", detail: "native", w: 300, h: 280, cls: "" });
-          } else if (t === "reward") {
-            plan.push({ kind: "reward", detail: "banner+social", w: 300, h: 250, cls: "" });
-          } else {
-            plan.push({ kind: "smartlink", detail: "banner unit", w: 300, h: 250, cls: "" });
-          }
-        }
-        while (plan.length < n) {
-          var sz2 = BANNER_SIZES[bi % BANNER_SIZES.length];
-          bi++;
-          plan.push({ kind: "banner", detail: sz2.label, w: sz2.w, h: sz2.h, cls: sz2.cls });
-        }
-        return plan.slice(0, n);
       }
 
       function clearTimers() {
         if (countdownTimer) clearInterval(countdownTimer);
         if (reloadTimer) clearTimeout(reloadTimer);
         if (retryTimer) clearInterval(retryTimer);
-        if (fillTimer) clearInterval(fillTimer);
-        countdownTimer = reloadTimer = retryTimer = fillTimer = null;
+        countdownTimer = reloadTimer = retryTimer = null;
       }
 
       function scheduleLoops() {
         clearTimers();
-        fillTimer = setInterval(checkFills, 700);
-        retryTimer = setInterval(retryEmpties, num("retry", 12, 120, 20) * 1000);
-
+        retryTimer = setInterval(retryEmpties, num("retry", 2, 60, 3) * 1000);
         if (!document.getElementById("auto").checked) {
           tickEl.innerHTML = "auto <strong>off</strong>";
           return;
         }
-        var secs = num("secs", 20, 300, 60);
+        var secs = num("secs", 5, 120, 10);
         nextAt = Date.now() + secs * 1000;
         function paintTick() {
           var left = Math.max(0, Math.ceil((nextAt - Date.now()) / 1000));
@@ -438,26 +510,23 @@
 
       function render() {
         var my = ++gen;
-        var n = num("count", 4, 24, 12);
+        var n = num("count", 4, 16, 8);
         var wantPop = document.getElementById("t-popunder").checked;
-        var plan = buildPlan(n);
+        slots.forEach(function (s) {
+          if (s.watchIv) clearInterval(s.watchIv);
+        });
         slots = [];
         grid.innerHTML = "";
+        mountQueue = Promise.resolve();
         ensurePopunder(wantPop);
 
-        if (!plan.length && !wantPop) {
-          setStatus("pick at least one ad type", "err");
-          paintFills();
-          return;
-        }
-
-        plan.forEach(function (item, idx) {
+        for (var i = 0; i < n; i++) {
           var card = document.createElement("article");
-          card.className = "card " + (item.cls || "");
+          card.className = "card";
           var head = document.createElement("div");
           head.className = "card-head";
           var left = document.createElement("span");
-          left.innerHTML = "<b>" + item.kind + "</b> #" + (idx + 1) + " - " + item.detail;
+          left.innerHTML = "<b>banner</b> #" + (i + 1) + " · 300x250";
           var st = document.createElement("span");
           st.className = "st";
           st.textContent = "queued";
@@ -470,25 +539,23 @@
           grid.appendChild(card);
 
           var slot = {
-            kind: item.kind,
-            w: item.w,
-            h: item.h,
+            kind: "banner",
             body: body,
             st: st,
-            frame: null,
+            hold: null,
             filled: false,
             attempts: 0,
             mountedAt: 0,
-            slotId: "",
+            gen: my,
           };
           slots.push(slot);
-
-          // Stagger so each request is separate (better chance of distinct fills)
-          setTimeout(function () {
-            if (my !== gen) return;
-            remountSlot(slot, true);
-          }, 400 + idx * 450);
-        });
+          (function (s, delay) {
+            setTimeout(function () {
+              if (gen !== my) return;
+              remountSlot(s, true);
+            }, delay);
+          })(slot, 150 + i * 450);
+        }
 
         if (wantPop) {
           var card = document.createElement("article");
@@ -504,15 +571,14 @@
           btn.className = "pop-arm";
           btn.innerHTML =
             "<strong>Arm &amp; fire popunder</strong>" +
-            "<span>Not a white/black ad box. May open a tab behind this one (often blocked).</span>";
+            "<span>Not an on-page ad. May open a tab behind this one (often blocked).</span>";
           btn.addEventListener("click", function () {
             popunderLoaded = false;
             ensurePopunder(true);
             setTimeout(function () {
               document.body.click();
               btn.innerHTML =
-                "<strong>Gesture sent</strong>" +
-                "<span>Check other tabs / the blocked-popup icon in the address bar.</span>";
+                "<strong>Gesture sent</strong><span>Check other tabs / blocked-popup icon.</span>";
             }, 300);
           });
           body.appendChild(btn);
@@ -522,31 +588,7 @@
           slots.push({ kind: "popunder", filled: true, body: body, st: null });
         }
 
-        // Optional smartlink strip (only if enabled) - one visible link, not a fake banner label
-        if (document.getElementById("t-smartlink").checked) {
-          var sc = document.createElement("article");
-          sc.className = "card";
-          sc.innerHTML =
-            "<div class='card-head'><span><b>smartlink</b> - click URL</span><span class='st ok'>ready</span></div>";
-          var sb = document.createElement("div");
-          sb.className = "card-body";
-          sb.style.display = "flex";
-          sb.style.alignItems = "center";
-          sb.style.justifyContent = "center";
-          sb.style.background = "#102018";
-          var a = document.createElement("a");
-          a.href = SMARTLINK;
-          a.target = "_blank";
-          a.rel = "noopener noreferrer sponsored";
-          a.style.cssText =
-            "color:#3dcf8a;font-weight:700;text-decoration:none;border:1px solid rgba(61,207,138,.35);padding:.85rem 1.1rem;border-radius:10px";
-          a.textContent = "Open smartlink";
-          sb.appendChild(a);
-          sc.appendChild(sb);
-          grid.appendChild(sc);
-        }
-
-        setStatus(plan.length + " slots - staggered load", "ok");
+        setStatus(n + " banners", "ok");
         paintFills();
         scheduleLoops();
       }
@@ -569,33 +611,17 @@
         document.body.classList.toggle("ads-only", !!e.target.checked);
       });
       document.getElementById("auto").addEventListener("change", scheduleLoops);
-
-      ["t-banner", "t-native", "t-reward", "t-smartlink", "t-popunder", "count", "secs", "retry"].forEach(
-        function (id) {
-          document.getElementById(id).addEventListener("change", function () {
-            if (id === "secs" || id === "retry") {
-              scheduleLoops();
-              return;
-            }
-            popunderLoaded = false;
-            var old = document.getElementById("steady-lab-popunder");
-            if (old) old.remove();
-            render();
-          });
-        }
-      );
-
-      window.addEventListener("message", function (ev) {
-        var data = ev.data || {};
-        if (data.type === "steady-unit-filled" && data.slot) {
-          slots.forEach(function (s) {
-            if (s.slotId === data.slot) {
-              s.filled = true;
-              setSlotStatus(s, "filled", true);
-            }
-          });
-          paintFills();
-        }
+      ["t-popunder", "count", "secs", "retry"].forEach(function (id) {
+        document.getElementById(id).addEventListener("change", function () {
+          if (id === "secs" || id === "retry") {
+            scheduleLoops();
+            return;
+          }
+          popunderLoaded = false;
+          var old = document.getElementById("steady-lab-popunder");
+          if (old) old.remove();
+          render();
+        });
       });
 
       paintMeta();
@@ -604,5 +630,3 @@
   </script>
 </body>
 </html>
-
-
