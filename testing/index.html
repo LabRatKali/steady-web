@@ -376,9 +376,37 @@
     .arm-btn strong { color: var(--accent); display: block; margin-bottom: 0.25rem; }
     .arm-btn span { color: var(--muted); font-size: 12px; display: block; line-height: 1.35; }
 
+    @media (max-width: 700px) {
+      .lab-chrome { padding: 0.65rem 0.75rem 0.75rem; }
+      .row { gap: 0.4rem 0.55rem; }
+      #grid {
+        padding: 0.75rem;
+        gap: 0.75rem;
+        justify-content: center;
+        grid-template-columns: repeat(auto-fill, minmax(min(100%, 312px), 312px));
+      }
+      .preset, button, .arm-btn { min-height: 44px; }
+      input[type="number"] { min-height: 40px; font-size: 16px; } /* iOS zoom guard */
+    }
     @media (max-width: 340px) {
       #grid { grid-template-columns: 1fr; justify-content: stretch; }
-      .card { width: 100%; max-width: 312px; }
+      .card { width: 100%; max-width: 312px; margin: 0 auto; }
+      .card-body, .smart-wrap, .adframe {
+        width: 100% !important;
+        max-width: var(--banner-w);
+      }
+    }
+    @supports (padding: env(safe-area-inset-top)) {
+      .lab-chrome {
+        padding-left: max(0.75rem, env(safe-area-inset-left));
+        padding-right: max(0.75rem, env(safe-area-inset-right));
+        padding-top: max(0.65rem, env(safe-area-inset-top));
+      }
+      #grid {
+        padding-left: max(0.75rem, env(safe-area-inset-left));
+        padding-right: max(0.75rem, env(safe-area-inset-right));
+        padding-bottom: max(1rem, env(safe-area-inset-bottom));
+      }
     }
   </style>
 </head>
@@ -401,7 +429,7 @@
         <button type="button" class="preset big" data-n="96">96</button>
       </span>
       <label>cards <input id="count" type="number" min="1" max="120" value="24" /></label>
-      <label>cycle empties <input id="reload" type="number" min="8" max="300" value="20" /> s</label>
+      <label>reload all <input id="reload" type="number" min="8" max="300" value="20" /> s</label>
       <label>retry empty <input id="retry" type="number" min="2" max="60" value="5" /> s</label>
       <label class="chk"><input type="checkbox" id="t-smart" checked /> smartlink</label>
       <label class="chk"><input type="checkbox" id="t-popunder" /> popunder</label>
@@ -418,10 +446,9 @@
 
   <section id="help">
     <p><strong>/testing/</strong> — every display unit is a fitted <strong>300×250</strong> (your working Adsterra banner zone).</p>
-    <p>Default wall is <strong>24</strong> cards, full reload every <strong>20s</strong> (change anytime; 12 is fine). A slot is <strong>filled</strong> only when a real ad image paints — not a blank frame.</p>
-    <p><strong>Use system Chrome or Edge</strong> — Cursor’s built-in browser blocks Adsterra hosts.</p>
-    <p>Ads run <strong>inside the page</strong> (srcdoc), not a separate unit URL. Auto cycle only retries empties so filled creatives stay put — that avoids burning hundreds of CDN URLs until networks start blocking.</p>
-    <p><strong>Smartlink</strong> = same banner + tap. <strong>Popunder</strong> = arm only. If creatives stay blank in real Chrome, run <code>scripts/fix_adsterra_dns.ps1</code> as admin.</p>
+    <p>Default wall is <strong>24</strong> cards; when the reload timer hits, the <strong>whole wall</strong> remounts. Empty slots also retry in between.</p>
+    <p>Works in system <strong>Chrome, Edge, Firefox, Safari</strong> and on phones — not inside Cursor’s IDE browser (it blocks ad hosts).</p>
+    <p><strong>Smartlink</strong> = same banner + tap. <strong>Popunder</strong> = arm only. If creatives stay blank, run <code>scripts/fix_adsterra_dns.ps1</code> as admin.</p>
   </section>
 
   <div id="grid" aria-live="polite"></div>
@@ -434,10 +461,18 @@
         "https://www.effectivecpmnetwork.com/s889n4i77?key=38aa37c91a94f34912a4a89f8b27799d";
       var POPUNDER_SRC =
         "https://pl30567774.effectivecpmnetwork.com/3c/91/ea/3c91ea5fe0936ca26b9cc5cebf036f9f.js";
-      var UNIT_PAGE = new URL("unit.html", location.href).href;
+      var UNIT_PAGE = (function () {
+        try {
+          return new URL("unit.html", location.href).href;
+        } catch (_) {
+          var path = location.pathname || "/";
+          var base = path.replace(/[^/]*$/, "");
+          return location.protocol + "//" + location.host + base + "unit.html";
+        }
+      })();
       var WORKERS_LAB = "https://steady.less-phone.workers.dev/testing/";
       var PAGES_LAB = "https://labratkali.github.io/steady-web/testing/";
-      var LAB_BUILD = "2026-07-28f";
+      var LAB_BUILD = "2026-07-28g";
 
       var W = 300;
       var H = 250;
@@ -449,6 +484,19 @@
       var CHECK_MS = 200;
       var BETWEEN_MS = 70;
       var MAX_CARDS = 120;
+      // unit.html is more reliable on Safari / Firefox / many phones than srcdoc+scripts.
+      var USE_UNIT_PAGE = (function () {
+        try {
+          if (!("srcdoc" in document.createElement("iframe"))) return true;
+        } catch (_) {
+          return true;
+        }
+        var ua = navigator.userAgent || "";
+        if (/iPhone|iPad|iPod|Android/i.test(ua)) return true;
+        if (/Firefox|FxiOS/i.test(ua)) return true;
+        if (/Safari/i.test(ua) && !/Chrome|CriOS|Chromium|Edg|OPR|Android/i.test(ua)) return true;
+        return false;
+      })();
 
       var grid = document.getElementById("grid");
       var statusEl = document.getElementById("status");
@@ -496,11 +544,21 @@
 
       function concurrencyFor(n) {
         // Parallel starts so the wall fills in ~2–5s; still capped to avoid rate-limits.
-        if (n <= 12) return 6;
-        if (n <= 24) return 10;
-        if (n <= 48) return 12;
-        if (n <= 72) return 14;
-        return 16;
+        // Phones / tablets: lower concurrency — weaker CPUs and stricter connection limits.
+        var mobile = false;
+        try {
+          mobile =
+            /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent || "") ||
+            (window.matchMedia && window.matchMedia("(pointer: coarse)").matches);
+        } catch (_) {}
+        var cap = mobile ? 4 : 16;
+        var want;
+        if (n <= 12) want = mobile ? 3 : 6;
+        else if (n <= 24) want = mobile ? 4 : 10;
+        else if (n <= 48) want = mobile ? 4 : 12;
+        else if (n <= 72) want = mobile ? 4 : 14;
+        else want = mobile ? 4 : 16;
+        return want > cap ? cap : want;
       }
 
       function syncPresets(n) {
@@ -756,8 +814,13 @@
         if (total > 0 && filled === total) setStatus("all filled", "ok");
       }
 
+      function unitHref(cb) {
+        var join = UNIT_PAGE.indexOf("?") >= 0 ? "&" : "?";
+        return UNIT_PAGE + join + "cb=" + encodeURIComponent(cb);
+      }
+
       function bannerSrcdoc(cb) {
-        // In-page iframe document (not a /unit.html sub-URL). Each card is isolated.
+        // Chromium desktop fallback — in-page iframe document.
         return (
           "<!DOCTYPE html><html><head><meta charset=\"utf-8\" />" +
           "<meta name=\"referrer\" content=\"no-referrer-when-downgrade\" />" +
@@ -786,6 +849,21 @@
           "/script>" +
           "</body></html>"
         );
+      }
+
+      function mountFrame(iframe, cb) {
+        var token = String(cb);
+        if (USE_UNIT_PAGE) {
+          iframe.src = unitHref(token);
+          try {
+            iframe.removeAttribute("srcdoc");
+          } catch (_) {}
+        } else {
+          iframe.srcdoc = bannerSrcdoc(token);
+          try {
+            iframe.removeAttribute("src");
+          } catch (_) {}
+        }
       }
 
       function findCreative(doc) {
@@ -964,13 +1042,16 @@
         iframe.className = "adframe";
         iframe.width = W;
         iframe.height = H;
+        iframe.setAttribute("width", String(W));
+        iframe.setAttribute("height", String(H));
         iframe.setAttribute("scrolling", "no");
         iframe.setAttribute("frameborder", "0");
         iframe.setAttribute("referrerpolicy", "no-referrer-when-downgrade");
         iframe.setAttribute("allow", "attribution-reporting");
+        iframe.setAttribute("importance", "high");
         iframe.title = slot.kind + " " + (slot.index + 1);
-        // srcdoc keeps the creative on this page (no /unit.html sub-URL).
-        iframe.srcdoc = bannerSrcdoc(Date.now() + "-" + slot.index + "-" + slot.attempts);
+        // Safari/Firefox/mobile → unit.html; Chromium desktop → srcdoc.
+        mountFrame(iframe, Date.now() + "-" + slot.index + "-" + slot.attempts);
         host.appendChild(iframe);
         slot.iframe = iframe;
 
@@ -1019,23 +1100,6 @@
         pumpQueue();
       }
 
-      function softCycle() {
-        // Keep filled creatives alive — tearing them down every N seconds floods
-        // the browser/ISP with new Adsterra CDN hosts until things start failing.
-        var n = 0;
-        slots.forEach(function (s) {
-          if (s.kind === "popunder" || s.filled || s.watching || s.mounting) return;
-          if (waitQueue.indexOf(s) >= 0) return;
-          waitQueue.push(s);
-          setSlotStatus(s, "queued", false, false);
-          n += 1;
-        });
-        if (n) setStatus("cycle retry " + n, "ok");
-        else setStatus(filledCount() ? "holding fills" : "waiting inventory", "ok");
-        pumpQueue();
-        scheduleLoops();
-      }
-
       function clearTimers() {
         if (countdownTimer) clearInterval(countdownTimer);
         if (reloadTimer) clearTimeout(reloadTimer);
@@ -1056,12 +1120,16 @@
         retryTimer = setInterval(retryEmpties, retrySecs * 1000);
         function paintTick() {
           var left = Math.max(0, Math.ceil((nextReloadAt - Date.now()) / 1000));
-          tickEl.innerHTML = "cycle <strong>" + left + "s</strong>";
+          tickEl.innerHTML = "reload <strong>" + left + "s</strong>";
         }
         paintTick();
         countdownTimer = setInterval(paintTick, 250);
         reloadTimer = setTimeout(function () {
-          softCycle();
+          // Full wall remount when the cycle runs out (not empties-only).
+          popunderLoaded = false;
+          var old = document.getElementById("steady-lab-popunder");
+          if (old) old.remove();
+          render();
         }, reloadSecs * 1000);
       }
 
