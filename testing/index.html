@@ -173,9 +173,9 @@
       <span id="status"></span>
     </div>
     <div class="row">
-      <label>cards <input id="count" type="number" min="4" max="16" value="8" /></label>
-      <label>reload <input id="secs" type="number" min="5" max="120" value="10" /> s</label>
-      <label>retry <input id="retry" type="number" min="2" max="60" value="3" /> s</label>
+      <label>cards <input id="count" type="number" min="4" max="16" value="4" /></label>
+      <label>reload <input id="secs" type="number" min="5" max="120" value="40" /> s</label>
+      <label>retry <input id="retry" type="number" min="2" max="60" value="6" /> s</label>
       <label class="chk"><input type="checkbox" id="t-popunder" checked /> popunder</label>
       <label class="chk"><input type="checkbox" id="auto" checked /> auto</label>
       <label class="chk"><input type="checkbox" id="ads-only" /> ads only</label>
@@ -186,7 +186,7 @@
   </div>
 
   <section id="help">
-    <p>Only path: <strong>/testing/</strong>. Every slot remounts until an ad appears. Creatives are loaded through a same-origin proxy so ISP DNS blocks (e.g. Optimum sinkholing Adsterra domains) do not blank the slots. If ads still fail, set DNS to 1.1.1.1.</p>
+    <p>Only path: <strong>/testing/</strong>. One-by-one mounts so Adsterra can fill. Empty slots retry; full grid reloads on the timer. Use DNS <strong>1.1.1.1</strong> if creatives refuse to connect.</p>
   </section>
 
   <div id="grid" aria-live="polite"></div>
@@ -196,12 +196,6 @@
       var BANNER_KEY = "d737196962ef25449dcb66c5655248f1";
       var POPUNDER_SRC =
         "https://pl30567774.effectivecpmnetwork.com/3c/91/ea/3c91ea5fe0936ca26b9cc5cebf036f9f.js";
-
-      // Dead Adsterra edge (often 167.206.37.145 / connection refused)
-      var DEAD_HOST_RE =
-        /spendsdetachment|workdeadlinededicate|zoologyfibre|protrafficinspector|detachment|deadline/i;
-      // Live creative edges currently answering HTTP 200
-      var LIVE_HOSTS = ["kettledroopingcontinuation.com"];
 
       var grid = document.getElementById("grid");
       var statusEl = document.getElementById("status");
@@ -217,9 +211,7 @@
       var nextAt = 0;
       var gen = 0;
       var slots = [];
-      var liveHostIdx = 0;
-      var remountBusy = false;
-      var remountQueue = [];
+      var mountChain = Promise.resolve();
 
       function setStatus(msg, kind) {
         statusEl.textContent = msg || "";
@@ -233,12 +225,6 @@
         if (n > max) n = max;
         document.getElementById(id).value = String(n);
         return n;
-      }
-
-      function nextLiveHost() {
-        var h = LIVE_HOSTS[liveHostIdx % LIVE_HOSTS.length];
-        liveHostIdx += 1;
-        return h;
       }
 
       function ensurePopunder(on) {
@@ -277,48 +263,6 @@
         if (filled === total && total > 0) setStatus("all slots filled", "ok");
       }
 
-      var adpReady = null; // null=unknown, true/false after probe
-
-      function probeAdp() {
-        if (adpReady !== null) return Promise.resolve(adpReady);
-        return fetch(location.origin + "/adp/https/kettledroopingcontinuation.com/", {
-          method: "GET",
-          cache: "no-store",
-        })
-          .then(function (r) {
-            adpReady = r.status > 0 && r.status !== 404;
-            return adpReady;
-          })
-          .catch(function () {
-            adpReady = false;
-            return false;
-          });
-      }
-
-      function fixCreativeSrc(src) {
-        try {
-          var u = new URL(src);
-          // If ISP sinkholed this host, try live CDN hostname as soft fallback.
-          if (DEAD_HOST_RE.test(u.hostname) && !adpReady) {
-            u.hostname = nextLiveHost();
-          }
-          if (adpReady) {
-            return (
-              location.origin +
-              "/adp/" +
-              u.protocol.replace(":", "") +
-              "/" +
-              u.hostname +
-              u.pathname +
-              u.search
-            );
-          }
-          return u.toString();
-        } catch (_) {
-          return src;
-        }
-      }
-
       function bannerSrcdoc(cb) {
         return (
           "<!DOCTYPE html><html><head><meta charset=\"utf-8\" />" +
@@ -347,7 +291,7 @@
         for (var i = 0; i < imgs.length; i++) {
           var img = imgs[i];
           if (img.complete && img.naturalWidth >= 40 && img.naturalHeight >= 40) {
-            return { kind: "img", el: img, src: img.currentSrc || img.src };
+            return { kind: "img", el: img };
           }
         }
         var frames = doc.querySelectorAll("iframe");
@@ -362,42 +306,10 @@
         return null;
       }
 
-      function enqueueRemount(slot) {
-        if (!slot || slot.kind === "popunder" || slot.filled) return;
-        if (remountQueue.indexOf(slot) >= 0) return;
-        remountQueue.push(slot);
-        pumpRemountQueue();
-      }
-
-      function pumpRemountQueue() {
-        if (remountBusy) return;
-        var slot = remountQueue.shift();
-        if (!slot) return;
-        remountBusy = true;
-        remountSlot(slot, true);
-        setTimeout(function () {
-          remountBusy = false;
-          pumpRemountQueue();
-        }, 700);
-      }
-
-      function markFilled(slot, note) {
-        slot.filled = true;
-        setSlotStatus(slot, note || "filled", true, false);
-        paintFills();
-      }
-
       function remountSlot(slot, force) {
         if (!slot || slot.kind === "popunder") return;
-        probeAdp().then(function () {
-          remountSlotInner(slot, force);
-        });
-      }
-
-      function remountSlotInner(slot, force) {
-        if (!slot || slot.kind === "popunder") return;
         var now = Date.now();
-        if (!force && slot.mountedAt && now - slot.mountedAt < 2800) return;
+        if (!force && slot.mountedAt && now - slot.mountedAt < 3500) return;
         if (slot.watchIv) clearInterval(slot.watchIv);
 
         slot.attempts = (slot.attempts || 0) + 1;
@@ -406,72 +318,71 @@
         slot.gen = gen;
         setSlotStatus(slot, "loading", false, false);
         paintFills();
-        slot.body.innerHTML = "";
 
-        var iframe = document.createElement("iframe");
-        iframe.className = "adframe";
-        iframe.width = 300;
-        iframe.height = 250;
-        iframe.setAttribute("scrolling", "no");
-        iframe.setAttribute("frameborder", "0");
-        iframe.setAttribute("referrerpolicy", "strict-origin-when-cross-origin");
-        iframe.title = "banner " + (slot.index + 1);
+        mountChain = mountChain.then(function () {
+          if (slot.gen !== gen) return;
+          slot.body.innerHTML = "";
+          var iframe = document.createElement("iframe");
+          iframe.className = "adframe";
+          iframe.width = 300;
+          iframe.height = 250;
+          iframe.setAttribute("scrolling", "no");
+          iframe.setAttribute("frameborder", "0");
+          iframe.setAttribute("referrerpolicy", "strict-origin-when-cross-origin");
+          iframe.title = "banner " + (slot.index + 1);
+          iframe.srcdoc = bannerSrcdoc(now + "-" + slot.index + "-" + slot.attempts);
+          slot.body.appendChild(iframe);
+          slot.iframe = iframe;
 
-        // Alternate: only use invoke (then proxy). Direct watch skips Adsterra auction.
-        var mode = "invoke";
-        slot.mode = mode;
-        iframe.srcdoc = bannerSrcdoc(now + "-" + slot.index + "-" + slot.attempts);
-
-        slot.body.appendChild(iframe);
-        slot.iframe = iframe;
-
-        var checks = 0;
-        slot.watchIv = setInterval(function () {
-          if (slot.gen !== gen) {
-            clearInterval(slot.watchIv);
-            return;
-          }
-          checks += 1;
-          var creative = null;
-          try {
-            creative = findCreative(iframe.contentDocument);
-          } catch (_) {}
-
-          if (creative) {
-            clearInterval(slot.watchIv);
-            if (creative.kind === "iframe" && creative.src) {
-              var fixed = fixCreativeSrc(creative.src);
-              if (fixed !== creative.src) {
-                try {
-                  creative.el.src = fixed;
-                  setSlotStatus(slot, adpReady ? "proxying" : "rewrote host", false, false);
-                } catch (_) {}
+          var checks = 0;
+          return new Promise(function (resolve) {
+            slot.watchIv = setInterval(function () {
+              if (slot.gen !== gen) {
+                clearInterval(slot.watchIv);
+                resolve();
+                return;
               }
-            }
-            markFilled(slot, "filled");
-            return;
-          }
+              checks += 1;
+              var creative = null;
+              try {
+                creative = findCreative(iframe.contentDocument);
+              } catch (_) {}
 
-          if (checks >= 18) {
-            clearInterval(slot.watchIv);
-            setSlotStatus(slot, "empty", false, true);
-            // queue another attempt — never leave a slot dark
-            setTimeout(function () {
-              if (slot.gen === gen && !slot.filled) enqueueRemount(slot);
-            }, 400);
-          }
-        }, 300);
+              if (creative) {
+                clearInterval(slot.watchIv);
+                slot.filled = true;
+                setSlotStatus(slot, "filled", true, false);
+                paintFills();
+                // Give creative host time to paint before next slot mounts.
+                setTimeout(resolve, 900);
+                return;
+              }
+
+              // ~7s for invoke + nested creative
+              if (checks >= 24) {
+                clearInterval(slot.watchIv);
+                setSlotStatus(slot, "empty", false, true);
+                resolve();
+              }
+            }, 300);
+          });
+        });
       }
 
       function retryEmpties() {
-        var n = 0;
+        var list = [];
         slots.forEach(function (s) {
           if (s.kind === "popunder" || s.filled) return;
-          enqueueRemount(s);
-          n += 1;
+          if (s.mountedAt && Date.now() - s.mountedAt < 3500) return;
+          list.push(s);
         });
-        if (n) setStatus("retrying " + n, "ok");
-        paintFills();
+        if (!list.length) return;
+        setStatus("retrying " + list.length, "ok");
+        list.forEach(function (s, i) {
+          setTimeout(function () {
+            if (s.gen === gen && !s.filled) remountSlot(s, true);
+          }, i * 400);
+        });
       }
 
       function clearTimers() {
@@ -483,12 +394,12 @@
 
       function scheduleLoops() {
         clearTimers();
-        retryTimer = setInterval(retryEmpties, num("retry", 2, 60, 3) * 1000);
+        retryTimer = setInterval(retryEmpties, num("retry", 2, 60, 5) * 1000);
         if (!document.getElementById("auto").checked) {
           tickEl.innerHTML = "auto <strong>off</strong>";
           return;
         }
-        var secs = num("secs", 5, 120, 10);
+        var secs = num("secs", 5, 120, 15);
         nextAt = Date.now() + secs * 1000;
         function paintTick() {
           var left = Math.max(0, Math.ceil((nextAt - Date.now()) / 1000));
@@ -506,9 +417,8 @@
 
       function render() {
         var my = ++gen;
-        remountQueue = [];
-        remountBusy = false;
-        var n = num("count", 4, 16, 8);
+        mountChain = Promise.resolve();
+        var n = num("count", 4, 16, 6);
         var wantPop = document.getElementById("t-popunder").checked;
         slots.forEach(function (s) {
           if (s.watchIv) clearInterval(s.watchIv);
@@ -547,12 +457,10 @@
               mountedAt: 0,
               gen: my,
               watchIv: null,
-              mode: "",
             };
             slots.push(slot);
-            setTimeout(function () {
-              if (slot.gen === gen) remountSlot(slot, true);
-            }, index * 650);
+            // Sequential chain inside remountSlot — just kick each in order.
+            remountSlot(slot, true);
           })(i);
         }
 
@@ -584,7 +492,7 @@
 
         paintFills();
         meta.innerHTML =
-          "<strong>" + location.host + "</strong> /testing/ · <strong>" + n + "</strong> banners";
+          "<strong>" + location.host + "</strong> /testing/ · <strong>" + n + "</strong> banners · one-by-one";
         scheduleLoops();
       }
 
