@@ -601,9 +601,28 @@
       }
 
       function releaseMount(slot) {
-        if (!slot || !slot.mounting) return;
+        if (!slot) return;
+        var was = slot.mounting;
         slot.mounting = false;
-        activeMounts = Math.max(0, activeMounts - 1);
+        if (was) activeMounts = Math.max(0, activeMounts - 1);
+        // Heal counter drift so the wall never stalls on "queued".
+        var live = 0;
+        slots.forEach(function (s) {
+          if (s.mounting) live++;
+        });
+        activeMounts = live;
+        ensureQueued();
+      }
+
+      function ensureQueued() {
+        slots.forEach(function (s) {
+          if (!s || s.kind === "popunder" || s.filled || s.mounting) return;
+          if (waitQueue.indexOf(s) >= 0) return;
+          waitQueue.push(s);
+          if (s.st && s.st.textContent !== "empty") {
+            setSlotStatus(s, "queued", false, false);
+          }
+        });
         setTimeout(pumpQueue, BETWEEN_MS);
       }
 
@@ -724,10 +743,13 @@
         slots.forEach(function (s) {
           if (s.kind === "popunder" || s.filled || s.mounting) return;
           if (s.mountedAt && Date.now() - s.mountedAt < 2800) return;
-          enqueueMount(s);
+          if (waitQueue.indexOf(s) >= 0) return;
+          waitQueue.push(s);
+          setSlotStatus(s, "queued", false, false);
           n += 1;
         });
         if (n) setStatus("retry " + n, "ok");
+        ensureQueued();
       }
 
       function clearTimers() {
@@ -883,6 +905,17 @@
           concurrency;
         setStatus("loading wall…", "warn");
         scheduleLoops();
+        // Watchdog: if mounts stall, heal the queue.
+        if (window.__steadyLabWatch) clearInterval(window.__steadyLabWatch);
+        window.__steadyLabWatch = setInterval(function () {
+          if (gen !== my) return;
+          var live = 0;
+          slots.forEach(function (s) {
+            if (s.mounting) live++;
+          });
+          if (activeMounts !== live) activeMounts = live;
+          ensureQueued();
+        }, 2500);
       }
 
       document.getElementById("presets").addEventListener("click", function (e) {
@@ -932,5 +965,4 @@
   </script>
 </body>
 </html>
-
-<!-- v1785256386 -->
+<!-- queue-heal 1785256519 -->
