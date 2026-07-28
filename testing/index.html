@@ -1039,11 +1039,16 @@
         // One automatic remount with the alternate loader (srcdoc) before giving up.
         if (slot && !slot.triedSrcdocFallback && slot.gen === gen) {
           slot.triedSrcdocFallback = true;
+          slot.watching = true; // block duplicate queue while we bounce
           setSlotStatus(slot, "retry", false, false);
           setOverlay(slot, "loading");
           setTimeout(function () {
-            if (!slot || slot.gen !== gen || slot.filled) return;
+            if (!slot || slot.gen !== gen || slot.filled) {
+              if (slot) slot.watching = false;
+              return;
+            }
             slot.forceSrcdoc = true;
+            slot.watching = false;
             if (waitQueue.indexOf(slot) < 0) waitQueue.unshift(slot);
             pumpQueue();
           }, 400);
