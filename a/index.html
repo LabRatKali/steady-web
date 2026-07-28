@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -173,8 +173,8 @@
   <div class="lab-chrome">
     <div class="row">
       <span class="title">AD LAB</span>
-      <span id="meta">…</span>
-      <span id="tick">reload <strong>—</strong></span>
+      <span id="meta">â€¦</span>
+      <span id="tick">reload <strong>â€”</strong></span>
       <span id="fills">filled <strong>0</strong>/<strong>0</strong></span>
       <span id="status"></span>
     </div>
@@ -196,7 +196,7 @@
   </div>
 
   <section id="help">
-    <p><strong>White boxes</strong> are the ad stage (ads need a light background). If a card stays empty, Adsterra has no fill — it will retry slowly, not thrash.</p>
+    <p><strong>White boxes</strong> are the ad stage (ads need a light background). If a card stays empty, Adsterra has no fill â€” it will retry slowly, not thrash.</p>
     <p><strong>Popunder</strong> is not an on-page image. Tap the popunder card once, then check for a tab behind this one (browsers often block it).</p>
     <p><strong>/ads/</strong> is the live lab path (Cloudflare sometimes caches older /testing, /watch, and /a pages).</p>
   </section>
@@ -211,14 +211,14 @@
         "https://pl30567774.effectivecpmnetwork.com/3c/91/ea/3c91ea5fe0936ca26b9cc5cebf036f9f.js";
 
       var BANNER_SIZES = [
-        { w: 300, h: 250, label: "300×250", cls: "" },
-        { w: 300, h: 250, label: "300×250", cls: "" },
-        { w: 336, h: 280, label: "336×280", cls: "" },
-        { w: 300, h: 250, label: "300×250", cls: "" },
-        { w: 728, h: 90, label: "728×90", cls: "is-wide" },
-        { w: 300, h: 250, label: "300×250", cls: "" },
-        { w: 320, h: 50, label: "320×50", cls: "is-wide" },
-        { w: 300, h: 250, label: "300×250", cls: "" },
+        { w: 300, h: 250, label: "300Ã—250", cls: "" },
+        { w: 300, h: 250, label: "300Ã—250", cls: "" },
+        { w: 336, h: 280, label: "336Ã—280", cls: "" },
+        { w: 300, h: 250, label: "300Ã—250", cls: "" },
+        { w: 728, h: 90, label: "728Ã—90", cls: "is-wide" },
+        { w: 300, h: 250, label: "300Ã—250", cls: "" },
+        { w: 320, h: 50, label: "320Ã—50", cls: "is-wide" },
+        { w: 300, h: 250, label: "300Ã—250", cls: "" },
       ];
 
       var grid = document.getElementById("grid");
@@ -254,7 +254,7 @@
 
       function unitSrc(kind, w, h, slotId) {
         return (
-          "unit.html?kind=" +
+          "u.html?kind=" +
           encodeURIComponent(kind) +
           "&w=" +
           w +
@@ -321,7 +321,7 @@
         frame.title = "ad " + slot.slotId;
         frame.loading = "eager";
         frame.referrerPolicy = "no-referrer-when-downgrade";
-        frame.scrolling = "no";
+        frame.setAttribute("scrolling","no"); frame.style.overflow="hidden";
         frame.style.height = Math.max(slot.h + 20, slot.cls === "is-wide" ? 110 : 260) + "px";
         frame.src = unitSrc(kind, slot.w, slot.h, slot.slotId);
         slot.body.appendChild(frame);
@@ -457,7 +457,7 @@
           var head = document.createElement("div");
           head.className = "card-head";
           var left = document.createElement("span");
-          left.innerHTML = "<b>" + item.kind + "</b> #" + (idx + 1) + " · " + item.detail;
+          left.innerHTML = "<b>" + item.kind + "</b> #" + (idx + 1) + " Â· " + item.detail;
           var st = document.createElement("span");
           st.className = "st";
           st.textContent = "queued";
@@ -522,12 +522,12 @@
           slots.push({ kind: "popunder", filled: true, body: body, st: null });
         }
 
-        // Optional smartlink strip (only if enabled) — one visible link, not a fake banner label
+        // Optional smartlink strip (only if enabled) â€” one visible link, not a fake banner label
         if (document.getElementById("t-smartlink").checked) {
           var sc = document.createElement("article");
           sc.className = "card";
           sc.innerHTML =
-            "<div class='card-head'><span><b>smartlink</b> · click URL</span><span class='st ok'>ready</span></div>";
+            "<div class='card-head'><span><b>smartlink</b> Â· click URL</span><span class='st ok'>ready</span></div>";
           var sb = document.createElement("div");
           sb.className = "card-body";
           sb.style.display = "flex";
@@ -546,7 +546,7 @@
           grid.appendChild(sc);
         }
 
-        setStatus(plan.length + " slots · staggered load", "ok");
+        setStatus(plan.length + " slots Â· staggered load", "ok");
         paintFills();
         scheduleLoops();
       }
@@ -604,3 +604,5 @@
   </script>
 </body>
 </html>
+
+
