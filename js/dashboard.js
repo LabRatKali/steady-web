@@ -219,31 +219,49 @@
     renderAllowedSites(p.extraAllowedHosts || "");
   }
 
+  const STEADY_ALWAYS_HOSTS = ["labratkali.github.io", "less-phone.workers.dev"];
+
+  function isSteadyAlwaysHost(host) {
+    const h = registrableDomain(host) || String(host || "").toLowerCase().trim();
+    return STEADY_ALWAYS_HOSTS.some(
+      (ok) => h === ok || h.endsWith("." + ok)
+    );
+  }
+
+  function withSteadyAlwaysHosts(csv) {
+    const hosts = String(csv || "")
+      .split(/[,;\s]+/)
+      .map((h) => registrableDomain(h) || h.trim().toLowerCase())
+      .filter(Boolean);
+    for (const must of STEADY_ALWAYS_HOSTS) {
+      if (!hosts.includes(must)) hosts.push(must);
+    }
+    return hosts;
+  }
+
   function renderAllowedSites(csv) {
     const box = $("sites-list");
     if (!box) return;
-    const hosts = String(csv || "")
-      .split(/[,;\s]+/)
-      .map((h) => h.trim().toLowerCase())
-      .filter(Boolean);
-    if (!hosts.length) {
-      box.innerHTML = '<p class="muted">No always-allowed sites yet. Approve a site ask, or add one below.</p>';
-      return;
-    }
+    const hosts = withSteadyAlwaysHosts(csv);
     box.innerHTML = "";
     hosts.forEach((host) => {
+      const locked = isSteadyAlwaysHost(host);
       const div = document.createElement("div");
       div.className = "dash-item";
-      div.innerHTML = `<strong>${escapeHtml(host)}</strong>`;
-      const row = document.createElement("div");
-      row.className = "approve-btns";
-      const rm = document.createElement("button");
-      rm.type = "button";
-      rm.className = "btn ghost";
-      rm.textContent = "Remove";
-      rm.addEventListener("click", () => removeAllowedSite(host));
-      row.appendChild(rm);
-      div.appendChild(row);
+      div.innerHTML = `<strong>${escapeHtml(host)}</strong>${
+        locked ? ' <span class="muted">Steady — always on</span>' : ""
+      }`;
+      if (!locked) {
+        const row = document.createElement("div");
+        row.className = "approve-btns";
+        const rm = document.createElement("button");
+        rm.type = "button";
+        rm.className = "btn ghost";
+        rm.textContent = "Remove";
+        rm.addEventListener("click", () => removeAllowedSite(host));
+        row.appendChild(rm);
+        div.appendChild(row);
+      }
       box.appendChild(div);
     });
   }
@@ -286,12 +304,16 @@
   }
 
   async function removeAllowedSite(host) {
+    if (isSteadyAlwaysHost(host)) {
+      flashOk("Steady websites stay always allowed");
+      return;
+    }
     mutatePolicyLocal((p) => {
-      const hosts = String(p.extraAllowedHosts || "")
-        .split(/[,;\s]+/)
-        .map((h) => h.trim().toLowerCase())
-        .filter((h) => h && h !== host);
-      p.extraAllowedHosts = hosts.join(",");
+      const hosts = withSteadyAlwaysHosts(p.extraAllowedHosts || "").filter(
+        (h) => h !== host
+      );
+      // withSteadyAlwaysHosts re-adds Steady hosts after filter
+      p.extraAllowedHosts = withSteadyAlwaysHosts(hosts.join(",")).join(",");
     });
     flashOk("Site removed — tap Save & push");
   }
@@ -300,14 +322,12 @@
     const host = registrableDomain(raw);
     if (!host) return;
     mutatePolicyLocal((p) => {
-      const hosts = String(p.extraAllowedHosts || "")
-        .split(/[,;\s]+/)
-        .map((h) => registrableDomain(h) || h.trim().toLowerCase())
-        .filter(Boolean);
+      const hosts = withSteadyAlwaysHosts(p.extraAllowedHosts || "");
       if (!hosts.includes(host)) hosts.push(host);
       p.extraAllowedHosts = hosts.join(",");
     });
     flashOk(`${host} allowed (all subdomains) — tap Save & push`);
+    renderAllowedSites((policy && policy.extraAllowedHosts) || "");
   }
 
   async function loadKidPhones() {
@@ -926,11 +946,9 @@
             .replace(/^www\./, "");
           if (host) {
             await patchPolicy((p) => {
-              const hosts = String(p.extraAllowedHosts || "")
-                .split(/[,;\s]+/)
-                .map((h) => h.trim().toLowerCase())
-                .filter(Boolean);
-              if (!hosts.includes(host)) hosts.push(host);
+              const hosts = withSteadyAlwaysHosts(p.extraAllowedHosts || "");
+              const base = registrableDomain(host) || host;
+              if (base && !hosts.includes(base)) hosts.push(base);
               p.extraAllowedHosts = hosts.join(",");
             });
             renderAllowedSites(policy.extraAllowedHosts || "");
@@ -1006,6 +1024,14 @@
     try {
       flashBusy("Pushing full profile to kid…");
       applyBudgetFormToPolicy();
+      policy.extraAllowedHosts = withSteadyAlwaysHosts(policy.extraAllowedHosts || "").join(",");
+      if (policy.extraBlockedHosts) {
+        policy.extraBlockedHosts = String(policy.extraBlockedHosts)
+          .split(/[,;\s]+/)
+          .map((h) => h.trim().toLowerCase())
+          .filter((h) => h && !isSteadyAlwaysHost(h))
+          .join(",");
+      }
       policy.updatedAt = Date.now();
       policy.childDeviceId = client.childId;
       await client.publishPolicy(policy);
