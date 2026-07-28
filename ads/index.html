@@ -28,7 +28,6 @@
     }
     body.ads-only .lab-chrome,
     body.ads-only #help { display: none !important; }
-
     .lab-chrome {
       position: sticky;
       top: 0;
@@ -83,8 +82,6 @@
     #meta, #status, #tick, #fills { color: var(--muted); font-size: 12px; }
     #meta strong, #tick strong, #fills strong { color: var(--text); }
     #status.ok { color: var(--accent); }
-    #status.err { color: var(--danger); }
-
     #help {
       display: none;
       margin: 0.75rem 1rem 0;
@@ -99,7 +96,6 @@
     #help.show { display: block; }
     #help p { margin: 0.35rem 0; }
     #help strong { color: var(--text); }
-
     #grid {
       display: grid;
       gap: 1rem;
@@ -116,11 +112,6 @@
       flex-direction: column;
       min-height: 310px;
       overflow: hidden;
-    }
-    .card.is-wide {
-      grid-column: 1 / -1;
-      max-width: 780px;
-      min-height: 150px;
     }
     .card.is-pop { min-height: 180px; }
     .card-head {
@@ -140,18 +131,25 @@
     .card-body {
       flex: 1;
       min-height: 260px;
-      background: #fff;
+      background: #ffffff;
       border-radius: 10px;
       overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       position: relative;
     }
-    .card.is-wide .card-body { min-height: 110px; }
-    .card-body > iframe.adframe {
-      width: 100%;
-      border: 0;
-      display: block;
-      background: #fff;
+    .card-body .hold {
+      width: 300px;
+      height: 250px;
+      max-width: 100%;
       overflow: hidden;
+      background: #fff;
+      position: relative;
+    }
+    .card-body .hold iframe {
+      display: block !important;
+      margin: 0 auto !important;
     }
     .pop-arm {
       width: calc(100% - 8px);
@@ -180,12 +178,9 @@
       <span id="status"></span>
     </div>
     <div class="row">
-      <label>cards <input id="count" type="number" min="4" max="20" value="10" /></label>
-      <label>reload <input id="secs" type="number" min="30" max="300" value="90" /> s</label>
-      <label>retry <input id="retry" type="number" min="10" max="120" value="18" /> s</label>
-      <label class="chk"><input type="checkbox" id="t-banner" checked /> banners</label>
-      <label class="chk"><input type="checkbox" id="t-native" /> native</label>
-      <label class="chk"><input type="checkbox" id="t-reward" checked /> reward</label>
+      <label>cards <input id="count" type="number" min="4" max="16" value="8" /></label>
+      <label>reload <input id="secs" type="number" min="45" max="300" value="120" /> s</label>
+      <label>retry <input id="retry" type="number" min="12" max="120" value="25" /> s</label>
       <label class="chk"><input type="checkbox" id="t-popunder" checked /> popunder</label>
       <label class="chk"><input type="checkbox" id="auto" checked /> auto</label>
       <label class="chk"><input type="checkbox" id="ads-only" /> ads only</label>
@@ -196,8 +191,8 @@
   </div>
 
   <section id="help">
-    <p><strong>White</strong> is only the ad stage background. Real creatives draw on top. If you see "refused to connect", that offer is dead - the lab auto-retries for a new one.</p>
-    <p><strong>Help</strong> stays hidden unless you tap this button. Use <code>/live/</code> if an older path looks stuck (Cloudflare cache).</p>
+    <p>Each card is a real Adsterra <strong>300x250</strong> banner on a white stage (same style that showed MELBET before). Dead "refused to connect" offers are detected and reloaded.</p>
+    <p>Open <strong>https://steady.less-phone.workers.dev/live/</strong> (hard refresh). Help stays hidden unless you tap Help.</p>
   </section>
 
   <div id="grid" aria-live="polite"></div>
@@ -205,22 +200,8 @@
   <script>
     (function () {
       var BANNER_KEY = "d737196962ef25449dcb66c5655248f1";
-      var NATIVE_ID = "aa9f63337d56fa208fd27e208e22774a";
-      var REWARD_SRC =
-        "https://pl30566396.effectivecpmnetwork.com/75/7d/b0/757db01b5a07eb68043c6fd140726fed.js";
       var POPUNDER_SRC =
         "https://pl30567774.effectivecpmnetwork.com/3c/91/ea/3c91ea5fe0936ca26b9cc5cebf036f9f.js";
-
-      // Mostly 300x250 - this size actually painted creatives before (MELBET, etc.)
-      var BANNER_SIZES = [
-        { w: 300, h: 250, label: "300x250", cls: "" },
-        { w: 300, h: 250, label: "300x250", cls: "" },
-        { w: 300, h: 250, label: "300x250", cls: "" },
-        { w: 336, h: 280, label: "336x280", cls: "" },
-        { w: 300, h: 250, label: "300x250", cls: "" },
-        { w: 728, h: 90, label: "728x90", cls: "is-wide" },
-        { w: 300, h: 250, label: "300x250", cls: "" },
-      ];
 
       var grid = document.getElementById("grid");
       var statusEl = document.getElementById("status");
@@ -233,11 +214,10 @@
       var reloadTimer = null;
       var countdownTimer = null;
       var retryTimer = null;
-      var fillTimer = null;
       var nextAt = 0;
       var gen = 0;
       var slots = [];
-      var slotSeq = 0;
+      var mountQueue = Promise.resolve();
 
       function setStatus(msg, kind) {
         statusEl.textContent = msg || "";
@@ -251,60 +231,6 @@
         if (n > max) n = max;
         document.getElementById(id).value = String(n);
         return n;
-      }
-
-      function adDoc(kind, w, h, slotId) {
-        var cb = Date.now() + "x" + slotId;
-        var body = "";
-        if (kind === "native") {
-          body =
-            '<div id="container-' +
-            NATIVE_ID +
-            '" style="width:100%;min-height:' +
-            h +
-            'px;background:#fff"></div>' +
-            '<script async data-cfasync="false" src="https://pl30566397.effectivecpmnetwork.com/' +
-            NATIVE_ID +
-            "/invoke.js?cb=" +
-            cb +
-            '"><\/script>';
-        } else {
-          body =
-            "<script>atOptions={key:'" +
-            BANNER_KEY +
-            "',format:'iframe',height:" +
-            h +
-            ",width:" +
-            w +
-            ",params:{slot:'" +
-            slotId +
-            "'}};<\/script>" +
-            "<div style='width:" +
-            w +
-            "px;height:" +
-            h +
-            "px;max-width:100%;margin:0 auto;overflow:hidden;background:#fff'>" +
-            "<script data-cfasync='false' src='https://www.highperformanceformat.com/" +
-            BANNER_KEY +
-            "/invoke.js?cb=" +
-            cb +
-            "'><\/script></div>";
-          if (kind === "reward") {
-            body +=
-              '<script async data-cfasync="false" src="' +
-              REWARD_SRC +
-              "?cb=" +
-              cb +
-              '"><\/script>';
-          }
-        }
-        return (
-          "<!DOCTYPE html><html><head><meta charset='utf-8'>" +
-          "<style>html,body{margin:0;padding:8px;background:#fff;overflow:hidden;height:100%;display:flex;align-items:center;justify-content:center}" +
-          "iframe{border:0!important}</style></head><body>" +
-          body +
-          "</body></html>"
-        );
       }
 
       function ensurePopunder(on) {
@@ -331,119 +257,6 @@
         slot.st.className = "st" + (ok ? " ok" : "") + (bad ? " bad" : "");
       }
 
-      function iframeLooksDead(inner) {
-        if (!inner) return true;
-        try {
-          var doc = inner.contentDocument;
-          if (!doc) return false; // cross-origin usually means a real ad navigated
-          var t = ((doc.body && doc.body.innerText) || "").toLowerCase();
-          if (/refused to connect|err_connection|can't be reached|not found|blocked/.test(t)) return true;
-          if ((doc.body && doc.body.children.length === 0) && t.length < 2) return true;
-        } catch (_) {
-          return false;
-        }
-        return false;
-      }
-
-      function creativeOk(frame) {
-        try {
-          var doc = frame.contentDocument || (frame.contentWindow && frame.contentWindow.document);
-          if (!doc) return false;
-          var inners = doc.querySelectorAll("iframe");
-          var imgs = doc.querySelectorAll("img");
-          if (!inners.length && !imgs.length) return false;
-          for (var i = 0; i < inners.length; i++) {
-            var el = inners[i];
-            var r = el.getBoundingClientRect();
-            if (r.width < 20 || r.height < 20) continue;
-            if (iframeLooksDead(el)) continue;
-            return true;
-          }
-          if (imgs.length) {
-            for (var j = 0; j < imgs.length; j++) {
-              var im = imgs[j].getBoundingClientRect();
-              if (im.width > 20 && im.height > 20) return true;
-            }
-          }
-          return false;
-        } catch (_) {
-          // Can't read = often a live cross-origin creative
-          return true;
-        }
-      }
-
-      function watchInner(slot) {
-        var frame = slot.frame;
-        if (!frame) return;
-        var checks = 0;
-        var iv = setInterval(function () {
-          if (slot.gen !== gen) {
-            clearInterval(iv);
-            return;
-          }
-          checks++;
-          if (creativeOk(frame)) {
-            slot.filled = true;
-            slot.dead = false;
-            setSlotStatus(slot, "filled", true, false);
-            paintFills();
-            clearInterval(iv);
-            return;
-          }
-          // After creatives inject, detect refused-to-connect and remount
-          try {
-            var doc = frame.contentDocument;
-            var inner = doc && doc.querySelector("iframe");
-            if (inner && iframeLooksDead(inner)) {
-              slot.dead = true;
-              setSlotStatus(slot, "dead offer", false, true);
-              clearInterval(iv);
-              setTimeout(function () {
-                if (slot.gen === gen) remountSlot(slot, true);
-              }, 800);
-              return;
-            }
-          } catch (_) {}
-          if (checks >= 25) {
-            // no healthy creative
-            setSlotStatus(slot, "no fill", false, true);
-            clearInterval(iv);
-            setTimeout(function () {
-              if (slot.gen === gen && !slot.filled) remountSlot(slot, true);
-            }, 1200);
-          }
-        }, 500);
-        slot.watchIv = iv;
-      }
-
-      function remountSlot(slot, force) {
-        if (!slot || slot.kind === "popunder") return;
-        var now = Date.now();
-        if (!force && slot.mountedAt && now - slot.mountedAt < 12000) return;
-        if (slot.watchIv) clearInterval(slot.watchIv);
-
-        slot.attempts = (slot.attempts || 0) + 1;
-        slot.filled = false;
-        slot.dead = false;
-        slot.mountedAt = now;
-        slot.gen = gen;
-        slot.slotId = "s" + ++slotSeq + "-" + now;
-        setSlotStatus(slot, "loading", false, false);
-        slot.body.innerHTML = "";
-
-        var kind = slot.kind;
-        var frame = document.createElement("iframe");
-        frame.className = "adframe";
-        frame.title = "ad";
-        frame.setAttribute("scrolling", "no");
-        frame.style.height = (slot.cls === "is-wide" ? Math.max(slot.h + 16, 110) : Math.max(slot.h + 20, 270)) + "px";
-        // srcdoc = same approach that previously showed real MELBET creatives
-        frame.srcdoc = adDoc(kind, slot.w, slot.h, slot.slotId);
-        slot.body.appendChild(frame);
-        slot.frame = frame;
-        watchInner(slot);
-      }
-
       function paintFills() {
         var total = 0;
         var filled = 0;
@@ -455,72 +268,166 @@
         fillsEl.innerHTML = "filled <strong>" + filled + "</strong>/<strong>" + total + "</strong>";
       }
 
+      function looksDeadText(t) {
+        t = (t || "").toLowerCase();
+        return /refused to connect|err_connection|can't be reached|this site can.t be reached|not found|blocked|err_tunnel/.test(t);
+      }
+
+      function holdHealthy(hold) {
+        if (!hold) return false;
+        var iframes = hold.querySelectorAll("iframe");
+        var imgs = hold.querySelectorAll("img");
+        if (!iframes.length && !imgs.length) return false;
+        for (var i = 0; i < iframes.length; i++) {
+          var el = iframes[i];
+          var r = el.getBoundingClientRect();
+          if (r.width < 40 || r.height < 40) continue;
+          try {
+            var doc = el.contentDocument;
+            if (doc) {
+              var txt = (doc.body && doc.body.innerText) || "";
+              if (looksDeadText(txt)) return false;
+            }
+          } catch (_) {
+            // cross-origin creative - usually good
+          }
+          return true;
+        }
+        for (var j = 0; j < imgs.length; j++) {
+          var ir = imgs[j].getBoundingClientRect();
+          if (ir.width > 40 && ir.height > 40) return true;
+        }
+        return false;
+      }
+
+      function loadBannerScript(hold, slotId) {
+        return new Promise(function (resolve) {
+          window.atOptions = {
+            key: BANNER_KEY,
+            format: "iframe",
+            height: 250,
+            width: 300,
+            params: { slot: slotId },
+          };
+          var s = document.createElement("script");
+          s.setAttribute("data-cfasync", "false");
+          s.src =
+            "https://www.highperformanceformat.com/" +
+            BANNER_KEY +
+            "/invoke.js?cb=" +
+            Date.now() +
+            "s" +
+            encodeURIComponent(slotId);
+          s.onload = function () {
+            resolve(true);
+          };
+          s.onerror = function () {
+            resolve(false);
+          };
+          hold.appendChild(s);
+        });
+      }
+
+      function remountSlot(slot, force) {
+        if (!slot || slot.kind === "popunder") return;
+        var now = Date.now();
+        if (!force && slot.mountedAt && now - slot.mountedAt < 15000) return;
+        if (slot.watchIv) clearInterval(slot.watchIv);
+
+        slot.attempts = (slot.attempts || 0) + 1;
+        slot.filled = false;
+        slot.mountedAt = now;
+        slot.gen = gen;
+        slot.slotId = "b" + Date.now() + "r" + Math.floor(Math.random() * 1e6);
+        setSlotStatus(slot, "loading", false, false);
+        slot.body.innerHTML = "";
+
+        var hold = document.createElement("div");
+        hold.className = "hold";
+        slot.body.appendChild(hold);
+        slot.hold = hold;
+
+        // Sequential queue so atOptions does not race between cards
+        mountQueue = mountQueue.then(function () {
+          if (slot.gen !== gen) return;
+          return loadBannerScript(hold, slot.slotId).then(function (ok) {
+            if (!ok) {
+              setSlotStatus(slot, "script fail", false, true);
+              return;
+            }
+            var checks = 0;
+            slot.watchIv = setInterval(function () {
+              if (slot.gen !== gen) {
+                clearInterval(slot.watchIv);
+                return;
+              }
+              checks++;
+              if (holdHealthy(hold)) {
+                slot.filled = true;
+                setSlotStatus(slot, "filled", true, false);
+                paintFills();
+                clearInterval(slot.watchIv);
+                return;
+              }
+              // Detect refused-to-connect inside nested iframe when readable
+              var dead = false;
+              hold.querySelectorAll("iframe").forEach(function (el) {
+                try {
+                  var doc = el.contentDocument;
+                  if (doc && looksDeadText((doc.body && doc.body.innerText) || "")) dead = true;
+                } catch (_) {}
+              });
+              if (dead) {
+                setSlotStatus(slot, "dead offer", false, true);
+                clearInterval(slot.watchIv);
+                setTimeout(function () {
+                  if (slot.gen === gen) remountSlot(slot, true);
+                }, 700);
+                return;
+              }
+              if (checks >= 28) {
+                setSlotStatus(slot, "no fill", false, true);
+                clearInterval(slot.watchIv);
+                setTimeout(function () {
+                  if (slot.gen === gen && !slot.filled) remountSlot(slot, true);
+                }, 1000);
+              }
+            }, 450);
+          });
+        }).then(function () {
+          return new Promise(function (r) {
+            setTimeout(r, 650);
+          });
+        });
+      }
+
       function retryEmpties() {
         var n = 0;
         slots.forEach(function (s) {
           if (s.kind === "popunder" || s.filled) return;
-          if (s.mountedAt && Date.now() - s.mountedAt < 12000) return;
+          if (s.mountedAt && Date.now() - s.mountedAt < 15000) return;
           remountSlot(s, true);
           n++;
         });
-        if (n) setStatus("retrying " + n + " empty/dead", "ok");
+        if (n) setStatus("retrying " + n, "ok");
         paintFills();
-      }
-
-      function buildPlan(n) {
-        var plan = [];
-        var wantBanner = document.getElementById("t-banner").checked;
-        var wantNative = document.getElementById("t-native").checked;
-        var wantReward = document.getElementById("t-reward").checked;
-        var types = [];
-        if (wantBanner) types.push("banner");
-        if (wantNative) types.push("native");
-        if (wantReward) types.push("reward");
-        if (!types.length) types.push("banner");
-
-        var bi = 0;
-        var i = 0;
-        var nativeCount = 0;
-        while (plan.length < n && i < n * 8) {
-          var t = types[i % types.length];
-          i++;
-          if (t === "banner") {
-            var sz = BANNER_SIZES[bi % BANNER_SIZES.length];
-            bi++;
-            plan.push({ kind: "banner", detail: sz.label, w: sz.w, h: sz.h, cls: sz.cls });
-          } else if (t === "native") {
-            if (nativeCount >= 1) continue;
-            nativeCount++;
-            plan.push({ kind: "native", detail: "native", w: 300, h: 280, cls: "" });
-          } else {
-            plan.push({ kind: "reward", detail: "300x250+social", w: 300, h: 250, cls: "" });
-          }
-        }
-        while (plan.length < n) {
-          var sz2 = BANNER_SIZES[bi % BANNER_SIZES.length];
-          bi++;
-          plan.push({ kind: "banner", detail: sz2.label, w: sz2.w, h: sz2.h, cls: sz2.cls });
-        }
-        return plan.slice(0, n);
       }
 
       function clearTimers() {
         if (countdownTimer) clearInterval(countdownTimer);
         if (reloadTimer) clearTimeout(reloadTimer);
         if (retryTimer) clearInterval(retryTimer);
-        if (fillTimer) clearInterval(fillTimer);
-        countdownTimer = reloadTimer = retryTimer = fillTimer = null;
+        countdownTimer = reloadTimer = retryTimer = null;
       }
 
       function scheduleLoops() {
         clearTimers();
-        fillTimer = setInterval(paintFills, 1000);
-        retryTimer = setInterval(retryEmpties, num("retry", 10, 120, 18) * 1000);
+        retryTimer = setInterval(retryEmpties, num("retry", 12, 120, 25) * 1000);
         if (!document.getElementById("auto").checked) {
           tickEl.innerHTML = "auto <strong>off</strong>";
           return;
         }
-        var secs = num("secs", 30, 300, 90);
+        var secs = num("secs", 45, 300, 120);
         nextAt = Date.now() + secs * 1000;
         function paintTick() {
           var left = Math.max(0, Math.ceil((nextAt - Date.now()) / 1000));
@@ -538,23 +445,23 @@
 
       function render() {
         var my = ++gen;
-        var n = num("count", 4, 20, 10);
+        var n = num("count", 4, 16, 8);
         var wantPop = document.getElementById("t-popunder").checked;
-        var plan = buildPlan(n);
         slots.forEach(function (s) {
           if (s.watchIv) clearInterval(s.watchIv);
         });
         slots = [];
         grid.innerHTML = "";
+        mountQueue = Promise.resolve();
         ensurePopunder(wantPop);
 
-        plan.forEach(function (item, idx) {
+        for (var i = 0; i < n; i++) {
           var card = document.createElement("article");
-          card.className = "card " + (item.cls || "");
+          card.className = "card";
           var head = document.createElement("div");
           head.className = "card-head";
           var left = document.createElement("span");
-          left.innerHTML = "<b>" + item.kind + "</b> #" + (idx + 1) + " · " + item.detail;
+          left.innerHTML = "<b>banner</b> #" + (i + 1) + " · 300x250";
           var st = document.createElement("span");
           st.className = "st";
           st.textContent = "queued";
@@ -567,30 +474,31 @@
           grid.appendChild(card);
 
           var slot = {
-            kind: item.kind,
-            w: item.w,
-            h: item.h,
-            cls: item.cls || "",
+            kind: "banner",
             body: body,
             st: st,
-            frame: null,
+            hold: null,
             filled: false,
             attempts: 0,
             mountedAt: 0,
             gen: my,
           };
+
           slots.push(slot);
-          setTimeout(function () {
-            if (gen !== my) return;
-            remountSlot(slot, true);
-          }, 300 + idx * 550);
-        });
+          (function (s, delay) {
+            setTimeout(function () {
+              if (gen !== my) return;
+              remountSlot(s, true);
+            }, delay);
+          })(slot, 200 + i * 700);
+        }
 
         if (wantPop) {
           var card = document.createElement("article");
           card.className = "card is-pop";
-          card.innerHTML =
-            "<div class='card-head'><span><b>popunder</b></span><span class='st ok'>armed</span></div>";
+          var head = document.createElement("div");
+          head.className = "card-head";
+          head.innerHTML = "<span><b>popunder</b></span><span class='st ok'>armed</span>";
           var body = document.createElement("div");
           body.className = "card-body";
           body.style.background = "transparent";
@@ -610,12 +518,13 @@
             }, 300);
           });
           body.appendChild(btn);
+          card.appendChild(head);
           card.appendChild(body);
           grid.appendChild(card);
           slots.push({ kind: "popunder", filled: true, body: body, st: null });
         }
 
-        setStatus(plan.length + " slots - fresh creatives", "ok");
+        setStatus(n + " banners · one-by-one load", "ok");
         paintFills();
         scheduleLoops();
       }
@@ -638,7 +547,7 @@
         document.body.classList.toggle("ads-only", !!e.target.checked);
       });
       document.getElementById("auto").addEventListener("change", scheduleLoops);
-      ["t-banner", "t-native", "t-reward", "t-popunder", "count", "secs", "retry"].forEach(function (id) {
+      ["t-popunder", "count", "secs", "retry"].forEach(function (id) {
         document.getElementById(id).addEventListener("change", function () {
           if (id === "secs" || id === "retry") {
             scheduleLoops();
