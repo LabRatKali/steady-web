@@ -319,6 +319,12 @@
       background-size: 200% 100%;
       animation: shimmer 1s ease-in-out infinite;
     }
+    /* Reveal the iframe underneath — status stays in the card header. */
+    .overlay.reveal {
+      background: transparent;
+      color: transparent;
+      animation: none;
+    }
     .overlay.empty {
       flex-direction: column;
       gap: 0.2rem;
@@ -472,7 +478,7 @@
       })();
       var WORKERS_LAB = "https://steady.less-phone.workers.dev/testing/";
       var PAGES_LAB = "https://labratkali.github.io/steady-web/testing/";
-      var LAB_BUILD = "2026-07-28i";
+      var LAB_BUILD = "2026-07-28j";
 
       var W = 300;
       var H = 250;
@@ -756,10 +762,10 @@
           if (d.state === "filled") {
             markFilled(slot);
           } else if (d.state === "pending") {
-            // Creative DOM is there — keep waiting, don't flash empty.
+            // Creative is painting — uncover it immediately; header still says loading.
             if (!slot.filled) {
               setSlotStatus(slot, "loading", false, false);
-              setOverlay(slot, "waiting");
+              setOverlay(slot, "reveal");
             }
           } else if (d.state === "error") {
             netState.scriptOk = false;
@@ -793,9 +799,10 @@
         if (mode === "loading") {
           slot.overlay.className = "overlay loading show";
           slot.overlay.textContent = "loading…";
-        } else if (mode === "waiting") {
-          slot.overlay.className = "overlay loading show";
-          slot.overlay.textContent = "…";
+        } else if (mode === "waiting" || mode === "reveal") {
+          // Do not cover the creative — many browsers paint ads while detection lags.
+          slot.overlay.className = "overlay reveal";
+          slot.overlay.textContent = "";
         } else if (mode === "empty") {
           slot.overlay.className = "overlay empty show";
           slot.overlay.innerHTML = "<strong>no fill</strong><span>retrying</span>";
@@ -976,6 +983,10 @@
           clearInterval(slot.watchIv);
           slot.watchIv = null;
         }
+        if (slot && slot.revealTimer) {
+          clearTimeout(slot.revealTimer);
+          slot.revealTimer = null;
+        }
       }
 
       function releaseStart() {
@@ -1127,6 +1138,14 @@
         slot.mounting = false;
         releaseStart();
 
+        // After a short shimmer, always uncover the iframe so a painted ad is visible
+        // even if fill-detection is slow on that browser.
+        if (slot.revealTimer) clearTimeout(slot.revealTimer);
+        slot.revealTimer = setTimeout(function () {
+          if (!slot || slot.gen !== gen || slot.filled) return;
+          setOverlay(slot, "reveal");
+        }, 2200);
+
         var checks = 0;
         var maxChecks = Math.ceil(FILL_WAIT_MS / CHECK_MS);
         var bonusChecks = 0;
@@ -1145,10 +1164,15 @@
             markFilled(slot);
             return;
           }
-          // Creative DOM present but image still decoding — give it more time.
+          // Creative DOM present but image still decoding — uncover + wait.
           if (creative && creative.pending && bonusChecks < 40) {
             bonusChecks += 1;
-            setOverlay(slot, "waiting");
+            setOverlay(slot, "reveal");
+            // After structure is stable for a bit, count as filled (visible creative).
+            if (bonusChecks >= 8) {
+              markFilled(slot);
+              return;
+            }
             return;
           }
           if (checks >= maxChecks + bonusChecks) markEmpty(slot);
