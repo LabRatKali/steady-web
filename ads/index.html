@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -16,6 +16,7 @@
       --muted: #8fa398;
       --accent: #3dcf8a;
       --warn: #e6c36a;
+      --danger: #e8a0a0;
     }
     * { box-sizing: border-box; }
     html, body {
@@ -34,7 +35,7 @@
       z-index: 40;
       background: rgba(10, 15, 13, 0.96);
       border-bottom: 1px solid var(--line);
-      padding: 0.7rem 1rem 0.8rem;
+      padding: 0.7rem 1rem 0.85rem;
       backdrop-filter: blur(12px);
     }
     .row {
@@ -42,7 +43,7 @@
       flex-wrap: wrap;
       gap: 0.45rem 0.7rem;
       align-items: center;
-      margin: 0.28rem 0;
+      margin: 0.25rem 0;
     }
     .title { font-weight: 800; color: var(--accent); letter-spacing: 0.04em; }
     label.chk {
@@ -82,6 +83,7 @@
     #meta, #status, #tick, #fills { color: var(--muted); font-size: 12px; }
     #meta strong, #tick strong, #fills strong { color: var(--text); }
     #status.ok { color: var(--accent); }
+    #status.err { color: var(--danger); }
 
     #help {
       display: none;
@@ -134,10 +136,11 @@
     .card-head b { color: var(--text); font-weight: 700; }
     .card-head .st { color: var(--warn); text-transform: none; letter-spacing: 0; }
     .card-head .st.ok { color: var(--accent); }
+    .card-head .st.bad { color: var(--danger); }
     .card-body {
       flex: 1;
       min-height: 260px;
-      background: #ffffff;
+      background: #fff;
       border-radius: 10px;
       overflow: hidden;
       position: relative;
@@ -145,13 +148,11 @@
     .card.is-wide .card-body { min-height: 110px; }
     .card-body > iframe.adframe {
       width: 100%;
-      height: 260px;
       border: 0;
       display: block;
       background: #fff;
       overflow: hidden;
     }
-    .card.is-wide .card-body > iframe.adframe { height: 110px; }
     .pop-arm {
       width: calc(100% - 8px);
       min-height: 150px;
@@ -179,13 +180,12 @@
       <span id="status"></span>
     </div>
     <div class="row">
-      <label>cards <input id="count" type="number" min="4" max="24" value="12" /></label>
-      <label>reload <input id="secs" type="number" min="20" max="300" value="60" /> s</label>
-      <label>retry empty <input id="retry" type="number" min="12" max="120" value="20" /> s</label>
+      <label>cards <input id="count" type="number" min="4" max="20" value="10" /></label>
+      <label>reload <input id="secs" type="number" min="30" max="300" value="90" /> s</label>
+      <label>retry <input id="retry" type="number" min="10" max="120" value="18" /> s</label>
       <label class="chk"><input type="checkbox" id="t-banner" checked /> banners</label>
-      <label class="chk"><input type="checkbox" id="t-native" checked /> native</label>
+      <label class="chk"><input type="checkbox" id="t-native" /> native</label>
       <label class="chk"><input type="checkbox" id="t-reward" checked /> reward</label>
-      <label class="chk"><input type="checkbox" id="t-smartlink" /> smartlink</label>
       <label class="chk"><input type="checkbox" id="t-popunder" checked /> popunder</label>
       <label class="chk"><input type="checkbox" id="auto" checked /> auto</label>
       <label class="chk"><input type="checkbox" id="ads-only" /> ads only</label>
@@ -196,29 +196,30 @@
   </div>
 
   <section id="help">
-    <p><strong>White boxes</strong> are the ad stage (ads need a light background). If a card stays empty, Adsterra has no fill - it will retry slowly, not thrash.</p>
-    <p><strong>Popunder</strong> is not an on-page image. Tap the popunder card once, then check for a tab behind this one (browsers often block it).</p>
-    <p><strong>/ads/</strong> is the live lab path (Cloudflare sometimes caches older /testing, /watch, and /a pages).</p>
+    <p><strong>White</strong> is only the ad stage background. Real creatives draw on top. If you see "refused to connect", that offer is dead - the lab auto-retries for a new one.</p>
+    <p><strong>Help</strong> stays hidden unless you tap this button. Use <code>/live/</code> if an older path looks stuck (Cloudflare cache).</p>
   </section>
 
   <div id="grid" aria-live="polite"></div>
 
   <script>
     (function () {
-      var SMARTLINK =
-        "https://www.effectivecpmnetwork.com/s889n4i77?key=38aa37c91a94f34912a4a89f8b27799d";
+      var BANNER_KEY = "d737196962ef25449dcb66c5655248f1";
+      var NATIVE_ID = "aa9f63337d56fa208fd27e208e22774a";
+      var REWARD_SRC =
+        "https://pl30566396.effectivecpmnetwork.com/75/7d/b0/757db01b5a07eb68043c6fd140726fed.js";
       var POPUNDER_SRC =
         "https://pl30567774.effectivecpmnetwork.com/3c/91/ea/3c91ea5fe0936ca26b9cc5cebf036f9f.js";
 
+      // Mostly 300x250 - this size actually painted creatives before (MELBET, etc.)
       var BANNER_SIZES = [
-        { w: 300, h: 250, label: "300Ã—250", cls: "" },
-        { w: 300, h: 250, label: "300Ã—250", cls: "" },
-        { w: 336, h: 280, label: "336Ã—280", cls: "" },
-        { w: 300, h: 250, label: "300Ã—250", cls: "" },
-        { w: 728, h: 90, label: "728Ã—90", cls: "is-wide" },
-        { w: 300, h: 250, label: "300Ã—250", cls: "" },
-        { w: 320, h: 50, label: "320Ã—50", cls: "is-wide" },
-        { w: 300, h: 250, label: "300Ã—250", cls: "" },
+        { w: 300, h: 250, label: "300x250", cls: "" },
+        { w: 300, h: 250, label: "300x250", cls: "" },
+        { w: 300, h: 250, label: "300x250", cls: "" },
+        { w: 336, h: 280, label: "336x280", cls: "" },
+        { w: 300, h: 250, label: "300x250", cls: "" },
+        { w: 728, h: 90, label: "728x90", cls: "is-wide" },
+        { w: 300, h: 250, label: "300x250", cls: "" },
       ];
 
       var grid = document.getElementById("grid");
@@ -252,18 +253,57 @@
         return n;
       }
 
-      function unitSrc(kind, w, h, slotId) {
+      function adDoc(kind, w, h, slotId) {
+        var cb = Date.now() + "x" + slotId;
+        var body = "";
+        if (kind === "native") {
+          body =
+            '<div id="container-' +
+            NATIVE_ID +
+            '" style="width:100%;min-height:' +
+            h +
+            'px;background:#fff"></div>' +
+            '<script async data-cfasync="false" src="https://pl30566397.effectivecpmnetwork.com/' +
+            NATIVE_ID +
+            "/invoke.js?cb=" +
+            cb +
+            '"><\/script>';
+        } else {
+          body =
+            "<script>atOptions={key:'" +
+            BANNER_KEY +
+            "',format:'iframe',height:" +
+            h +
+            ",width:" +
+            w +
+            ",params:{slot:'" +
+            slotId +
+            "'}};<\/script>" +
+            "<div style='width:" +
+            w +
+            "px;height:" +
+            h +
+            "px;max-width:100%;margin:0 auto;overflow:hidden;background:#fff'>" +
+            "<script data-cfasync='false' src='https://www.highperformanceformat.com/" +
+            BANNER_KEY +
+            "/invoke.js?cb=" +
+            cb +
+            "'><\/script></div>";
+          if (kind === "reward") {
+            body +=
+              '<script async data-cfasync="false" src="' +
+              REWARD_SRC +
+              "?cb=" +
+              cb +
+              '"><\/script>';
+          }
+        }
         return (
-          "u.html?kind=" +
-          encodeURIComponent(kind) +
-          "&w=" +
-          w +
-          "&h=" +
-          h +
-          "&slot=" +
-          encodeURIComponent(slotId) +
-          "&t=" +
-          Date.now()
+          "<!DOCTYPE html><html><head><meta charset='utf-8'>" +
+          "<style>html,body{margin:0;padding:8px;background:#fff;overflow:hidden;height:100%;display:flex;align-items:center;justify-content:center}" +
+          "iframe{border:0!important}</style></head><body>" +
+          body +
+          "</body></html>"
         );
       }
 
@@ -285,47 +325,123 @@
         popunderLoaded = true;
       }
 
-      function setSlotStatus(slot, text, ok) {
+      function setSlotStatus(slot, text, ok, bad) {
         if (!slot || !slot.st) return;
         slot.st.textContent = text;
-        slot.st.className = "st" + (ok ? " ok" : "");
+        slot.st.className = "st" + (ok ? " ok" : "") + (bad ? " bad" : "");
       }
 
-      function frameHasFill(frame) {
+      function iframeLooksDead(inner) {
+        if (!inner) return true;
+        try {
+          var doc = inner.contentDocument;
+          if (!doc) return false; // cross-origin usually means a real ad navigated
+          var t = ((doc.body && doc.body.innerText) || "").toLowerCase();
+          if (/refused to connect|err_connection|can't be reached|not found|blocked/.test(t)) return true;
+          if ((doc.body && doc.body.children.length === 0) && t.length < 2) return true;
+        } catch (_) {
+          return false;
+        }
+        return false;
+      }
+
+      function creativeOk(frame) {
         try {
           var doc = frame.contentDocument || (frame.contentWindow && frame.contentWindow.document);
           if (!doc) return false;
-          if (doc.querySelectorAll("iframe").length > 0) return true;
-          if (doc.querySelectorAll("img").length > 0) return true;
+          var inners = doc.querySelectorAll("iframe");
+          var imgs = doc.querySelectorAll("img");
+          if (!inners.length && !imgs.length) return false;
+          for (var i = 0; i < inners.length; i++) {
+            var el = inners[i];
+            var r = el.getBoundingClientRect();
+            if (r.width < 20 || r.height < 20) continue;
+            if (iframeLooksDead(el)) continue;
+            return true;
+          }
+          if (imgs.length) {
+            for (var j = 0; j < imgs.length; j++) {
+              var im = imgs[j].getBoundingClientRect();
+              if (im.width > 20 && im.height > 20) return true;
+            }
+          }
           return false;
         } catch (_) {
+          // Can't read = often a live cross-origin creative
           return true;
         }
+      }
+
+      function watchInner(slot) {
+        var frame = slot.frame;
+        if (!frame) return;
+        var checks = 0;
+        var iv = setInterval(function () {
+          if (slot.gen !== gen) {
+            clearInterval(iv);
+            return;
+          }
+          checks++;
+          if (creativeOk(frame)) {
+            slot.filled = true;
+            slot.dead = false;
+            setSlotStatus(slot, "filled", true, false);
+            paintFills();
+            clearInterval(iv);
+            return;
+          }
+          // After creatives inject, detect refused-to-connect and remount
+          try {
+            var doc = frame.contentDocument;
+            var inner = doc && doc.querySelector("iframe");
+            if (inner && iframeLooksDead(inner)) {
+              slot.dead = true;
+              setSlotStatus(slot, "dead offer", false, true);
+              clearInterval(iv);
+              setTimeout(function () {
+                if (slot.gen === gen) remountSlot(slot, true);
+              }, 800);
+              return;
+            }
+          } catch (_) {}
+          if (checks >= 25) {
+            // no healthy creative
+            setSlotStatus(slot, "no fill", false, true);
+            clearInterval(iv);
+            setTimeout(function () {
+              if (slot.gen === gen && !slot.filled) remountSlot(slot, true);
+            }, 1200);
+          }
+        }, 500);
+        slot.watchIv = iv;
       }
 
       function remountSlot(slot, force) {
         if (!slot || slot.kind === "popunder") return;
         var now = Date.now();
-        if (!force && slot.mountedAt && now - slot.mountedAt < 15000) return;
+        if (!force && slot.mountedAt && now - slot.mountedAt < 12000) return;
+        if (slot.watchIv) clearInterval(slot.watchIv);
 
         slot.attempts = (slot.attempts || 0) + 1;
         slot.filled = false;
+        slot.dead = false;
         slot.mountedAt = now;
-        slot.slotId = "s" + ++slotSeq + "-" + now + "-" + Math.floor(Math.random() * 1e6);
-        setSlotStatus(slot, "loading", false);
+        slot.gen = gen;
+        slot.slotId = "s" + ++slotSeq + "-" + now;
+        setSlotStatus(slot, "loading", false, false);
         slot.body.innerHTML = "";
 
-        var kind = slot.kind === "smartlink" ? "banner" : slot.kind;
+        var kind = slot.kind;
         var frame = document.createElement("iframe");
         frame.className = "adframe";
-        frame.title = "ad " + slot.slotId;
-        frame.loading = "eager";
-        frame.referrerPolicy = "no-referrer-when-downgrade";
-        frame.setAttribute("scrolling","no"); frame.style.overflow="hidden";
-        frame.style.height = Math.max(slot.h + 20, slot.cls === "is-wide" ? 110 : 260) + "px";
-        frame.src = unitSrc(kind, slot.w, slot.h, slot.slotId);
+        frame.title = "ad";
+        frame.setAttribute("scrolling", "no");
+        frame.style.height = (slot.cls === "is-wide" ? Math.max(slot.h + 16, 110) : Math.max(slot.h + 20, 270)) + "px";
+        // srcdoc = same approach that previously showed real MELBET creatives
+        frame.srcdoc = adDoc(kind, slot.w, slot.h, slot.slotId);
         slot.body.appendChild(frame);
         slot.frame = frame;
+        watchInner(slot);
       }
 
       function paintFills() {
@@ -339,26 +455,15 @@
         fillsEl.innerHTML = "filled <strong>" + filled + "</strong>/<strong>" + total + "</strong>";
       }
 
-      function checkFills() {
-        slots.forEach(function (s) {
-          if (s.kind === "popunder" || s.filled || !s.frame) return;
-          if (frameHasFill(s.frame)) {
-            s.filled = true;
-            setSlotStatus(s, "filled", true);
-          }
-        });
-        paintFills();
-      }
-
       function retryEmpties() {
         var n = 0;
         slots.forEach(function (s) {
           if (s.kind === "popunder" || s.filled) return;
-          if (s.mountedAt && Date.now() - s.mountedAt < 15000) return;
+          if (s.mountedAt && Date.now() - s.mountedAt < 12000) return;
           remountSlot(s, true);
           n++;
         });
-        if (n) setStatus("retrying " + n + " empty", "ok");
+        if (n) setStatus("retrying " + n + " empty/dead", "ok");
         paintFills();
       }
 
@@ -367,18 +472,16 @@
         var wantBanner = document.getElementById("t-banner").checked;
         var wantNative = document.getElementById("t-native").checked;
         var wantReward = document.getElementById("t-reward").checked;
-        var wantSmart = document.getElementById("t-smartlink").checked;
         var types = [];
         if (wantBanner) types.push("banner");
         if (wantNative) types.push("native");
         if (wantReward) types.push("reward");
-        if (wantSmart) types.push("smartlink");
-        if (!types.length) return plan;
+        if (!types.length) types.push("banner");
 
         var bi = 0;
         var i = 0;
         var nativeCount = 0;
-        while (plan.length < n && i < n * 10) {
+        while (plan.length < n && i < n * 8) {
           var t = types[i % types.length];
           i++;
           if (t === "banner") {
@@ -386,13 +489,11 @@
             bi++;
             plan.push({ kind: "banner", detail: sz.label, w: sz.w, h: sz.h, cls: sz.cls });
           } else if (t === "native") {
-            if (nativeCount >= 2) continue;
+            if (nativeCount >= 1) continue;
             nativeCount++;
             plan.push({ kind: "native", detail: "native", w: 300, h: 280, cls: "" });
-          } else if (t === "reward") {
-            plan.push({ kind: "reward", detail: "banner+social", w: 300, h: 250, cls: "" });
           } else {
-            plan.push({ kind: "smartlink", detail: "banner unit", w: 300, h: 250, cls: "" });
+            plan.push({ kind: "reward", detail: "300x250+social", w: 300, h: 250, cls: "" });
           }
         }
         while (plan.length < n) {
@@ -413,14 +514,13 @@
 
       function scheduleLoops() {
         clearTimers();
-        fillTimer = setInterval(checkFills, 700);
-        retryTimer = setInterval(retryEmpties, num("retry", 12, 120, 20) * 1000);
-
+        fillTimer = setInterval(paintFills, 1000);
+        retryTimer = setInterval(retryEmpties, num("retry", 10, 120, 18) * 1000);
         if (!document.getElementById("auto").checked) {
           tickEl.innerHTML = "auto <strong>off</strong>";
           return;
         }
-        var secs = num("secs", 20, 300, 60);
+        var secs = num("secs", 30, 300, 90);
         nextAt = Date.now() + secs * 1000;
         function paintTick() {
           var left = Math.max(0, Math.ceil((nextAt - Date.now()) / 1000));
@@ -438,18 +538,15 @@
 
       function render() {
         var my = ++gen;
-        var n = num("count", 4, 24, 12);
+        var n = num("count", 4, 20, 10);
         var wantPop = document.getElementById("t-popunder").checked;
         var plan = buildPlan(n);
+        slots.forEach(function (s) {
+          if (s.watchIv) clearInterval(s.watchIv);
+        });
         slots = [];
         grid.innerHTML = "";
         ensurePopunder(wantPop);
-
-        if (!plan.length && !wantPop) {
-          setStatus("pick at least one ad type", "err");
-          paintFills();
-          return;
-        }
 
         plan.forEach(function (item, idx) {
           var card = document.createElement("article");
@@ -457,7 +554,7 @@
           var head = document.createElement("div");
           head.className = "card-head";
           var left = document.createElement("span");
-          left.innerHTML = "<b>" + item.kind + "</b> #" + (idx + 1) + " - " + item.detail;
+          left.innerHTML = "<b>" + item.kind + "</b> #" + (idx + 1) + " · " + item.detail;
           var st = document.createElement("span");
           st.className = "st";
           st.textContent = "queued";
@@ -473,29 +570,27 @@
             kind: item.kind,
             w: item.w,
             h: item.h,
+            cls: item.cls || "",
             body: body,
             st: st,
             frame: null,
             filled: false,
             attempts: 0,
             mountedAt: 0,
-            slotId: "",
+            gen: my,
           };
           slots.push(slot);
-
-          // Stagger so each request is separate (better chance of distinct fills)
           setTimeout(function () {
-            if (my !== gen) return;
+            if (gen !== my) return;
             remountSlot(slot, true);
-          }, 400 + idx * 450);
+          }, 300 + idx * 550);
         });
 
         if (wantPop) {
           var card = document.createElement("article");
           card.className = "card is-pop";
-          var head = document.createElement("div");
-          head.className = "card-head";
-          head.innerHTML = "<span><b>popunder</b></span><span class='st ok'>armed</span>";
+          card.innerHTML =
+            "<div class='card-head'><span><b>popunder</b></span><span class='st ok'>armed</span></div>";
           var body = document.createElement("div");
           body.className = "card-body";
           body.style.background = "transparent";
@@ -504,49 +599,23 @@
           btn.className = "pop-arm";
           btn.innerHTML =
             "<strong>Arm &amp; fire popunder</strong>" +
-            "<span>Not a white/black ad box. May open a tab behind this one (often blocked).</span>";
+            "<span>Not an on-page ad. May open a tab behind this one (often blocked).</span>";
           btn.addEventListener("click", function () {
             popunderLoaded = false;
             ensurePopunder(true);
             setTimeout(function () {
               document.body.click();
               btn.innerHTML =
-                "<strong>Gesture sent</strong>" +
-                "<span>Check other tabs / the blocked-popup icon in the address bar.</span>";
+                "<strong>Gesture sent</strong><span>Check other tabs / blocked-popup icon.</span>";
             }, 300);
           });
           body.appendChild(btn);
-          card.appendChild(head);
           card.appendChild(body);
           grid.appendChild(card);
           slots.push({ kind: "popunder", filled: true, body: body, st: null });
         }
 
-        // Optional smartlink strip (only if enabled) - one visible link, not a fake banner label
-        if (document.getElementById("t-smartlink").checked) {
-          var sc = document.createElement("article");
-          sc.className = "card";
-          sc.innerHTML =
-            "<div class='card-head'><span><b>smartlink</b> - click URL</span><span class='st ok'>ready</span></div>";
-          var sb = document.createElement("div");
-          sb.className = "card-body";
-          sb.style.display = "flex";
-          sb.style.alignItems = "center";
-          sb.style.justifyContent = "center";
-          sb.style.background = "#102018";
-          var a = document.createElement("a");
-          a.href = SMARTLINK;
-          a.target = "_blank";
-          a.rel = "noopener noreferrer sponsored";
-          a.style.cssText =
-            "color:#3dcf8a;font-weight:700;text-decoration:none;border:1px solid rgba(61,207,138,.35);padding:.85rem 1.1rem;border-radius:10px";
-          a.textContent = "Open smartlink";
-          sb.appendChild(a);
-          sc.appendChild(sb);
-          grid.appendChild(sc);
-        }
-
-        setStatus(plan.length + " slots - staggered load", "ok");
+        setStatus(plan.length + " slots - fresh creatives", "ok");
         paintFills();
         scheduleLoops();
       }
@@ -569,33 +638,17 @@
         document.body.classList.toggle("ads-only", !!e.target.checked);
       });
       document.getElementById("auto").addEventListener("change", scheduleLoops);
-
-      ["t-banner", "t-native", "t-reward", "t-smartlink", "t-popunder", "count", "secs", "retry"].forEach(
-        function (id) {
-          document.getElementById(id).addEventListener("change", function () {
-            if (id === "secs" || id === "retry") {
-              scheduleLoops();
-              return;
-            }
-            popunderLoaded = false;
-            var old = document.getElementById("steady-lab-popunder");
-            if (old) old.remove();
-            render();
-          });
-        }
-      );
-
-      window.addEventListener("message", function (ev) {
-        var data = ev.data || {};
-        if (data.type === "steady-unit-filled" && data.slot) {
-          slots.forEach(function (s) {
-            if (s.slotId === data.slot) {
-              s.filled = true;
-              setSlotStatus(s, "filled", true);
-            }
-          });
-          paintFills();
-        }
+      ["t-banner", "t-native", "t-reward", "t-popunder", "count", "secs", "retry"].forEach(function (id) {
+        document.getElementById(id).addEventListener("change", function () {
+          if (id === "secs" || id === "retry") {
+            scheduleLoops();
+            return;
+          }
+          popunderLoaded = false;
+          var old = document.getElementById("steady-lab-popunder");
+          if (old) old.remove();
+          render();
+        });
       });
 
       paintMeta();
@@ -604,5 +657,3 @@
   </script>
 </body>
 </html>
-
-
