@@ -17,6 +17,7 @@
       --muted: #8fa398;
       --accent: #3dcf8a;
       --danger: #e8a0a0;
+      --warn: #e6c36a;
     }
     * { box-sizing: border-box; }
     html, body {
@@ -76,89 +77,95 @@
       border-color: transparent;
       font-weight: 700;
     }
-    #meta, #status, #tick { color: var(--muted); }
-    #meta strong, #tick strong { color: var(--text); font-weight: 600; }
+    #meta, #status, #tick, #fills { color: var(--muted); }
+    #meta strong, #tick strong, #fills strong { color: var(--text); font-weight: 600; }
     #status.ok { color: var(--accent); }
     #status.err { color: var(--danger); }
     .note {
       color: var(--muted);
       font-size: 11px;
-      max-width: 62rem;
+      max-width: 64rem;
       margin: 0.25rem 0 0;
     }
     #grid {
       display: grid;
       gap: 1rem;
       padding: 1rem;
-      grid-template-columns: repeat(12, 1fr);
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
       align-items: start;
     }
     .card {
       border: 1px solid var(--line);
       border-radius: 12px;
       background: var(--panel);
-      padding: 0.65rem;
+      padding: 0.55rem;
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      grid-column: span 3;
-      min-height: 200px;
+      min-height: 300px;
+      position: relative;
     }
-    .card.size-300x250 { grid-column: span 3; min-height: 320px; }
-    .card.size-336x280 { grid-column: span 3; min-height: 350px; }
-    .card.size-320x50 { grid-column: span 3; min-height: 130px; }
-    .card.size-320x100 { grid-column: span 3; min-height: 180px; }
-    .card.size-468x60 { grid-column: span 4; min-height: 140px; }
-    .card.size-728x90 { grid-column: span 6; min-height: 170px; }
-    .card.size-160x600 { grid-column: span 2; min-height: 660px; }
-    .card.size-native { grid-column: span 4; min-height: 380px; }
-    .card.size-reward { grid-column: span 3; min-height: 240px; }
-    .card.size-smart { grid-column: span 3; min-height: 140px; }
-    .card.size-pop { grid-column: span 3; min-height: 140px; }
-    @media (max-width: 1100px) {
-      .card, .card[class*="size-"] { grid-column: span 6; }
-    }
-    @media (max-width: 700px) {
-      .card, .card[class*="size-"] { grid-column: span 12; }
+    .card.is-wide { grid-column: span 2; min-height: 160px; }
+    .card.is-tall { min-height: 620px; }
+    @media (max-width: 900px) {
+      .card.is-wide { grid-column: span 1; }
     }
     .card-head {
       display: flex;
       justify-content: space-between;
       gap: 0.5rem;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.45rem;
       color: var(--muted);
       font-size: 11px;
       text-transform: uppercase;
       letter-spacing: 0.04em;
     }
     .card-head b { color: var(--text); font-weight: 600; }
+    .card-head .st { color: var(--warn); }
+    .card-head .st.ok { color: var(--accent); }
     .card-body {
       flex: 1;
       display: flex;
       align-items: center;
       justify-content: center;
       overflow: hidden;
-      background: rgba(0, 0, 0, 0.18);
+      background: #070b09;
       border-radius: 8px;
-      min-height: 80px;
+      min-height: 250px;
+      position: relative;
     }
     .card-body > iframe.adframe {
       width: 100%;
+      height: 100%;
+      min-height: 250px;
       border: 0;
-      background: #0a0f0d;
+      background: #070b09;
       display: block;
     }
-    .smartlink {
-      display: inline-block;
-      padding: 0.85rem 1.1rem;
-      border-radius: 10px;
-      background: #1b2a22;
-      color: var(--accent);
-      text-decoration: none;
-      border: 1px solid rgba(61, 207, 138, 0.35);
-      font-size: 13px;
+    .card.is-wide .card-body,
+    .card.is-wide .card-body > iframe.adframe { min-height: 100px; }
+    .card.is-tall .card-body,
+    .card.is-tall .card-body > iframe.adframe { min-height: 600px; }
+    .hit {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      display: block;
+      text-indent: -9999px;
+      overflow: hidden;
     }
-    .muted { color: var(--muted); font-size: 12px; text-align: center; padding: 0.5rem; }
+    .pop-arm {
+      width: 100%;
+      min-height: 250px;
+      border: 0;
+      border-radius: 8px;
+      background: linear-gradient(160deg, #1b2a22, #0f1713);
+      color: var(--accent);
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .pop-arm small { display: block; margin-top: 0.4rem; color: var(--muted); font-weight: 500; }
   </style>
 </head>
 <body>
@@ -166,11 +173,13 @@
     <div class="row">
       <span id="meta">…</span>
       <span id="tick">next reload <strong>—</strong></span>
+      <span id="fills">filled <strong>0</strong>/<strong>0</strong></span>
       <span id="status"></span>
     </div>
     <div class="row">
-      <label>cards <input id="count" type="number" min="1" max="36" value="16" /></label>
-      <label>every <input id="secs" type="number" min="10" max="300" value="30" /> s</label>
+      <label>cards <input id="count" type="number" min="1" max="36" value="18" /></label>
+      <label>reload <input id="secs" type="number" min="10" max="300" value="25" /> s</label>
+      <label>retry empty <input id="retry" type="number" min="3" max="60" value="6" /> s</label>
       <label class="chk"><input type="checkbox" id="t-banner" checked /> banners</label>
       <label class="chk"><input type="checkbox" id="t-native" checked /> native</label>
       <label class="chk"><input type="checkbox" id="t-reward" checked /> reward</label>
@@ -178,12 +187,12 @@
       <label class="chk"><input type="checkbox" id="t-popunder" checked /> popunder</label>
       <label class="chk"><input type="checkbox" id="auto" checked /> auto reload</label>
       <label class="chk"><input type="checkbox" id="ads-only" /> ads only</label>
-      <button type="button" class="primary" id="btn-refresh">reload now</button>
-      <button type="button" id="btn-clear">clear</button>
+      <button type="button" class="primary" id="btn-refresh">reload all</button>
+      <button type="button" id="btn-retry">retry empties</button>
     </div>
     <p class="note">
-      Hard-refresh if cards look empty (Ctrl+F5). Each banner size loads in its own frame so Adsterra can document.write.
-      Prefer workers.dev (the domain these units are for). Empty cards usually mean no fill yet — leave auto reload on.
+      Empty slots auto-retry. Smartlink cards show a real banner (Adsterra smartlinks are click URLs, not creatives) with the smartlink as the click layer.
+      Popunder is armed in the page — tap the popunder card once to fire it.
     </p>
   </div>
   <div id="grid" aria-live="polite"></div>
@@ -199,76 +208,58 @@
       var POPUNDER_SRC =
         "https://pl30567774.effectivecpmnetwork.com/3c/91/ea/3c91ea5fe0936ca26b9cc5cebf036f9f.js";
 
+      // Bias hard toward sizes that actually fill for this key.
       var BANNER_SIZES = [
-        { w: 300, h: 250, label: "300×250" },
-        { w: 300, h: 250, label: "300×250b" },
-        { w: 336, h: 280, label: "336×280" },
-        { w: 300, h: 250, label: "300×250c" },
-        { w: 728, h: 90, label: "728×90" },
-        { w: 320, h: 50, label: "320×50" },
-        { w: 160, h: 600, label: "160×600" },
-        { w: 300, h: 250, label: "300×250d" },
-        { w: 468, h: 60, label: "468×60" },
-        { w: 300, h: 600, label: "300×600" },
-        { w: 250, h: 250, label: "250×250" },
-        { w: 320, h: 100, label: "320×100" },
+        { w: 300, h: 250, label: "300×250", cls: "" },
+        { w: 300, h: 250, label: "300×250", cls: "" },
+        { w: 300, h: 250, label: "300×250", cls: "" },
+        { w: 336, h: 280, label: "336×280", cls: "" },
+        { w: 300, h: 250, label: "300×250", cls: "" },
+        { w: 728, h: 90, label: "728×90", cls: "is-wide" },
+        { w: 300, h: 250, label: "300×250", cls: "" },
+        { w: 320, h: 50, label: "320×50", cls: "is-wide" },
+        { w: 160, h: 600, label: "160×600", cls: "is-tall" },
+        { w: 300, h: 250, label: "300×250", cls: "" },
       ];
 
       var grid = document.getElementById("grid");
       var statusEl = document.getElementById("status");
       var meta = document.getElementById("meta");
       var tickEl = document.getElementById("tick");
+      var fillsEl = document.getElementById("fills");
       var popunderLoaded = false;
       var reloadTimer = null;
       var countdownTimer = null;
+      var retryTimer = null;
+      var fillTimer = null;
       var nextAt = 0;
       var gen = 0;
+      var slots = [];
 
       function setStatus(msg, kind) {
         statusEl.textContent = msg || "";
         statusEl.className = kind || "";
       }
 
-      function makeCard(kind, index, sizeClass, detail) {
-        var card = document.createElement("article");
-        card.className = "card " + (sizeClass || "");
-        var head = document.createElement("div");
-        head.className = "card-head";
-        head.innerHTML =
-          "<span><b>" +
-          kind +
-          "</b> #" +
-          index +
-          (detail ? " · " + detail : "") +
-          "</span><span>live</span>";
-        var body = document.createElement("div");
-        body.className = "card-body";
-        card.appendChild(head);
-        card.appendChild(body);
-        return { card: card, body: body };
+      function num(id, min, max, fallback) {
+        var n = parseInt(document.getElementById(id).value, 10);
+        if (!isFinite(n)) n = fallback;
+        if (n < min) n = min;
+        if (n > max) n = max;
+        document.getElementById(id).value = String(n);
+        return n;
       }
 
       function adPage(inner, minH) {
         return (
           "<!DOCTYPE html><html><head><meta charset='utf-8'>" +
-          "<meta name='viewport' content='width=device-width,initial-scale=1'>" +
-          "<style>html,body{margin:0;padding:8px;background:#0a0f0d;color:#8fa398;font:12px monospace;display:flex;align-items:center;justify-content:center;min-height:" +
-          (minH || 200) +
-          "px}iframe{margin:0 auto!important}</style></head><body>" +
+          "<style>html,body{margin:0;padding:6px;background:#070b09;min-height:" +
+          (minH || 250) +
+          "px;display:flex;align-items:center;justify-content:center}" +
+          "iframe{margin:0 auto!important}</style></head><body>" +
           inner +
           "</body></html>"
         );
-      }
-
-      function mountSrcdoc(body, html, height) {
-        var frame = document.createElement("iframe");
-        frame.className = "adframe";
-        frame.setAttribute("title", "ad");
-        frame.setAttribute("loading", "eager");
-        frame.style.height = Math.max(height || 250, 80) + 24 + "px";
-        // No sandbox — Adsterra needs a normal document for document.write / invoke.js
-        frame.srcdoc = html;
-        body.appendChild(frame);
       }
 
       function bannerHtml(w, h) {
@@ -295,19 +286,18 @@
         return adPage(
           "<div id='container-" +
             NATIVE_ID +
-            "'></div>" +
+            "' style='min-height:250px;width:100%'></div>" +
             "<script async data-cfasync='false' src='https://pl30566397.effectivecpmnetwork.com/" +
             NATIVE_ID +
             "/invoke.js?cb=" +
             cb +
             "'><\/script>",
-          300
+          280
         );
       }
 
       function rewardHtml() {
         var cb = Date.now() + "" + Math.floor(Math.random() * 1e6);
-        // Reward page also includes a 300x250 so something visible often appears
         return adPage(
           "<script>atOptions={key:'" +
             BANNER_KEY +
@@ -344,13 +334,99 @@
         popunderLoaded = true;
       }
 
-      function num(id, min, max, fallback) {
-        var n = parseInt(document.getElementById(id).value, 10);
-        if (!isFinite(n)) n = fallback;
-        if (n < min) n = min;
-        if (n > max) n = max;
-        document.getElementById(id).value = String(n);
-        return n;
+      function setSlotStatus(slot, text, ok) {
+        if (!slot || !slot.st) return;
+        slot.st.textContent = text;
+        slot.st.className = "st" + (ok ? " ok" : "");
+      }
+
+      function frameHasFill(frame) {
+        try {
+          var doc = frame.contentDocument || (frame.contentWindow && frame.contentWindow.document);
+          if (!doc) return false;
+          if (doc.querySelectorAll("iframe").length > 0) return true;
+          if (doc.querySelectorAll("img").length > 0) return true;
+          if (doc.querySelectorAll("ins,a[href]").length > 0) return true;
+          var text = (doc.body && doc.body.innerText) || "";
+          if (text && text.replace(/\s+/g, "").length > 8) return true;
+          // Some units inject into body as children beyond our scripts
+          var kids = doc.body ? doc.body.children.length : 0;
+          return kids > 2;
+        } catch (_) {
+          // Cross-origin after fill often means the creative navigated — treat as filled
+          return true;
+        }
+      }
+
+      function remountSlot(slot) {
+        if (!slot || slot.kind === "popunder") return;
+        slot.attempts = (slot.attempts || 0) + 1;
+        setSlotStatus(slot, "retry #" + slot.attempts, false);
+        slot.filled = false;
+        slot.body.innerHTML = "";
+
+        if (slot.kind === "smartlink") {
+          // Real creative + invisible smartlink hit area
+          var frame = document.createElement("iframe");
+          frame.className = "adframe";
+          frame.title = "ad";
+          frame.srcdoc = bannerHtml(300, 250);
+          slot.body.appendChild(frame);
+          slot.frame = frame;
+          var hit = document.createElement("a");
+          hit.className = "hit";
+          hit.href = SMARTLINK;
+          hit.target = "_blank";
+          hit.rel = "noopener noreferrer sponsored";
+          hit.textContent = "offer";
+          slot.body.appendChild(hit);
+          return;
+        }
+
+        var frame2 = document.createElement("iframe");
+        frame2.className = "adframe";
+        frame2.title = "ad";
+        if (slot.kind === "banner") frame2.srcdoc = bannerHtml(slot.w, slot.h);
+        else if (slot.kind === "native") frame2.srcdoc = nativeHtml();
+        else frame2.srcdoc = rewardHtml();
+        slot.body.appendChild(frame2);
+        slot.frame = frame2;
+      }
+
+      function paintFills() {
+        var total = 0;
+        var filled = 0;
+        slots.forEach(function (s) {
+          if (s.kind === "popunder") return;
+          total++;
+          if (s.filled) filled++;
+        });
+        fillsEl.innerHTML = "filled <strong>" + filled + "</strong>/<strong>" + total + "</strong>";
+      }
+
+      function checkFills() {
+        slots.forEach(function (s) {
+          if (s.kind === "popunder") return;
+          if (s.filled) return;
+          if (!s.frame) return;
+          if (frameHasFill(s.frame)) {
+            s.filled = true;
+            setSlotStatus(s, "filled", true);
+          }
+        });
+        paintFills();
+      }
+
+      function retryEmpties() {
+        var n = 0;
+        slots.forEach(function (s) {
+          if (s.kind === "popunder") return;
+          if (s.filled) return;
+          remountSlot(s);
+          n++;
+        });
+        if (n) setStatus("retrying " + n + " empty slot(s)", "ok");
+        paintFills();
       }
 
       function buildPlan(n) {
@@ -367,9 +443,8 @@
         if (!types.length) return plan;
 
         var bi = 0;
-        var nativeCount = 0;
         var i = 0;
-        while (plan.length < n && i < n * 6) {
+        while (plan.length < n && i < n * 8) {
           var t = types[i % types.length];
           i++;
           if (t === "banner") {
@@ -377,112 +452,53 @@
             bi++;
             plan.push({
               kind: "banner",
-              sizeClass: "size-" + sz.w + "x" + sz.h,
               detail: sz.label,
               w: sz.w,
               h: sz.h,
+              cls: sz.cls,
             });
           } else if (t === "native") {
-            // Multiple natives OK now — each in own srcdoc frame
-            nativeCount++;
-            plan.push({ kind: "native", sizeClass: "size-native", detail: "banner" });
+            plan.push({ kind: "native", detail: "native", w: 300, h: 280, cls: "" });
           } else if (t === "reward") {
-            plan.push({ kind: "reward", sizeClass: "size-reward", detail: "social+banner" });
+            // Reward social bar is invisible; always pair with a visible 300x250
+            plan.push({ kind: "reward", detail: "300×250+social", w: 300, h: 250, cls: "" });
           } else if (t === "smartlink") {
-            plan.push({ kind: "smartlink", sizeClass: "size-smart", detail: "link" });
+            plan.push({ kind: "smartlink", detail: "banner+click", w: 300, h: 250, cls: "" });
           }
         }
         while (plan.length < n) {
-          if (wantBanner) {
-            var sz2 = BANNER_SIZES[bi % BANNER_SIZES.length];
-            bi++;
-            plan.push({
-              kind: "banner",
-              sizeClass: "size-" + sz2.w + "x" + sz2.h,
-              detail: sz2.label,
-              w: sz2.w,
-              h: sz2.h,
-            });
-          } else if (wantSmart) {
-            plan.push({ kind: "smartlink", sizeClass: "size-smart", detail: "link" });
-          } else break;
+          var sz2 = BANNER_SIZES[bi % BANNER_SIZES.length];
+          bi++;
+          plan.push({
+            kind: wantBanner ? "banner" : wantSmart ? "smartlink" : "banner",
+            detail: sz2.label,
+            w: sz2.w,
+            h: sz2.h,
+            cls: sz2.cls,
+          });
         }
         return plan.slice(0, n);
       }
 
-      function render() {
-        var my = ++gen;
-        var n = num("count", 1, 36, 16);
-        var wantPop = document.getElementById("t-popunder").checked;
-        var plan = buildPlan(n);
-
-        grid.innerHTML = "";
-        ensurePopunder(wantPop);
-
-        if (!plan.length && !wantPop) {
-          setStatus("pick at least one ad type", "err");
-          return;
-        }
-
-        var made = 0;
-        plan.forEach(function (item, idx) {
-          var c = makeCard(item.kind, idx + 1, item.sizeClass, item.detail);
-          grid.appendChild(c.card);
-          made++;
-
-          if (item.kind === "smartlink") {
-            var a = document.createElement("a");
-            a.className = "smartlink";
-            a.href = SMARTLINK;
-            a.target = "_blank";
-            a.rel = "noopener noreferrer sponsored";
-            a.textContent = "smartlink " + (idx + 1);
-            c.body.appendChild(a);
-            return;
-          }
-
-          // Stagger frame mounts so Adsterra is less likely to drop concurrent fills.
-          (function (cardBody, kind, w, h, delay) {
-            setTimeout(function () {
-              if (my !== gen) return;
-              if (kind === "banner") mountSrcdoc(cardBody, bannerHtml(w, h), h);
-              else if (kind === "native") mountSrcdoc(cardBody, nativeHtml(), 300);
-              else if (kind === "reward") mountSrcdoc(cardBody, rewardHtml(), 260);
-            }, delay);
-          })(c.body, item.kind, item.w || 300, item.h || 250, idx * 180);
-        });
-
-        if (wantPop) {
-          var p = makeCard("popunder", 1, "size-pop", "1×");
-          p.body.innerHTML =
-            '<p class="muted">Popunder script in &lt;head&gt;. Click empty page area after load.</p>';
-          grid.appendChild(p.card);
-          made++;
-        }
-
-        if (my !== gen) return;
-        setStatus(made + " cards · " + new Date().toLocaleTimeString(), "ok");
-        scheduleNext();
+      function clearTimers() {
+        if (countdownTimer) clearInterval(countdownTimer);
+        if (reloadTimer) clearTimeout(reloadTimer);
+        if (retryTimer) clearInterval(retryTimer);
+        if (fillTimer) clearInterval(fillTimer);
+        countdownTimer = reloadTimer = retryTimer = fillTimer = null;
       }
 
-      function clearCountdown() {
-        if (countdownTimer) {
-          clearInterval(countdownTimer);
-          countdownTimer = null;
-        }
-        if (reloadTimer) {
-          clearTimeout(reloadTimer);
-          reloadTimer = null;
-        }
-      }
+      function scheduleLoops() {
+        clearTimers();
+        fillTimer = setInterval(checkFills, 1000);
+        var retrySecs = num("retry", 3, 60, 6);
+        retryTimer = setInterval(retryEmpties, retrySecs * 1000);
 
-      function scheduleNext() {
-        clearCountdown();
         if (!document.getElementById("auto").checked) {
           tickEl.innerHTML = "auto <strong>off</strong>";
           return;
         }
-        var secs = num("secs", 10, 300, 30);
+        var secs = num("secs", 10, 300, 25);
         nextAt = Date.now() + secs * 1000;
         function paintTick() {
           var left = Math.max(0, Math.ceil((nextAt - Date.now()) / 1000));
@@ -498,6 +514,90 @@
         }, secs * 1000);
       }
 
+      function render() {
+        var my = ++gen;
+        var n = num("count", 1, 36, 18);
+        var wantPop = document.getElementById("t-popunder").checked;
+        var plan = buildPlan(n);
+        slots = [];
+        grid.innerHTML = "";
+        ensurePopunder(wantPop);
+
+        if (!plan.length && !wantPop) {
+          setStatus("pick at least one ad type", "err");
+          paintFills();
+          return;
+        }
+
+        plan.forEach(function (item, idx) {
+          var card = document.createElement("article");
+          card.className = "card " + (item.cls || "");
+          var head = document.createElement("div");
+          head.className = "card-head";
+          var left = document.createElement("span");
+          left.innerHTML = "<b>" + item.kind + "</b> #" + (idx + 1) + " · " + item.detail;
+          var st = document.createElement("span");
+          st.className = "st";
+          st.textContent = "loading";
+          head.appendChild(left);
+          head.appendChild(st);
+          var body = document.createElement("div");
+          body.className = "card-body";
+          card.appendChild(head);
+          card.appendChild(body);
+          grid.appendChild(card);
+
+          var slot = {
+            kind: item.kind,
+            w: item.w,
+            h: item.h,
+            body: body,
+            st: st,
+            frame: null,
+            filled: false,
+            attempts: 0,
+          };
+          slots.push(slot);
+
+          setTimeout(function () {
+            if (my !== gen) return;
+            remountSlot(slot);
+          }, idx * 120);
+        });
+
+        if (wantPop) {
+          var card = document.createElement("article");
+          card.className = "card";
+          var head = document.createElement("div");
+          head.className = "card-head";
+          head.innerHTML = "<span><b>popunder</b> · armed</span><span class='st ok'>ready</span>";
+          var body = document.createElement("div");
+          body.className = "card-body";
+          var btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "pop-arm";
+          btn.innerHTML = "Tap to fire popunder<small>real click — Adsterra needs a gesture</small>";
+          btn.addEventListener("click", function () {
+            // Re-inject script then synthetic page click so popunder can attach to gesture
+            popunderLoaded = false;
+            ensurePopunder(true);
+            setTimeout(function () {
+              document.body.click();
+              btn.innerHTML = "Popunder gestured<small>check for under-tab / blocked popup</small>";
+            }, 400);
+          });
+          body.appendChild(btn);
+          card.appendChild(head);
+          card.appendChild(body);
+          grid.appendChild(card);
+          slots.push({ kind: "popunder", filled: true, body: body, st: null });
+        }
+
+        setStatus(plan.length + " slots mounting", "ok");
+        paintFills();
+        scheduleLoops();
+      }
+
       function paintMeta() {
         meta.innerHTML =
           "<strong>" + location.host + "</strong> " + location.pathname + " · adsterra";
@@ -509,48 +609,36 @@
         if (old) old.remove();
         render();
       });
-      document.getElementById("btn-clear").addEventListener("click", function () {
-        clearCountdown();
-        gen++;
-        grid.innerHTML = "";
-        ensurePopunder(false);
-        setStatus("cleared", "");
-        tickEl.innerHTML = "auto <strong>paused</strong>";
-      });
+      document.getElementById("btn-retry").addEventListener("click", retryEmpties);
       document.getElementById("ads-only").addEventListener("change", function (e) {
         document.body.classList.toggle("ads-only", !!e.target.checked);
       });
       document.getElementById("auto").addEventListener("change", function () {
-        if (document.getElementById("auto").checked) scheduleNext();
+        if (document.getElementById("auto").checked) scheduleLoops();
         else {
-          clearCountdown();
+          clearTimers();
           tickEl.innerHTML = "auto <strong>off</strong>";
+          fillTimer = setInterval(checkFills, 1000);
+          retryTimer = setInterval(retryEmpties, num("retry", 3, 60, 6) * 1000);
         }
       });
-      ["t-banner", "t-native", "t-reward", "t-smartlink", "t-popunder", "count", "secs"].forEach(
+      ["t-banner", "t-native", "t-reward", "t-smartlink", "t-popunder", "count", "secs", "retry"].forEach(
         function (id) {
           document.getElementById(id).addEventListener("change", function () {
-            if (id === "secs" && document.getElementById("auto").checked) {
-              scheduleNext();
+            if (id === "secs" || id === "retry") {
+              scheduleLoops();
               return;
             }
-            if (id !== "secs") {
-              popunderLoaded = false;
-              var old = document.getElementById("steady-lab-popunder");
-              if (old) old.remove();
-              render();
-            }
+            popunderLoaded = false;
+            var old = document.getElementById("steady-lab-popunder");
+            if (old) old.remove();
+            render();
           });
         }
       );
 
       document.addEventListener("visibilitychange", function () {
-        if (!document.hidden && document.getElementById("auto").checked) {
-          popunderLoaded = false;
-          var old = document.getElementById("steady-lab-popunder");
-          if (old) old.remove();
-          render();
-        }
+        if (!document.hidden) retryEmpties();
       });
 
       paintMeta();
