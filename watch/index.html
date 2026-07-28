@@ -139,7 +139,7 @@
     .card-body {
       flex: 1;
       min-height: 250px;
-      background: #050807;
+      background: #ffffff;
       border-radius: 8px;
       overflow: hidden;
       position: relative;
@@ -151,7 +151,7 @@
       min-height: 250px;
       border: 0;
       display: block;
-      background: #050807;
+      background: #ffffff;
       pointer-events: none; /* clicks go to card → mini browser (stay on /watch) */
     }
     .card.is-wide .card-body > iframe.adframe { min-height: 100px; }
@@ -241,9 +241,9 @@
       <span id="status"></span>
     </div>
     <div class="row">
-      <label>cards <input id="count" type="number" min="4" max="36" value="16" /></label>
-      <label>reload <input id="secs" type="number" min="10" max="300" value="20" /> s</label>
-      <label>retry <input id="retry" type="number" min="3" max="60" value="5" /> s</label>
+      <label>cards <input id="count" type="number" min="4" max="36" value="12" /></label>
+      <label>reload <input id="secs" type="number" min="15" max="300" value="45" /> s</label>
+      <label>retry <input id="retry" type="number" min="8" max="90" value="15" /> s</label>
       <label class="chk"><input type="checkbox" id="t-banner" checked /> banners</label>
       <label class="chk"><input type="checkbox" id="t-native" checked /> native</label>
       <label class="chk"><input type="checkbox" id="t-reward" checked /> reward</label>
@@ -405,9 +405,14 @@
 
       function remountSlot(slot) {
         if (!slot || slot.kind === "popunder") return;
+        var now = Date.now();
+        // Don't thrash a slot that just started loading
+        if (slot.mountedAt && now - slot.mountedAt < 12000 && !slot.forceRetry) return;
+        slot.forceRetry = false;
         slot.attempts = (slot.attempts || 0) + 1;
-        setSlotStatus(slot, "retry #" + slot.attempts, false);
+        setSlotStatus(slot, "loading #" + slot.attempts, false);
         slot.filled = false;
+        slot.mountedAt = now;
         slot.body.innerHTML = "";
 
         var kind = slot.kind === "smartlink" ? "banner" : slot.kind;
@@ -451,6 +456,8 @@
         var n = 0;
         slots.forEach(function (s) {
           if (s.kind === "popunder" || s.filled) return;
+          if (s.mountedAt && Date.now() - s.mountedAt < 12000) return;
+          s.forceRetry = true;
           remountSlot(s);
           n++;
         });
@@ -589,7 +596,7 @@
           setTimeout(function () {
             if (my !== gen) return;
             remountSlot(slot);
-          }, idx * 90);
+          }, idx * 350);
         });
 
         if (wantPop) {
@@ -671,6 +678,20 @@
 
       document.addEventListener("visibilitychange", function () {
         if (!document.hidden) retryEmpties();
+      });
+
+      window.addEventListener("message", function (ev) {
+        var data = ev.data || {};
+        if (data.type === "steady-unit-filled") {
+          slots.forEach(function (s) {
+            if (s.filled || !s.frame) return;
+            if (frameHasFill(s.frame)) {
+              s.filled = true;
+              setSlotStatus(s, "filled", true);
+            }
+          });
+          paintFills();
+        }
       });
 
       paintMeta();
