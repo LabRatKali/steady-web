@@ -1,15 +1,907 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta http-equiv="Cache-Control" content="no-store" />
-  <meta http-equiv="refresh" content="0;url=wall.html" />
-  <title>lab</title>
-  <script>
-    var p = location.pathname.replace(/index\.html$/i, "");
-    if (!p.endsWith("/")) p += "/";
-    location.replace(p + "wall.html");
-  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="robots" content="noindex, nofollow, noarchive" />
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <title>Steady ad lab</title>
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml" />
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #060a08;
+      --panel: #0e1511;
+      --line: rgba(232, 240, 235, 0.1);
+      --text: #e8f0eb;
+      --muted: #7f9488;
+      --accent: #3dcf8a;
+      --warn: #e6c36a;
+      --danger: #e8a0a0;
+      --stage: #fff;
+      --pad: 0.45rem;
+      --banner-w: 300px;
+      --banner-h: 250px;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background:
+        radial-gradient(ellipse 90% 40% at 50% -5%, rgba(61, 207, 138, 0.09), transparent 55%),
+        var(--bg);
+      color: var(--text);
+      font: 13px/1.4 "Segoe UI", system-ui, sans-serif;
+    }
+    body.ads-only .lab-chrome,
+    body.ads-only #help { display: none !important; }
+    body.ads-only #grid { padding-top: 0.75rem; }
+
+    .lab-chrome {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      background: rgba(6, 10, 8, 0.92);
+      border-bottom: 1px solid var(--line);
+      padding: 0.75rem 1.1rem 0.85rem;
+      backdrop-filter: blur(16px);
+    }
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem 0.75rem;
+      align-items: center;
+      margin: 0.2rem 0;
+    }
+    .title {
+      font-weight: 800;
+      color: var(--accent);
+      letter-spacing: 0.06em;
+      font-size: 13px;
+    }
+    label.chk {
+      display: inline-flex;
+      gap: 0.3rem;
+      align-items: center;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 12px;
+      user-select: none;
+    }
+    label.chk input { accent-color: var(--accent); }
+    label:not(.chk) { color: var(--muted); font-size: 12px; }
+    input[type="number"] {
+      width: 3.4rem;
+      background: var(--panel);
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 0.28rem 0.35rem;
+      font: inherit;
+    }
+    button {
+      border: 1px solid var(--line);
+      background: #15201a;
+      color: var(--text);
+      border-radius: 8px;
+      padding: 0.38rem 0.75rem;
+      font: inherit;
+      cursor: pointer;
+      transition: border-color 0.15s ease, transform 0.12s ease;
+    }
+    button:hover { border-color: rgba(61, 207, 138, 0.4); }
+    button:active { transform: scale(0.98); }
+    button.primary {
+      background: var(--accent);
+      color: #042316;
+      border-color: transparent;
+      font-weight: 800;
+    }
+    #meta, #tick, #fills, #status, #diag { color: var(--muted); font-size: 12px; }
+    #meta strong, #tick strong, #fills strong { color: var(--text); }
+    #status.ok { color: var(--accent); }
+    #status.warn { color: var(--warn); }
+    #diag.ok { color: var(--accent); }
+    #diag.bad { color: var(--danger); }
+
+    #help {
+      display: none;
+      margin: 0.75rem 1.1rem 0;
+      padding: 0.9rem 1rem;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--panel);
+      color: var(--muted);
+      font-size: 12.5px;
+      max-width: 42rem;
+    }
+    #help.show { display: block; }
+    #help p { margin: 0.35rem 0; }
+    #help strong { color: var(--text); }
+
+    #grid {
+      display: grid;
+      gap: 1rem;
+      padding: 1rem 1.1rem 1.6rem;
+      /* Exact fit for 300×250 stages + card chrome */
+      grid-template-columns: repeat(auto-fill, minmax(312px, 312px));
+      justify-content: start;
+      align-items: start;
+    }
+
+    .card {
+      width: 312px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--panel);
+      padding: var(--pad);
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      overflow: hidden;
+      transition: border-color 0.2s ease, box-shadow 0.25s ease, transform 0.25s ease;
+    }
+    .card.is-filled {
+      border-color: rgba(61, 207, 138, 0.55);
+      box-shadow: 0 0 0 1px rgba(61, 207, 138, 0.12), 0 8px 24px rgba(0, 0, 0, 0.25);
+    }
+    .card.is-filled.is-fresh {
+      animation: popIn 0.35s ease;
+    }
+    @keyframes popIn {
+      from { transform: scale(0.985); box-shadow: 0 0 0 0 transparent; }
+      to { transform: scale(1); }
+    }
+    .card.is-pop {
+      width: 312px;
+      min-height: auto;
+    }
+
+    .card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0 0.1rem;
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: 0.02em;
+    }
+    .card-head .who {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    .card-head b { color: var(--text); font-weight: 700; }
+    .tag {
+      display: inline-block;
+      padding: 0.1rem 0.35rem;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      background: rgba(61, 207, 138, 0.12);
+      color: var(--accent);
+    }
+    .tag.smart { background: rgba(230, 195, 106, 0.14); color: var(--warn); }
+    .tag.native { background: rgba(140, 180, 255, 0.14); color: #9db7ff; }
+    .tag.pop { background: rgba(232, 160, 160, 0.12); color: var(--danger); }
+
+    .st { font-variant-numeric: tabular-nums; font-size: 11px; }
+    .st.ok { color: var(--accent); }
+    .st.bad { color: var(--danger); }
+    .st.wait { color: var(--warn); }
+
+    /* Exact creative stage — no leftover white / overflow */
+    .card-body {
+      width: var(--banner-w);
+      height: var(--banner-h);
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--stage);
+      border-radius: 8px;
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .card.is-pop .card-body {
+      width: 100%;
+      height: auto;
+      min-height: 0;
+      background: transparent;
+      overflow: visible;
+    }
+
+    .adframe {
+      width: var(--banner-w);
+      height: var(--banner-h);
+      border: 0;
+      background: #fff;
+      display: block;
+      position: relative;
+      z-index: 1;
+    }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 0.75rem;
+      font-size: 12px;
+      pointer-events: none;
+    }
+    .overlay.show { display: flex; }
+    .overlay.loading {
+      color: #6a7a72;
+      background: linear-gradient(110deg, #f2f5f3 20%, #e6ece8 45%, #f2f5f3 70%);
+      background-size: 200% 100%;
+      animation: shimmer 1s ease-in-out infinite;
+    }
+    .overlay.empty {
+      flex-direction: column;
+      gap: 0.2rem;
+      color: #8a5555;
+      background: #fbf6f6;
+    }
+    .overlay.empty strong { color: #b06060; font-size: 12px; }
+    @keyframes shimmer {
+      0% { background-position: 100% 0; }
+      100% { background-position: -100% 0; }
+    }
+
+    .smart-wrap {
+      position: relative;
+      width: var(--banner-w);
+      height: var(--banner-h);
+    }
+    .smart-wrap .hit {
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      cursor: pointer;
+      border: 0;
+      padding: 0;
+      background: transparent;
+    }
+    .smart-wrap .hit:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: -2px;
+    }
+    .smart-caption {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 4;
+      pointer-events: none;
+      padding: 0.35rem 0.5rem;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #042316;
+      background: linear-gradient(transparent, rgba(61, 207, 138, 0.92));
+      text-align: center;
+    }
+
+    .arm-btn {
+      width: 100%;
+      text-align: left;
+      padding: 0.85rem 0.9rem;
+      font: inherit;
+      cursor: pointer;
+      background: #15201a;
+      border: 1px dashed rgba(61, 207, 138, 0.35);
+      border-radius: 10px;
+      color: var(--text);
+    }
+    .arm-btn strong { color: var(--accent); display: block; margin-bottom: 0.25rem; }
+    .arm-btn span { color: var(--muted); font-size: 12px; display: block; line-height: 1.35; }
+
+    @media (max-width: 340px) {
+      #grid { grid-template-columns: 1fr; justify-content: stretch; }
+      .card { width: 100%; max-width: 312px; }
+    }
+  </style>
 </head>
-<body><a href="wall.html">ad lab</a></body>
+<body>
+  <div class="lab-chrome">
+    <div class="row">
+      <span class="title">AD LAB</span>
+      <span id="meta">...</span>
+      <span id="tick">reload <strong>-</strong></span>
+      <span id="fills">ok <strong>0</strong>/<strong>0</strong></span>
+      <span id="status"></span>
+    </div>
+    <div class="row">
+      <label>cards <input id="count" type="number" min="1" max="24" value="12" /></label>
+      <label>reload all <input id="reload" type="number" min="8" max="300" value="18" /> s</label>
+      <label>retry empty <input id="retry" type="number" min="2" max="60" value="4" /> s</label>
+      <label class="chk"><input type="checkbox" id="t-native" checked /> native</label>
+      <label class="chk"><input type="checkbox" id="t-smart" checked /> smartlink</label>
+      <label class="chk"><input type="checkbox" id="t-popunder" /> popunder</label>
+      <label class="chk"><input type="checkbox" id="auto" checked /> auto</label>
+      <label class="chk"><input type="checkbox" id="ads-only" /> ads only</label>
+      <button type="button" class="primary" id="btn-refresh">reload all</button>
+      <button type="button" id="btn-retry">retry empties</button>
+      <button type="button" id="btn-help">help</button>
+    </div>
+    <div class="row"><span id="diag">checking ad network…</span></div>
+  </div>
+
+  <section id="help">
+    <p><strong>/testing/</strong> — every display unit is a true <strong>300×250</strong> frame so creatives fit cleanly (your Adsterra banner zone).</p>
+    <p><strong>Native</strong> uses its own unit in the same fitted stage. <strong>Smartlink</strong> is a 300×250 banner you can tap to open the link. <strong>Popunder</strong> is arm-only (not an on-page size).</p>
+    <p>Slots mount together for speed. Empties retry; the wall reloads on the timer.</p>
+  </section>
+
+  <div id="grid" aria-live="polite"></div>
+
+  <script>
+    (function () {
+      var BANNER_KEY = "d737196962ef25449dcb66c5655248f1";
+      var INVOKE = "https://www.highperformanceformat.com/" + BANNER_KEY + "/invoke.js";
+      var NATIVE_ID = "aa9f63337d56fa208fd27e208e22774a";
+      var NATIVE_SRC =
+        "https://pl30566397.effectivecpmnetwork.com/aa9f63337d56fa208fd27e208e22774a/invoke.js";
+      var SMARTLINK =
+        "https://www.effectivecpmnetwork.com/s889n4i77?key=38aa37c91a94f34912a4a89f8b27799d";
+      var POPUNDER_SRC =
+        "https://pl30567774.effectivecpmnetwork.com/3c/91/ea/3c91ea5fe0936ca26b9cc5cebf036f9f.js";
+
+      // Zone size only — creatives fit the frame.
+      var W = 300;
+      var H = 250;
+      // Parallel mounts — detection is solid; fill the wall fast.
+      var CONCURRENCY = 8;
+      var FILL_WAIT_MS = 12000;
+      var CHECK_MS = 220;
+      var BETWEEN_MS = 40;
+
+      var grid = document.getElementById("grid");
+      var statusEl = document.getElementById("status");
+      var meta = document.getElementById("meta");
+      var tickEl = document.getElementById("tick");
+      var fillsEl = document.getElementById("fills");
+      var helpEl = document.getElementById("help");
+      var diagEl = document.getElementById("diag");
+
+      var popunderLoaded = false;
+      var reloadTimer = null;
+      var retryTimer = null;
+      var countdownTimer = null;
+      var nextReloadAt = 0;
+      var gen = 0;
+      var slots = [];
+      var activeMounts = 0;
+      var waitQueue = [];
+
+      function setStatus(msg, kind) {
+        statusEl.textContent = msg || "";
+        statusEl.className = kind || "";
+      }
+
+      function num(id, min, max, fallback) {
+        var n = parseInt(document.getElementById(id).value, 10);
+        if (!isFinite(n)) n = fallback;
+        if (n < min) n = min;
+        if (n > max) n = max;
+        document.getElementById(id).value = String(n);
+        return n;
+      }
+
+      function runDiag() {
+        var ctrl = typeof AbortController !== "undefined" ? new AbortController() : null;
+        var t = setTimeout(function () {
+          if (ctrl) ctrl.abort();
+        }, 7000);
+        fetch(INVOKE + "?diag=" + Date.now(), {
+          mode: "no-cors",
+          cache: "no-store",
+          signal: ctrl && ctrl.signal,
+        })
+          .then(function () {
+            clearTimeout(t);
+            diagEl.textContent = "ad network reachable · parallel mount · /testing/";
+            diagEl.className = "ok";
+          })
+          .catch(function () {
+            clearTimeout(t);
+            diagEl.textContent = "ad network blocked or slow — check DNS / ad blocker";
+            diagEl.className = "bad";
+          });
+      }
+
+      function ensurePopunder(on) {
+        var existing = document.getElementById("steady-lab-popunder");
+        if (!on) {
+          if (existing) existing.remove();
+          popunderLoaded = false;
+          return;
+        }
+        if (popunderLoaded && existing) return;
+        if (existing) existing.remove();
+        var s = document.createElement("script");
+        s.id = "steady-lab-popunder";
+        s.async = true;
+        s.setAttribute("data-cfasync", "false");
+        s.src = POPUNDER_SRC + "?cb=" + Date.now();
+        document.head.appendChild(s);
+        popunderLoaded = true;
+      }
+
+      function setOverlay(slot, mode) {
+        if (!slot || !slot.overlay) return;
+        if (mode === "loading") {
+          slot.overlay.className = "overlay loading show";
+          slot.overlay.textContent = "loading…";
+        } else if (mode === "waiting") {
+          slot.overlay.className = "overlay loading show";
+          slot.overlay.textContent = "…";
+        } else if (mode === "empty") {
+          slot.overlay.className = "overlay empty show";
+          slot.overlay.innerHTML = "<strong>no fill</strong><span>retrying</span>";
+        } else {
+          slot.overlay.className = "overlay";
+          slot.overlay.textContent = "";
+        }
+      }
+
+      function setSlotStatus(slot, text, ok, bad) {
+        if (!slot || !slot.st) return;
+        slot.st.textContent = text;
+        slot.st.className =
+          "st" +
+          (ok ? " ok" : bad ? " bad" : text === "loading" || text === "queued" ? " wait" : "");
+        if (slot.card) {
+          slot.card.classList.toggle("is-filled", !!ok);
+          if (ok) {
+            slot.card.classList.remove("is-fresh");
+            void slot.card.offsetWidth;
+            slot.card.classList.add("is-fresh");
+          }
+        }
+      }
+
+      function paintFills() {
+        var total = 0;
+        var filled = 0;
+        slots.forEach(function (s) {
+          if (s.kind === "popunder") return;
+          total++;
+          if (s.filled) filled++;
+        });
+        fillsEl.innerHTML = "ok <strong>" + filled + "</strong>/<strong>" + total + "</strong>";
+        if (total > 0 && filled === total) setStatus("all filled", "ok");
+      }
+
+      function bannerSrcdoc(cb) {
+        return (
+          "<!DOCTYPE html><html><head><meta charset=\"utf-8\" />" +
+          "<meta name=\"referrer\" content=\"no-referrer-when-downgrade\" />" +
+          "<base href=\"" + location.origin + "/\" />" +
+          "<style>html,body{margin:0;padding:0;background:#fff;overflow:hidden;width:" +
+          W + "px;height:" + H + "px}" +
+          "iframe,img{display:block;margin:0;border:0;width:100%;max-width:" + W + "px}</style></head><body>" +
+          "<script>window.atOptions={key:'" + BANNER_KEY +
+          "',format:'iframe',height:" + H + ",width:" + W + ",params:{}};<" + "/script>" +
+          "<script src=\"" + INVOKE + "?cb=" + encodeURIComponent(cb) + "\"><" + "/script>" +
+          "</body></html>"
+        );
+      }
+
+      function nativeSrcdoc(cb) {
+        return (
+          "<!DOCTYPE html><html><head><meta charset=\"utf-8\" />" +
+          "<base href=\"" + location.origin + "/\" />" +
+          "<style>html,body{margin:0;padding:0;background:#fff;overflow:hidden;width:" +
+          W + "px;height:" + H + "px}" +
+          "#container-" + NATIVE_ID + "{width:" + W + "px;height:" + H +
+          "px;display:flex;align-items:center;justify-content:center;overflow:hidden}" +
+          "iframe,img{display:block;margin:0 auto;border:0;max-width:100%;max-height:100%}</style></head><body>" +
+          "<div id=\"container-" + NATIVE_ID + "\"></div>" +
+          "<script async data-cfasync=\"false\" src=\"" + NATIVE_SRC + "?cb=" +
+          encodeURIComponent(cb) + "\"><" + "/script>" +
+          "</body></html>"
+        );
+      }
+
+      function findCreative(doc) {
+        if (!doc) return null;
+
+        function hasPaintedImg(root) {
+          if (!root) return false;
+          var imgs = root.querySelectorAll("img");
+          for (var i = 0; i < imgs.length; i++) {
+            var img = imgs[i];
+            var w = img.naturalWidth || img.width || 0;
+            var h = img.naturalHeight || img.height || 0;
+            if (w >= 20 && h >= 20) return true;
+          }
+          return false;
+        }
+
+        if (hasPaintedImg(doc)) return { kind: "img" };
+
+        var box = doc.getElementById("container-" + NATIVE_ID);
+        if (box && (hasPaintedImg(box) || (box.children.length > 0 && box.offsetHeight >= 40))) {
+          return { kind: "native" };
+        }
+
+        var frames = doc.querySelectorAll("iframe");
+        for (var j = 0; j < frames.length; j++) {
+          var f = frames[j];
+          var src = (f.getAttribute("src") || f.src || "").trim();
+
+          if (!src || src === "about:blank") {
+            try {
+              var nested = f.contentDocument;
+              if (
+                nested &&
+                (hasPaintedImg(nested) ||
+                  (nested.body &&
+                    nested.body.childElementCount > 0 &&
+                    nested.body.innerHTML.length > 40))
+              ) {
+                return { kind: "blank-filled" };
+              }
+            } catch (_) {}
+            continue;
+          }
+          if (/^https?:\/\//i.test(src)) return { kind: "iframe", src: src };
+        }
+
+        var chain = doc.querySelectorAll(
+          "script[src*='0a/9d'],script[src*='spendsdetachment'],script[src*='zoologyfibre'],script[src*='workdeadline'],script[src*='newestfangs']"
+        );
+        var anyFrame = doc.querySelector("iframe");
+        if (chain.length && anyFrame) {
+          var aw = anyFrame.offsetWidth || parseInt(anyFrame.width, 10) || 0;
+          var ah = anyFrame.offsetHeight || parseInt(anyFrame.height, 10) || 0;
+          if (aw >= 40 && ah >= 40) return { kind: "chain-iframe" };
+        }
+        return null;
+      }
+
+      function stopWatch(slot) {
+        if (slot && slot.watchIv) {
+          clearInterval(slot.watchIv);
+          slot.watchIv = null;
+        }
+      }
+
+      function releaseMount(slot) {
+        if (!slot || !slot.mounting) return;
+        slot.mounting = false;
+        activeMounts = Math.max(0, activeMounts - 1);
+        setTimeout(pumpQueue, BETWEEN_MS);
+      }
+
+      function pumpQueue() {
+        while (activeMounts < CONCURRENCY && waitQueue.length) {
+          var slot = waitQueue.shift();
+          if (!slot || slot.gen !== gen) continue;
+          if (slot.filled || slot.mounting) continue;
+          startMount(slot);
+        }
+      }
+
+      function enqueueMount(slot) {
+        if (!slot || slot.kind === "popunder") return;
+        if (slot.filled || slot.mounting) return;
+        if (waitQueue.indexOf(slot) >= 0) return;
+        waitQueue.push(slot);
+        setSlotStatus(slot, "queued", false, false);
+        setOverlay(slot, "waiting");
+        pumpQueue();
+      }
+
+      function markFilled(slot) {
+        stopWatch(slot);
+        slot.filled = true;
+        setOverlay(slot, null);
+        setSlotStatus(slot, "filled", true, false);
+        releaseMount(slot);
+        paintFills();
+      }
+
+      function markEmpty(slot) {
+        stopWatch(slot);
+        slot.filled = false;
+        setOverlay(slot, "empty");
+        setSlotStatus(slot, "empty", false, true);
+        releaseMount(slot);
+        paintFills();
+      }
+
+      function startMount(slot) {
+        if (!slot || slot.gen !== gen) return;
+        stopWatch(slot);
+        slot.mounting = true;
+        slot.attempts = (slot.attempts || 0) + 1;
+        slot.filled = false;
+        slot.mountedAt = Date.now();
+        activeMounts += 1;
+        setSlotStatus(slot, "loading", false, false);
+        setOverlay(slot, "loading");
+        paintFills();
+
+        slot.body.innerHTML = "";
+        var overlay = document.createElement("div");
+        overlay.className = "overlay loading show";
+        overlay.textContent = "loading…";
+        slot.overlay = overlay;
+
+        var host = slot.body;
+        if (slot.kind === "smart") {
+          var wrap = document.createElement("div");
+          wrap.className = "smart-wrap";
+          var hit = document.createElement("button");
+          hit.type = "button";
+          hit.className = "hit";
+          hit.setAttribute("aria-label", "Open smartlink");
+          hit.addEventListener("click", function () {
+            window.open(SMARTLINK, "_blank", "noopener,noreferrer");
+          });
+          var caption = document.createElement("div");
+          caption.className = "smart-caption";
+          caption.textContent = "tap · smartlink";
+          wrap.appendChild(overlay);
+          wrap.appendChild(hit);
+          wrap.appendChild(caption);
+          slot.body.appendChild(wrap);
+          host = wrap;
+        } else {
+          slot.body.appendChild(overlay);
+        }
+
+        var iframe = document.createElement("iframe");
+        iframe.className = "adframe";
+        iframe.width = W;
+        iframe.height = H;
+        iframe.setAttribute("scrolling", "no");
+        iframe.setAttribute("frameborder", "0");
+        iframe.setAttribute("referrerpolicy", "no-referrer-when-downgrade");
+        iframe.setAttribute("allow", "attribution-reporting");
+        iframe.title = slot.kind + " " + (slot.index + 1);
+        var cb = Date.now() + "-" + slot.index + "-" + slot.attempts;
+        iframe.srcdoc = slot.kind === "native" ? nativeSrcdoc(cb) : bannerSrcdoc(cb);
+        host.appendChild(iframe);
+        slot.iframe = iframe;
+
+        var checks = 0;
+        var maxChecks = Math.ceil(FILL_WAIT_MS / CHECK_MS);
+        slot.watchIv = setInterval(function () {
+          if (slot.gen !== gen) {
+            stopWatch(slot);
+            releaseMount(slot);
+            return;
+          }
+          checks += 1;
+          var creative = null;
+          try {
+            creative = findCreative(iframe.contentDocument);
+          } catch (_) {}
+          if (creative) {
+            markFilled(slot);
+            return;
+          }
+          if (checks >= maxChecks) markEmpty(slot);
+        }, CHECK_MS);
+      }
+
+      function retryEmpties() {
+        var n = 0;
+        slots.forEach(function (s) {
+          if (s.kind === "popunder" || s.filled || s.mounting) return;
+          if (s.mountedAt && Date.now() - s.mountedAt < 1500) return;
+          enqueueMount(s);
+          n += 1;
+        });
+        if (n) setStatus("retry " + n, "ok");
+      }
+
+      function clearTimers() {
+        if (countdownTimer) clearInterval(countdownTimer);
+        if (reloadTimer) clearTimeout(reloadTimer);
+        if (retryTimer) clearInterval(retryTimer);
+        countdownTimer = reloadTimer = retryTimer = null;
+      }
+
+      function scheduleLoops() {
+        clearTimers();
+        if (!document.getElementById("auto").checked) {
+          tickEl.innerHTML = "auto <strong>off</strong>";
+          return;
+        }
+        var retrySecs = num("retry", 2, 60, 4);
+        var reloadSecs = num("reload", 8, 300, 18);
+        nextReloadAt = Date.now() + reloadSecs * 1000;
+        retryTimer = setInterval(retryEmpties, retrySecs * 1000);
+        function paintTick() {
+          var left = Math.max(0, Math.ceil((nextReloadAt - Date.now()) / 1000));
+          tickEl.innerHTML = "reload <strong>" + left + "s</strong>";
+        }
+        paintTick();
+        countdownTimer = setInterval(paintTick, 250);
+        reloadTimer = setTimeout(function () {
+          popunderLoaded = false;
+          var old = document.getElementById("steady-lab-popunder");
+          if (old) old.remove();
+          render();
+        }, reloadSecs * 1000);
+      }
+
+      function kindMeta(kind) {
+        if (kind === "smart") return { label: "smartlink", tag: "smart", tagText: "link" };
+        if (kind === "native") return { label: "native", tag: "native", tagText: "native" };
+        return { label: "banner", tag: "", tagText: "ad" };
+      }
+
+      function makeMountCard(spec, my) {
+        var metaK = kindMeta(spec.kind);
+        var card = document.createElement("article");
+        card.className = "card";
+
+        var head = document.createElement("div");
+        head.className = "card-head";
+        var left = document.createElement("span");
+        left.className = "who";
+        left.innerHTML =
+          "<b>" +
+          metaK.label +
+          "</b> #" +
+          (spec.index + 1) +
+          ' <span class="tag' +
+          (metaK.tag ? " " + metaK.tag : "") +
+          '">' +
+          metaK.tagText +
+          "</span> · 300×250";
+        var st = document.createElement("span");
+        st.className = "st wait";
+        st.textContent = "queued";
+        head.appendChild(left);
+        head.appendChild(st);
+
+        var body = document.createElement("div");
+        body.className = "card-body";
+
+        card.appendChild(head);
+        card.appendChild(body);
+        grid.appendChild(card);
+
+        var slot = {
+          kind: spec.kind,
+          index: spec.index,
+          card: card,
+          body: body,
+          st: st,
+          overlay: null,
+          iframe: null,
+          filled: false,
+          attempts: 0,
+          mountedAt: 0,
+          gen: my,
+          watchIv: null,
+          mounting: false,
+        };
+        slots.push(slot);
+        enqueueMount(slot);
+      }
+
+      function render() {
+        var my = ++gen;
+        waitQueue = [];
+        activeMounts = 0;
+        var n = num("count", 1, 24, 12);
+        var wantNative = document.getElementById("t-native").checked;
+        var wantSmart = document.getElementById("t-smart").checked;
+        var wantPop = document.getElementById("t-popunder").checked;
+
+        slots.forEach(stopWatch);
+        slots = [];
+        grid.innerHTML = "";
+        if (!wantPop) ensurePopunder(false);
+
+        var plan = [];
+        while (plan.length < n) {
+          var i = plan.length;
+          if (wantNative && i > 0 && i % 5 === 4) {
+            plan.push({ kind: "native", index: i });
+            continue;
+          }
+          if (wantSmart && i > 0 && i % 6 === 5) {
+            plan.push({ kind: "smart", index: i });
+            continue;
+          }
+          plan.push({ kind: "banner", index: i });
+        }
+
+        plan.forEach(function (spec) {
+          makeMountCard(spec, my);
+        });
+
+        if (wantPop) {
+          var card = document.createElement("article");
+          card.className = "card is-pop";
+          var head = document.createElement("div");
+          head.className = "card-head";
+          head.innerHTML =
+            '<span class="who"><b>popunder</b> <span class="tag pop">arm</span></span><span class="st ok">ready</span>';
+          var body = document.createElement("div");
+          body.className = "card-body";
+          var btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "arm-btn";
+          btn.innerHTML =
+            "<strong>Arm popunder</strong><span>Not a banner size. After arming, a later click may open a tab behind this one.</span>";
+          btn.addEventListener("click", function () {
+            popunderLoaded = false;
+            ensurePopunder(true);
+            setStatus("popunder armed", "ok");
+          });
+          body.appendChild(btn);
+          card.appendChild(head);
+          card.appendChild(body);
+          grid.appendChild(card);
+          slots.push({ kind: "popunder", filled: true });
+        }
+
+        paintFills();
+        meta.innerHTML =
+          "<strong>" + location.host + "</strong> /testing/ · <strong>" + n + "</strong> cards";
+        setStatus("loading wall…", "warn");
+        scheduleLoops();
+      }
+
+      document.getElementById("btn-refresh").addEventListener("click", function () {
+        popunderLoaded = false;
+        var old = document.getElementById("steady-lab-popunder");
+        if (old) old.remove();
+        render();
+      });
+      document.getElementById("btn-retry").addEventListener("click", retryEmpties);
+      document.getElementById("btn-help").addEventListener("click", function () {
+        helpEl.classList.toggle("show");
+      });
+      document.getElementById("ads-only").addEventListener("change", function () {
+        document.body.classList.toggle("ads-only", this.checked);
+      });
+      document.getElementById("auto").addEventListener("change", scheduleLoops);
+      ["reload", "retry"].forEach(function (id) {
+        document.getElementById(id).addEventListener("change", scheduleLoops);
+      });
+      ["count", "t-native", "t-smart", "t-popunder"].forEach(function (id) {
+        document.getElementById(id).addEventListener("change", render);
+      });
+
+      (function cleanUrl() {
+        var path = location.pathname.replace(/index\.html$/i, "");
+        if (!path.endsWith("/")) path += "/";
+        if (path.indexOf("/testing") === -1) return;
+        var q = new URLSearchParams(location.search);
+        ["v", "chrome", "nocache", "t", "_", "cb"].forEach(function (k) {
+          q.delete(k);
+        });
+        var next = path + (q.toString() ? "?" + q.toString() : "") + location.hash;
+        if (next !== location.pathname + location.search + location.hash) {
+          history.replaceState(null, "", next);
+        }
+      })();
+
+      runDiag();
+      render();
+    })();
+  </script>
+</body>
 </html>
+<!-- wall-1785255168 -->
