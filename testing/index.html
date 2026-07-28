@@ -8,6 +8,18 @@
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
   <title>Steady ad lab</title>
+  <script>
+    // One-shot escape from stale browser/CDN copies of the old "native" lab.
+    (function () {
+      var REV = "14";
+      var q = new URLSearchParams(location.search);
+      if (q.get("r") === REV) return;
+      q.set("r", REV);
+      var path = location.pathname.replace(/index\.html$/i, "");
+      if (!path.endsWith("/")) path += "/";
+      location.replace(path + "?" + q.toString() + location.hash);
+    })();
+  </script>
   <script>(function(){var p=location.pathname;if(p.length>1&&!p.endsWith("/")&&!/\.[a-z0-9]{1,8}$/i.test(p))location.replace(p+"/"+location.search+location.hash)})();</script>
   <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml" />
   <style>
@@ -357,8 +369,8 @@
         <button type="button" class="preset big" data-n="96">96</button>
       </span>
       <label>cards <input id="count" type="number" min="1" max="120" value="12" /></label>
-      <label>reload all <input id="reload" type="number" min="8" max="300" value="18" /> s</label>
-      <label>retry empty <input id="retry" type="number" min="2" max="60" value="4" /> s</label>
+      <label>reload all <input id="reload" type="number" min="8" max="300" value="40" /> s</label>
+      <label>retry empty <input id="retry" type="number" min="2" max="60" value="7" /> s</label>
       <label class="chk"><input type="checkbox" id="t-smart" checked /> smartlink</label>
       <label class="chk"><input type="checkbox" id="t-popunder" /> popunder</label>
       <label class="chk"><input type="checkbox" id="auto" checked /> auto</label>
@@ -389,9 +401,10 @@
 
       var W = 300;
       var H = 250;
-      var FILL_WAIT_MS = 12000;
-      var CHECK_MS = 220;
-      var BETWEEN_MS = 30;
+      // Proven sweet spot — too much parallel = Adsterra no-fills / sinkhole thrash.
+      var FILL_WAIT_MS = 16000;
+      var CHECK_MS = 250;
+      var BETWEEN_MS = 180;
       var MAX_CARDS = 120;
 
       var grid = document.getElementById("grid");
@@ -412,7 +425,7 @@
       var slots = [];
       var activeMounts = 0;
       var waitQueue = [];
-      var concurrency = 8;
+      var concurrency = 3;
 
       function setStatus(msg, kind) {
         statusEl.textContent = msg || "";
@@ -429,10 +442,11 @@
       }
 
       function concurrencyFor(n) {
-        if (n <= 8) return Math.max(4, n);
-        if (n <= 24) return 8;
-        if (n <= 48) return 12;
-        return 16;
+        if (n <= 6) return 2;
+        if (n <= 12) return 3;
+        if (n <= 24) return 4;
+        if (n <= 48) return 5;
+        return 6;
       }
 
       function syncPresets(n) {
@@ -736,7 +750,7 @@
         var n = 0;
         slots.forEach(function (s) {
           if (s.kind === "popunder" || s.filled || s.mounting) return;
-          if (s.mountedAt && Date.now() - s.mountedAt < 1200) return;
+          if (s.mountedAt && Date.now() - s.mountedAt < 2800) return;
           enqueueMount(s);
           n += 1;
         });
@@ -756,8 +770,8 @@
           tickEl.innerHTML = "auto <strong>off</strong>";
           return;
         }
-        var retrySecs = num("retry", 2, 60, 4);
-        var reloadSecs = num("reload", 8, 300, 18);
+        var retrySecs = num("retry", 2, 60, 7);
+        var reloadSecs = num("reload", 8, 300, 40);
         nextReloadAt = Date.now() + reloadSecs * 1000;
         retryTimer = setInterval(retryEmpties, retrySecs * 1000);
         function paintTick() {
@@ -932,7 +946,7 @@
         if (!path.endsWith("/")) path += "/";
         if (path.indexOf("/testing") === -1) return;
         var q = new URLSearchParams(location.search);
-        ["v", "chrome", "nocache", "t", "_", "cb", "fresh", "x"].forEach(function (k) {
+        ["v", "chrome", "nocache", "t", "_", "cb", "fresh", "x", "r", "force"].forEach(function (k) {
           q.delete(k);
         });
         var next = path + (q.toString() ? "?" + q.toString() : "") + location.hash;
@@ -948,3 +962,4 @@
   </script>
 </body>
 </html>
+<!-- recover-1785255791 -->
