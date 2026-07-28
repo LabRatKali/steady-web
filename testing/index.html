@@ -436,7 +436,7 @@
       var UNIT_PAGE = new URL("unit.html", location.href).href;
       var WORKERS_LAB = "https://steady.less-phone.workers.dev/testing/";
       var PAGES_LAB = "https://labratkali.github.io/steady-web/testing/";
-      var LAB_BUILD = "2026-07-28c";
+      var LAB_BUILD = "2026-07-28d";
 
       var W = 300;
       var H = 250;
@@ -595,16 +595,29 @@
               : "";
       }
 
+      function filledCount() {
+        var n = 0;
+        slots.forEach(function (s) {
+          if (s && s.kind !== "popunder" && s.filled) n++;
+        });
+        return n;
+      }
+
       function updateEnvBannerFromState() {
+        // Real fills win — never scare the user while creatives are painting.
+        if (filledCount() > 0) {
+          hideEnvBanner();
+          return;
+        }
         if (netState.embedded) {
           showEnvBanner(
             "<strong>You’re inside Cursor’s browser</strong> — it blocks Adsterra hosts, so cards stay empty here. " +
-              "Open the lab in <strong>system Chrome or Edge</strong> (where you’re not using the IDE browser)." +
+              "Open the lab in <strong>system Chrome or Edge</strong> (the normal browser app, not the IDE panel)." +
               '<div class="actions">' +
-              '<a class="primary" id="btn-open-pages" href="' +
+              '<a class="primary" href="' +
               PAGES_LAB +
               '" target="_blank" rel="noopener">Open Pages lab</a>' +
-              '<a id="btn-open-workers" href="' +
+              '<a href="' +
               WORKERS_LAB +
               '" target="_blank" rel="noopener">Open workers.dev lab</a>' +
               "</div>",
@@ -680,9 +693,11 @@
           finishScript(false);
         };
         document.head.appendChild(s);
+        // Do not timeout→false: invoke.js is obfuscated and onload can be flaky;
+        // unit iframes are the source of truth. Only onerror means blocked.
         setTimeout(function () {
-          if (netState.scriptOk === null) finishScript(false);
-        }, 8000);
+          if (netState.scriptOk === null && filledCount() > 0) finishScript(true);
+        }, 5000);
 
         // Watch resource timings — status 0 means blocked (Cursor/adblock), not a soft 404.
         function scanResources() {
@@ -694,10 +709,12 @@
               if (!/highperformance|storageimagedisplay|effectivecpm/i.test(name)) continue;
               if (typeof e.responseStatus !== "number") continue;
               if (e.responseStatus === 0) {
+                if (filledCount() > 0) continue;
                 if (/highperformance|effectivecpm|invoke/i.test(name)) netState.scriptOk = false;
                 if (/storageimagedisplay/i.test(name)) netState.imageOk = false;
               } else if (e.responseStatus > 0) {
                 if (/storageimagedisplay/i.test(name)) netState.imageOk = true;
+                if (/highperformance|invoke/i.test(name)) netState.scriptOk = true;
               }
             }
             paintDiag();
@@ -892,6 +909,11 @@
         setOverlay(slot, null);
         setSlotStatus(slot, "filled", true, false);
         paintFills();
+        if (netState.scriptOk !== true) {
+          netState.scriptOk = true;
+          paintDiag();
+        }
+        updateEnvBannerFromState();
       }
 
       function markEmpty(slot) {
