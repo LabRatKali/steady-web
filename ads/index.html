@@ -145,13 +145,13 @@
     .card.is-wide .card-body { min-height: 110px; }
     .card-body > iframe.adframe {
       width: 100%;
-      height: 100%;
-      min-height: 260px;
+      height: 260px;
       border: 0;
       display: block;
       background: #fff;
+      overflow: hidden;
     }
-    .card.is-wide .card-body > iframe.adframe { min-height: 110px; }
+    .card.is-wide .card-body > iframe.adframe { height: 110px; }
     .pop-arm {
       width: calc(100% - 8px);
       min-height: 150px;
@@ -321,7 +321,8 @@
         frame.title = "ad " + slot.slotId;
         frame.loading = "eager";
         frame.referrerPolicy = "no-referrer-when-downgrade";
-        frame.allow = "fullscreen";
+        frame.scrolling = "no";
+        frame.style.height = Math.max(slot.h + 20, slot.cls === "is-wide" ? 110 : 260) + "px";
         frame.src = unitSrc(kind, slot.w, slot.h, slot.slotId);
         slot.body.appendChild(frame);
         slot.frame = frame;
