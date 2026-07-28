@@ -2,48 +2,60 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="referrer" content="no-referrer-when-downgrade" />
   <meta name="robots" content="noindex,nofollow" />
-  <title>Steady</title>
+  <meta http-equiv="Cache-Control" content="no-store" />
+  <title>ad unit</title>
   <style>
-    html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #fff; }
-    #stage { width: 300px; height: 250px; margin: 0 auto; overflow: hidden; background: #fff; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 300px;
+      height: 250px;
+      overflow: hidden;
+      background: #fff;
+    }
+    iframe, img { display: block; margin: 0; border: 0; max-width: 300px; }
   </style>
 </head>
 <body>
-  <div id="stage">
-    <script>
-      atOptions = {
-        key: "d737196962ef25449dcb66c5655248f1",
+  <script>
+    (function () {
+      var KEY = "d737196962ef25449dcb66c5655248f1";
+      var DIRECT = "https://www.highperformanceformat.com/" + KEY + "/invoke.js";
+      // On the Cloudflare worker, /adp/ proxies creatives past ISP DNS sinkholes
+      // and some embedded-browser host blocks.
+      var useProxy =
+        /(?:\?|&)proxy=1(?:&|$)/.test(location.search) ||
+        /workers\.dev$/i.test(location.hostname) ||
+        /less-phone/i.test(location.hostname);
+      var src = useProxy
+        ? location.origin +
+          "/adp/https/www.highperformanceformat.com/" +
+          KEY +
+          "/invoke.js"
+        : DIRECT;
+      window.atOptions = {
+        key: KEY,
         format: "iframe",
         height: 250,
         width: 300,
-        params: {}
+        params: {},
       };
-    </script>
-    <script src="https://www.highperformanceformat.com/d737196962ef25449dcb66c5655248f1/invoke.js"></script>
-  </div>
-  <script>
-    (function () {
-      var slot = new URLSearchParams(location.search).get("slot") || "";
-      var tries = 0;
-      var t = setInterval(function () {
-        tries++;
-        var filled =
-          document.querySelectorAll("iframe").length > 0 ||
-          document.querySelectorAll("img").length > 0;
-        if (filled) {
-          try {
-            parent.postMessage({ type: "steady-unit-filled", slot: slot }, "*");
-          } catch (_) {}
-          clearInterval(t);
-        } else if (tries > 40) {
-          try {
-            parent.postMessage({ type: "steady-unit-empty", slot: slot }, "*");
-          } catch (_) {}
-          clearInterval(t);
+      var s = document.createElement("script");
+      s.async = true;
+      s.setAttribute("data-cfasync", "false");
+      s.src = src + (src.indexOf("?") >= 0 ? "&" : "?") + "cb=" + encodeURIComponent(Date.now());
+      s.onerror = function () {
+        if (useProxy && s.src.indexOf("/adp/") >= 0) {
+          var s2 = document.createElement("script");
+          s2.async = true;
+          s2.setAttribute("data-cfasync", "false");
+          s2.src = DIRECT + "?cb=" + encodeURIComponent(Date.now());
+          document.body.appendChild(s2);
         }
-      }, 250);
+      };
+      document.body.appendChild(s);
     })();
   </script>
 </body>
