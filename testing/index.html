@@ -4,7 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="robots" content="noindex, nofollow, noarchive" />
-  <title>Steady</title>
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <title>Steady ad lab</title>
   <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml" />
   <style>
     :root {
@@ -99,7 +101,7 @@
     #grid {
       display: grid;
       gap: 0.9rem;
-      padding: 0.9rem 1rem 1rem;
+      padding: 0.9rem 1rem 1.2rem;
       grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
       align-items: start;
     }
@@ -162,6 +164,18 @@
     .pop-arm strong { color: var(--accent); display: block; margin-bottom: 0.3rem; }
     .pop-arm span { color: var(--muted); font-size: 12px; display: block; }
   </style>
+  <script>
+    // Force every /testing/ visit onto a fresh build URL so normal browsers
+    // don't keep a stale cached lab (the ?chrome=1 window worked because it was uncached).
+    (function () {
+      var LAB_BUILD = "b8";
+      var q = new URLSearchParams(location.search);
+      if (q.get("v") === LAB_BUILD) return;
+      q.set("v", LAB_BUILD);
+      q.delete("chrome");
+      location.replace(location.pathname + "?" + q.toString() + location.hash);
+    })();
+  </script>
 </head>
 <body>
   <div class="lab-chrome">
@@ -173,9 +187,9 @@
       <span id="status"></span>
     </div>
     <div class="row">
-      <label>cards <input id="count" type="number" min="4" max="16" value="4" /></label>
-      <label>reload <input id="secs" type="number" min="5" max="120" value="40" /> s</label>
-      <label>retry <input id="retry" type="number" min="2" max="60" value="6" /> s</label>
+      <label>cards <input id="count" type="number" min="4" max="16" value="8" /></label>
+      <label>reload <input id="secs" type="number" min="5" max="120" value="12" /> s</label>
+      <label>retry <input id="retry" type="number" min="2" max="60" value="4" /> s</label>
       <label class="chk"><input type="checkbox" id="t-popunder" checked /> popunder</label>
       <label class="chk"><input type="checkbox" id="auto" checked /> auto</label>
       <label class="chk"><input type="checkbox" id="ads-only" /> ads only</label>
@@ -186,16 +200,18 @@
   </div>
 
   <section id="help">
-    <p>Only path: <strong>/testing/</strong>. One-by-one mounts so Adsterra can fill. Empty slots retry; full grid reloads on the timer. Use DNS <strong>1.1.1.1</strong> if creatives refuse to connect.</p>
+    <p>Only path: <strong>/testing/</strong>. Opens a fresh build automatically. Two ads mount at a time; empties retry; grid reloads on the timer.</p>
   </section>
 
   <div id="grid" aria-live="polite"></div>
 
   <script>
     (function () {
+      var LAB_BUILD = "b8";
       var BANNER_KEY = "d737196962ef25449dcb66c5655248f1";
       var POPUNDER_SRC =
         "https://pl30567774.effectivecpmnetwork.com/3c/91/ea/3c91ea5fe0936ca26b9cc5cebf036f9f.js";
+      var CONCURRENCY = 2;
 
       var grid = document.getElementById("grid");
       var statusEl = document.getElementById("status");
@@ -211,7 +227,8 @@
       var nextAt = 0;
       var gen = 0;
       var slots = [];
-      var mountChain = Promise.resolve();
+      var activeMounts = 0;
+      var waitQueue = [];
 
       function setStatus(msg, kind) {
         statusEl.textContent = msg || "";
@@ -306,108 +323,109 @@
         return null;
       }
 
-      function remountSlot(slot, force) {
-        if (!slot || slot.kind === "popunder") return;
-        var now = Date.now();
-        if (!force && slot.mountedAt && now - slot.mountedAt < 3500) return;
-        if (slot.mounting) return; // already queued/running
+      function pumpQueue() {
+        while (activeMounts < CONCURRENCY && waitQueue.length) {
+          var slot = waitQueue.shift();
+          if (!slot || slot.gen !== gen || slot.filled || slot.mounting) continue;
+          startMount(slot);
+        }
+      }
 
+      function enqueueMount(slot) {
+        if (!slot || slot.kind === "popunder" || slot.filled || slot.mounting) return;
+        if (waitQueue.indexOf(slot) >= 0) return;
+        waitQueue.push(slot);
+        setSlotStatus(slot, "queued", false, false);
+        pumpQueue();
+      }
+
+      function startMount(slot) {
+        if (!slot || slot.gen !== gen) return;
+        slot.mounting = true;
         slot.attempts = (slot.attempts || 0) + 1;
         slot.filled = false;
-        slot.mountedAt = now;
-        slot.gen = gen;
-        slot.mounting = true;
-        setSlotStatus(slot, "queued", false, false);
+        slot.mountedAt = Date.now();
+        activeMounts += 1;
+        setSlotStatus(slot, "loading", false, false);
         paintFills();
 
-        mountChain = mountChain
-          .catch(function () {})
-          .then(function () {
-            if (slot.gen !== gen) {
-              slot.mounting = false;
-              return;
-            }
-            setSlotStatus(slot, "loading", false, false);
-            if (slot.watchIv) {
-              clearInterval(slot.watchIv);
-              slot.watchIv = null;
-            }
-            if (slot._resolveWatch) {
-              try {
-                slot._resolveWatch();
-              } catch (_) {}
-              slot._resolveWatch = null;
-            }
+        if (slot.watchIv) {
+          clearInterval(slot.watchIv);
+          slot.watchIv = null;
+        }
 
-            slot.body.innerHTML = "";
-            var iframe = document.createElement("iframe");
-            iframe.className = "adframe";
-            iframe.width = 300;
-            iframe.height = 250;
-            iframe.setAttribute("scrolling", "no");
-            iframe.setAttribute("frameborder", "0");
-            iframe.setAttribute("referrerpolicy", "strict-origin-when-cross-origin");
-            iframe.title = "banner " + (slot.index + 1);
-            iframe.srcdoc = bannerSrcdoc(Date.now() + "-" + slot.index + "-" + slot.attempts);
-            slot.body.appendChild(iframe);
-            slot.iframe = iframe;
+        slot.body.innerHTML = "";
+        var iframe = document.createElement("iframe");
+        iframe.className = "adframe";
+        iframe.width = 300;
+        iframe.height = 250;
+        iframe.setAttribute("scrolling", "no");
+        iframe.setAttribute("frameborder", "0");
+        iframe.setAttribute("referrerpolicy", "strict-origin-when-cross-origin");
+        iframe.setAttribute("allow", "attribution-reporting");
+        iframe.title = "banner " + (slot.index + 1);
+        iframe.srcdoc = bannerSrcdoc(Date.now() + "-" + slot.index + "-" + slot.attempts);
+        slot.body.appendChild(iframe);
+        slot.iframe = iframe;
 
-            var checks = 0;
-            return new Promise(function (resolve) {
-              var done = false;
-              var finish = function () {
-                if (done) return;
-                done = true;
-                slot.mounting = false;
-                slot._resolveWatch = null;
-                if (slot.watchIv) {
-                  clearInterval(slot.watchIv);
-                  slot.watchIv = null;
-                }
-                resolve();
-              };
-              slot._resolveWatch = finish;
+        var checks = 0;
+        slot.watchIv = setInterval(function () {
+          if (slot.gen !== gen) {
+            clearInterval(slot.watchIv);
+            slot.watchIv = null;
+            slot.mounting = false;
+            activeMounts = Math.max(0, activeMounts - 1);
+            pumpQueue();
+            return;
+          }
+          checks += 1;
+          var creative = null;
+          try {
+            creative = findCreative(iframe.contentDocument);
+          } catch (_) {}
 
-              slot.watchIv = setInterval(function () {
-                if (slot.gen !== gen) {
-                  finish();
-                  return;
-                }
-                checks += 1;
-                var creative = null;
-                try {
-                  creative = findCreative(iframe.contentDocument);
-                } catch (_) {}
+          if (creative) {
+            clearInterval(slot.watchIv);
+            slot.watchIv = null;
+            slot.filled = true;
+            slot.mounting = false;
+            activeMounts = Math.max(0, activeMounts - 1);
+            setSlotStatus(slot, "filled", true, false);
+            paintFills();
+            // brief pause then pull next from queue
+            setTimeout(pumpQueue, 350);
+            return;
+          }
 
-                if (creative) {
-                  slot.filled = true;
-                  setSlotStatus(slot, "filled", true, false);
-                  paintFills();
-                  setTimeout(finish, 800);
-                  return;
-                }
+          // ~5.5s wait for inventory
+          if (checks >= 18) {
+            clearInterval(slot.watchIv);
+            slot.watchIv = null;
+            slot.mounting = false;
+            activeMounts = Math.max(0, activeMounts - 1);
+            setSlotStatus(slot, "empty", false, true);
+            paintFills();
+            pumpQueue();
+          }
+        }, 300);
+      }
 
-                if (checks >= 22) {
-                  setSlotStatus(slot, "empty", false, true);
-                  finish();
-                }
-              }, 300);
-            });
-          });
+      function remountSlot(slot, force) {
+        if (!slot || slot.kind === "popunder") return;
+        if (!force && slot.mountedAt && Date.now() - slot.mountedAt < 2500) return;
+        if (slot.mounting) return;
+        enqueueMount(slot);
       }
 
       function retryEmpties() {
-        var list = [];
+        var n = 0;
         slots.forEach(function (s) {
           if (s.kind === "popunder" || s.filled || s.mounting) return;
-          if (s.mountedAt && Date.now() - s.mountedAt < 5000) return;
-          list.push(s);
+          if (s.mountedAt && Date.now() - s.mountedAt < 2500) return;
+          enqueueMount(s);
+          n += 1;
         });
-        if (!list.length) return;
-        setStatus("retrying " + list.length, "ok");
-        list.forEach(function (s) {
-          remountSlot(s, true);
-        });
+        if (n) setStatus("retrying " + n, "ok");
       }
 
       function clearTimers() {
@@ -419,12 +437,12 @@
 
       function scheduleLoops() {
         clearTimers();
-        retryTimer = setInterval(retryEmpties, num("retry", 2, 60, 5) * 1000);
+        retryTimer = setInterval(retryEmpties, num("retry", 2, 60, 4) * 1000);
         if (!document.getElementById("auto").checked) {
           tickEl.innerHTML = "auto <strong>off</strong>";
           return;
         }
-        var secs = num("secs", 5, 120, 40);
+        var secs = num("secs", 5, 120, 12);
         nextAt = Date.now() + secs * 1000;
         function paintTick() {
           var left = Math.max(0, Math.ceil((nextAt - Date.now()) / 1000));
@@ -442,8 +460,9 @@
 
       function render() {
         var my = ++gen;
-        mountChain = Promise.resolve();
-        var n = num("count", 4, 16, 6);
+        waitQueue = [];
+        activeMounts = 0;
+        var n = num("count", 4, 16, 8);
         var wantPop = document.getElementById("t-popunder").checked;
         slots.forEach(function (s) {
           if (s.watchIv) clearInterval(s.watchIv);
@@ -482,10 +501,10 @@
               mountedAt: 0,
               gen: my,
               watchIv: null,
+              mounting: false,
             };
             slots.push(slot);
-            // Sequential chain inside remountSlot — just kick each in order.
-            remountSlot(slot, true);
+            enqueueMount(slot);
           })(i);
         }
 
@@ -517,7 +536,13 @@
 
         paintFills();
         meta.innerHTML =
-          "<strong>" + location.host + "</strong> /testing/ · <strong>" + n + "</strong> banners · one-by-one";
+          "<strong>" +
+          location.host +
+          "</strong> /testing/ · <strong>" +
+          n +
+          "</strong> banners · build <strong>" +
+          LAB_BUILD +
+          "</strong>";
         scheduleLoops();
       }
 
@@ -545,7 +570,10 @@
         });
       });
 
-      render();
+      // Only boot after cache-bust redirect has settled on ?v=build
+      if (new URLSearchParams(location.search).get("v") === LAB_BUILD) {
+        render();
+      }
     })();
   </script>
 </body>
