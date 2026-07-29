@@ -240,9 +240,8 @@
     }
 
     if (rewardHtml() || bannerHtml() || scriptUrl()) {
-      const fromApp = !!(window.SteadyNative) || opts.autoComplete === true;
       return await timedSponsorConfirm({
-        autoComplete: fromApp || opts.autoComplete === true,
+        autoComplete: opts.autoComplete === true,
         silent: opts.silent === true,
         statusEl: opts.statusEl,
         tickEl: opts.tickEl,
