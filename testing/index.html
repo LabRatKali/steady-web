@@ -426,7 +426,7 @@
     <div class="row">
       <span class="title">AD LAB</span>
       <span id="meta">...</span>
-      <span id="tick">rotate <strong>-</strong></span>
+      <span id="tick">reload <strong>-</strong></span>
       <span id="fills">ok <strong>0</strong>/<strong>0</strong></span>
       <span id="status"></span>
     </div>
@@ -440,8 +440,7 @@
         <button type="button" class="preset big" data-n="96">96</button>
       </span>
       <label>cards <input id="count" type="number" min="1" max="120" value="24" /></label>
-      <label>rotate <input id="reload" type="number" min="5" max="300" value="10" /> s</label>
-      <label>batch <input id="batch" type="number" min="1" max="48" value="4" /></label>
+      <label>reload all <input id="reload" type="number" min="8" max="300" value="20" /> s</label>
       <label>retry empty <input id="retry" type="number" min="2" max="60" value="8" /> s</label>
       <label class="chk"><input type="checkbox" id="t-smart" checked /> smartlink</label>
       <label class="chk"><input type="checkbox" id="t-popunder" /> popunder</label>
@@ -458,9 +457,8 @@
 
   <section id="help">
     <p><strong>/testing/</strong> — every display unit is a fitted <strong>300×250</strong> (your working Adsterra banner zone).</p>
-    <p><strong>Traffic-safe mode:</strong> auto <strong>rotates a small batch</strong> of cards (default 4 every 10s) instead of remounting the whole wall at once. That keeps ads fresh without flooding Adsterra — the usual cause of white/loading walls on phones and slower browsers.</p>
-    <p>Filled cards stay visible while others rotate. Use <strong>reload all</strong> only when you want a full remount. Empty slots still retry gently.</p>
-    <p>Hard-refresh once (Ctrl+F5) after updates. Use system Chrome/Edge/Firefox/Safari — not Cursor’s IDE browser (Adsterra is blocked there).</p>
+    <p>When the timer hits <strong>0</strong>, <strong>every card remounts</strong> (including filled ones) in place — you should see a brief loading shimmer, then new creatives. No full-page white screen.</p>
+    <p>Starts are paced so phones / Safari don’t get rate-limited. If a browser shows nothing: hard-refresh (Ctrl+F5), turn off ad blockers for this tab, and use normal Chrome/Edge/Firefox/Safari — not Cursor’s IDE browser.</p>
   </section>
 
   <div id="grid" aria-live="polite"></div>
@@ -484,16 +482,14 @@
       })();
       var WORKERS_LAB = "https://steady.less-phone.workers.dev/testing/";
       var PAGES_LAB = "https://labratkali.github.io/steady-web/testing/";
-      var LAB_BUILD = "2026-07-29d";
+      var LAB_BUILD = "2026-07-29e";
       var rotateArmedAt = 0;
 
       var W = 300;
       var H = 250;
-      // Traffic-safe defaults: rotate a small batch instead of remounting the whole
-      // wall. Adsterra throttles bursty same-key traffic (phones / Safari especially).
+      // Auto timer remounts EVERY card in place (paced starts — no white page reload).
       var DEFAULT_CARDS = 24;
-      var DEFAULT_RELOAD = 10;
-      var DEFAULT_BATCH = 4;
+      var DEFAULT_RELOAD = 20;
       var DEFAULT_RETRY = 8;
       var FILL_WAIT_MS = 16000;
       var CHECK_MS = 250;
@@ -597,9 +593,8 @@
 
       function savePrefs() {
         try {
-          localStorage.setItem("steady-lab-reload", String(num("reload", 5, 300, DEFAULT_RELOAD)));
+          localStorage.setItem("steady-lab-reload", String(num("reload", 8, 300, DEFAULT_RELOAD)));
           localStorage.setItem("steady-lab-retry", String(num("retry", 2, 60, DEFAULT_RETRY)));
-          localStorage.setItem("steady-lab-batch", String(num("batch", 1, 48, DEFAULT_BATCH)));
         } catch (_) {}
       }
 
@@ -613,15 +608,17 @@
 
       function migratePrefs() {
         try {
-          if (localStorage.getItem("steady-lab-v") === "4") return;
-          // v4: traffic-safe rotate/batch defaults (old full-wall reloads caused throttling).
+          if (localStorage.getItem("steady-lab-v") === "5") return;
+          // v5: auto remounts ALL cards again (batch rotate looked like "timer does nothing").
           localStorage.setItem("steady-lab-reload", String(DEFAULT_RELOAD));
           localStorage.setItem("steady-lab-retry", String(DEFAULT_RETRY));
-          localStorage.setItem("steady-lab-batch", String(DEFAULT_BATCH));
+          try {
+            localStorage.removeItem("steady-lab-batch");
+          } catch (_) {}
           if (!localStorage.getItem("steady-lab-count")) {
             localStorage.setItem("steady-lab-count", String(DEFAULT_CARDS));
           }
-          localStorage.setItem("steady-lab-v", "4");
+          localStorage.setItem("steady-lab-v", "5");
         } catch (_) {}
       }
 
@@ -891,6 +888,8 @@
           W +
           ",params:{}};var s=document.createElement('script');s.async=true;s.setAttribute('data-cfasync','false');s.src='" +
           INVOKE +
+          "?cb=" +
+          encodeURIComponent(cb) +
           "';s.onload=function(){ping({steadyLab:'invoke',ok:true})};s.onerror=function(){ping({steadyLab:'invoke',ok:false});report('error','script')};document.body.appendChild(s);var n=0;var iv=setInterval(function(){n++;scan();if(reported==='filled'||n>=80)clearInterval(iv)},200);})();<" +
           "/script>" +
           "</body></html>"
@@ -1236,94 +1235,8 @@
       }
 
       /**
-       * Remount a SMALL batch of slots (empties first, then oldest filled).
-       * Full-wall remounts hammer Adsterra and cause white/loading walls on
-       * phones and stricter browsers. Rolling keeps the wall looking live
-       * while cutting peak traffic ~4–6×.
-       */
-      function rotateBatch() {
-        cycleCount += 1;
-        window.__steadyCycleAt = Date.now();
-
-        var display = [];
-        var filled = 0;
-        slots.forEach(function (s) {
-          if (!s || s.kind === "popunder") return;
-          display.push(s);
-          if (s.filled) filled++;
-        });
-        var total = display.length;
-        lastFillRatio = total ? filled / total : 0;
-
-        if (lastFillRatio < 0.35) {
-          BETWEEN_MS = 260;
-          concurrency = Math.max(2, Math.min(concurrency, 2));
-        } else if (lastFillRatio < 0.7) {
-          BETWEEN_MS = 180;
-          concurrency = Math.max(2, Math.min(concurrency, 3));
-        } else {
-          BETWEEN_MS = 140;
-          concurrency = concurrencyFor(num("count", 1, MAX_CARDS, DEFAULT_CARDS));
-        }
-
-        var batch = num("batch", 1, 48, DEFAULT_BATCH);
-        if (lastFillRatio < 0.5) batch = Math.min(batch, 3);
-        if (preferUnitPrimary()) batch = Math.min(batch, 3);
-
-        var empties = [];
-        var filledList = [];
-        display.forEach(function (s) {
-          if (s.filled) filledList.push(s);
-          else empties.push(s);
-        });
-        filledList.sort(function (a, b) {
-          return (a.mountedAt || 0) - (b.mountedAt || 0);
-        });
-
-        var pick = [];
-        empties.forEach(function (s) {
-          if (pick.length < batch) pick.push(s);
-        });
-        filledList.forEach(function (s) {
-          if (pick.length < batch) pick.push(s);
-        });
-
-        // Do NOT bump global gen — that would kill watches on cards we keep.
-        waitQueue = waitQueue.filter(function (s) {
-          return pick.indexOf(s) < 0;
-        });
-
-        pick.forEach(function (s) {
-          stopWatch(s);
-          s.gen = gen;
-          s.filled = false;
-          s.watching = false;
-          s.mounting = false;
-          s.triedAltLoader = false;
-          s.forceLoader = null;
-          s.mountedAt = 0;
-          if (s.card) s.card.classList.remove("is-filled", "is-fresh");
-          setSlotStatus(s, "queued", false, false);
-          setOverlay(s, "loading");
-          if (waitQueue.indexOf(s) < 0) waitQueue.push(s);
-        });
-
-        // Decay counters so adaptive concurrency can recover.
-        recentEmpties = Math.max(0, recentEmpties - 1);
-        recentFills = Math.max(0, recentFills - 1);
-
-        setStatus(
-          "rotate #" + cycleCount + " · " + pick.length + " cards…",
-          lastFillRatio < 0.35 ? "warn" : "ok"
-        );
-        paintFills();
-        pumpQueue();
-        scheduleLoops();
-        armWallWatch();
-      }
-
-      /**
-       * Full remount of every display slot (manual "reload all" only).
+       * Full remount of every display slot when the auto timer hits.
+       * (Batch-only rotate looked like the timer did nothing — most cards never changed.)
        */
       function cycleAllSlots() {
         cycleCount += 1;
@@ -1338,31 +1251,57 @@
         });
         lastFillRatio = total ? filled / total : 0;
 
-        BETWEEN_MS = lastFillRatio < 0.5 ? 220 : 160;
-        concurrency = Math.max(2, Math.min(3, concurrencyFor(total || DEFAULT_CARDS)));
+        // Pace the remount wave — avoid Adsterra rate-limit death spiral.
+        if (lastFillRatio < 0.35) {
+          BETWEEN_MS = 220;
+          concurrency = Math.max(2, Math.min(3, concurrencyFor(total || DEFAULT_CARDS)));
+        } else if (preferUnitPrimary()) {
+          BETWEEN_MS = 160;
+          concurrency = Math.max(2, Math.min(4, concurrencyFor(total || DEFAULT_CARDS)));
+        } else {
+          BETWEEN_MS = 110;
+          concurrency = concurrencyFor(total || DEFAULT_CARDS);
+        }
 
         var my = ++gen;
         waitQueue = [];
         startInflight = 0;
+        recentEmpties = 0;
+        recentFills = 0;
 
         slots.forEach(function (s) {
           if (!s || s.kind === "popunder") return;
           stopWatch(s);
+          try {
+            if (s.iframe) {
+              s.iframe.src = "about:blank";
+              s.iframe.removeAttribute("srcdoc");
+            }
+          } catch (_) {}
           s.gen = my;
           s.filled = false;
           s.watching = false;
           s.mounting = false;
           s.triedAltLoader = false;
           s.forceLoader = null;
+          s.loader = null;
           s.mountedAt = 0;
+          s.iframe = null;
+          if (s.body) {
+            s.body.innerHTML = "";
+            var overlay = document.createElement("div");
+            overlay.className = "overlay loading show";
+            overlay.textContent = "loading…";
+            s.overlay = overlay;
+            s.body.appendChild(overlay);
+          }
           if (s.card) s.card.classList.remove("is-filled", "is-fresh");
           setSlotStatus(s, "queued", false, false);
-          setOverlay(s, "loading");
           waitQueue.push(s);
         });
 
         setStatus(
-          "reload all #" + cycleCount + " · remounting…",
+          "reload #" + cycleCount + " · remounting all…",
           lastFillRatio < 0.35 ? "warn" : "ok"
         );
         paintFills();
@@ -1378,13 +1317,12 @@
           return;
         }
         var retrySecs = num("retry", 2, 60, DEFAULT_RETRY);
-        var reloadSecs = num("reload", 5, 300, DEFAULT_RELOAD);
-        // If fills are weak, slow the rotate timer so we don't dig a deeper hole.
-        if (lastFillRatio < 0.35) reloadSecs = Math.max(reloadSecs, 18);
-        else if (lastFillRatio < 0.7) reloadSecs = Math.max(reloadSecs, 12);
-        // First arm after a fresh wall: give Adsterra time before the first rotate.
+        var reloadSecs = num("reload", 8, 300, DEFAULT_RELOAD);
+        if (lastFillRatio < 0.35) reloadSecs = Math.max(reloadSecs, 35);
+        else if (lastFillRatio < 0.7) reloadSecs = Math.max(reloadSecs, 25);
+        // First timer after a fresh wall: let the initial fill finish.
         if (!rotateArmedAt) {
-          reloadSecs = Math.max(reloadSecs, 16);
+          reloadSecs = Math.max(reloadSecs, 18);
           rotateArmedAt = Date.now();
         }
         savePrefs();
@@ -1392,7 +1330,7 @@
         retryTimer = setInterval(retryEmpties, retrySecs * 1000);
         function paintTick() {
           var left = Math.max(0, Math.ceil((nextReloadAt - Date.now()) / 1000));
-          tickEl.innerHTML = "rotate <strong>" + left + "s</strong>";
+          tickEl.innerHTML = "reload <strong>" + left + "s</strong>";
         }
         paintTick();
         countdownTimer = setInterval(paintTick, 250);
@@ -1400,7 +1338,7 @@
           popunderLoaded = false;
           var old = document.getElementById("steady-lab-popunder");
           if (old) old.remove();
-          rotateBatch();
+          cycleAllSlots();
         }, reloadSecs * 1000);
       }
 
@@ -1612,7 +1550,7 @@
         document.body.classList.toggle("ads-only", this.checked);
       });
       document.getElementById("auto").addEventListener("change", scheduleLoops);
-      ["reload", "retry", "batch"].forEach(function (id) {
+      ["reload", "retry"].forEach(function (id) {
         document.getElementById(id).addEventListener("change", scheduleLoops);
       });
       ["count", "t-smart", "t-popunder"].forEach(function (id) {
@@ -1634,7 +1572,7 @@
       window.__steadyLab = {
         build: LAB_BUILD,
         cycle: function () {
-          rotateBatch();
+          cycleAllSlots();
         },
         cycleAll: function () {
           cycleAllSlots();
@@ -1669,13 +1607,10 @@
       migratePrefs();
       countInput.value = String(loadCount());
       document.getElementById("reload").value = String(
-        loadPref("steady-lab-reload", 5, 300, DEFAULT_RELOAD)
+        loadPref("steady-lab-reload", 8, 300, DEFAULT_RELOAD)
       );
       document.getElementById("retry").value = String(
         loadPref("steady-lab-retry", 2, 60, DEFAULT_RETRY)
-      );
-      document.getElementById("batch").value = String(
-        loadPref("steady-lab-batch", 1, 48, DEFAULT_BATCH)
       );
 
       // Kill legacy ad-lab service workers — they cached failed opaque responses and
