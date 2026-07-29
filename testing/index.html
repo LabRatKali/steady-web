@@ -484,7 +484,8 @@
       })();
       var WORKERS_LAB = "https://steady.less-phone.workers.dev/testing/";
       var PAGES_LAB = "https://labratkali.github.io/steady-web/testing/";
-      var LAB_BUILD = "2026-07-29c";
+      var LAB_BUILD = "2026-07-29d";
+      var rotateArmedAt = 0;
 
       var W = 300;
       var H = 250;
@@ -496,7 +497,7 @@
       var DEFAULT_RETRY = 8;
       var FILL_WAIT_MS = 16000;
       var CHECK_MS = 250;
-      var BETWEEN_MS = 140;
+      var BETWEEN_MS = 100;
       var MAX_CARDS = 120;
       var cycleCount = 0;
       var lastFillRatio = 1;
@@ -561,12 +562,12 @@
           var c = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
           if (c && (c.saveData || /2g|slow-2g|3g/i.test(c.effectiveType || ""))) slowNet = true;
         } catch (_) {}
-        var cap = mobile || slowNet ? 3 : 6;
+        var cap = mobile || slowNet ? 3 : 8;
         var want;
-        if (n <= 12) want = mobile || slowNet ? 2 : 4;
-        else if (n <= 24) want = mobile || slowNet ? 3 : 5;
-        else if (n <= 48) want = mobile || slowNet ? 3 : 5;
-        else want = mobile || slowNet ? 3 : 6;
+        if (n <= 12) want = mobile || slowNet ? 3 : 6;
+        else if (n <= 24) want = mobile || slowNet ? 3 : 7;
+        else if (n <= 48) want = mobile || slowNet ? 3 : 7;
+        else want = mobile || slowNet ? 3 : 8;
         if (recentEmpties > recentFills && recentEmpties >= 3) {
           want = Math.max(2, want - 1);
         }
@@ -1381,6 +1382,11 @@
         // If fills are weak, slow the rotate timer so we don't dig a deeper hole.
         if (lastFillRatio < 0.35) reloadSecs = Math.max(reloadSecs, 18);
         else if (lastFillRatio < 0.7) reloadSecs = Math.max(reloadSecs, 12);
+        // First arm after a fresh wall: give Adsterra time before the first rotate.
+        if (!rotateArmedAt) {
+          reloadSecs = Math.max(reloadSecs, 16);
+          rotateArmedAt = Date.now();
+        }
         savePrefs();
         nextReloadAt = Date.now() + reloadSecs * 1000;
         retryTimer = setInterval(retryEmpties, retrySecs * 1000);
@@ -1462,6 +1468,10 @@
         var my = ++gen;
         waitQueue = [];
         startInflight = 0;
+        rotateArmedAt = 0;
+        recentEmpties = 0;
+        recentFills = 0;
+        lastFillRatio = 1;
         var n = num("count", 1, MAX_CARDS, DEFAULT_CARDS);
         concurrency = concurrencyFor(n);
         saveCount(n);
