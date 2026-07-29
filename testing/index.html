@@ -435,8 +435,8 @@
         <button type="button" class="preset big" data-n="96">96</button>
       </span>
       <label>cards <input id="count" type="number" min="1" max="120" value="24" /></label>
-      <label>reload all <input id="reload" type="number" min="8" max="300" value="20" /> s</label>
-      <label>retry empty <input id="retry" type="number" min="2" max="60" value="5" /> s</label>
+      <label>reload all <input id="reload" type="number" min="8" max="300" value="30" /> s</label>
+      <label>retry empty <input id="retry" type="number" min="2" max="60" value="8" /> s</label>
       <label class="chk"><input type="checkbox" id="t-smart" checked /> smartlink</label>
       <label class="chk"><input type="checkbox" id="t-popunder" /> popunder</label>
       <label class="chk"><input type="checkbox" id="auto" checked /> auto</label>
@@ -452,7 +452,7 @@
 
   <section id="help">
     <p><strong>/testing/</strong> — every display unit is a fitted <strong>300×250</strong> (your working Adsterra banner zone).</p>
-    <p>Default wall is <strong>24</strong> cards; when the reload timer hits, the page does a <strong>hard reload</strong> (every card, even filled ones). Empty slots also retry in between.</p>
+    <p>Default wall is <strong>24</strong> cards. When the reload timer hits, <strong>every card remounts</strong> (filled ones too) without blanking the whole page. Empty slots also retry gently in between.</p>
     <p>If cards stay on <strong>loading</strong> with no image, hard-refresh once (Ctrl+F5) so old service-worker caches clear. Prefer system Chrome/Edge/Firefox/Safari — not Cursor’s IDE browser.</p>
     <p><strong>Smartlink</strong> = same banner + tap. <strong>Popunder</strong> = arm only. If creatives stay blank, run <code>scripts/fix_adsterra_dns.ps1</code> as admin.</p>
   </section>
@@ -478,19 +478,21 @@
       })();
       var WORKERS_LAB = "https://steady.less-phone.workers.dev/testing/";
       var PAGES_LAB = "https://labratkali.github.io/steady-web/testing/";
-      var LAB_BUILD = "2026-07-28k";
+      var LAB_BUILD = "2026-07-29a";
 
       var W = 300;
       var H = 250;
-      // Defaults: 24-card wall, full hard reload every 20s.
+      // Defaults: 24-card wall. Cycle remounts ALL cards (including filled) in-place —
+      // no location.reload() white-out. Longer gap reduces Adsterra rate-limits.
       var DEFAULT_CARDS = 24;
-      var DEFAULT_RELOAD = 20;
-      var DEFAULT_RETRY = 5;
+      var DEFAULT_RELOAD = 30;
+      var DEFAULT_RETRY = 8;
       var FILL_WAIT_MS = 16000;
       var CHECK_MS = 250;
-      var BETWEEN_MS = 80;
+      var BETWEEN_MS = 100;
       var MAX_CARDS = 120;
-      // Primary loader: srcdoc (fewest moving parts). Alternate: unit.html once if empty.
+      var cycleCount = 0;
+      var lastFillRatio = 1;
 
       var grid = document.getElementById("grid");
       var statusEl = document.getElementById("status");
@@ -1176,10 +1178,12 @@
       }
 
       function retryEmpties() {
+        // After a fresh cycle, give mounts time before hammering retries.
+        if (window.__steadyCycleAt && Date.now() - window.__steadyCycleAt < 6000) return;
         var n = 0;
         slots.forEach(function (s) {
           if (s.kind === "popunder" || s.filled || s.watching || s.mounting) return;
-          if (s.mountedAt && Date.now() - s.mountedAt < 2500) return;
+          if (s.mountedAt && Date.now() - s.mountedAt < 4000) return;
           if (waitQueue.indexOf(s) >= 0) return;
           waitQueue.push(s);
           setSlotStatus(s, "queued", false, false);
@@ -1196,6 +1200,65 @@
         countdownTimer = reloadTimer = retryTimer = null;
       }
 
+      /**
+       * Remount EVERY display slot (including filled) without location.reload().
+       * Full page reloads caused a white screen and, after many cycles, left
+       * slower browsers stuck on "loading" when Adsterra throttled.
+       */
+      function cycleAllSlots() {
+        cycleCount += 1;
+        window.__steadyCycleAt = Date.now();
+
+        var total = 0;
+        var filled = 0;
+        slots.forEach(function (s) {
+          if (!s || s.kind === "popunder") return;
+          total++;
+          if (s.filled) filled++;
+        });
+        lastFillRatio = total ? filled / total : 0;
+
+        // Back off when the last wall barely filled — avoid rate-limit death spiral.
+        if (lastFillRatio < 0.35) {
+          BETWEEN_MS = 220;
+          concurrency = Math.max(2, Math.min(concurrency, 3));
+        } else if (lastFillRatio < 0.7) {
+          BETWEEN_MS = 140;
+          concurrency = Math.max(3, Math.min(concurrency, concurrencyFor(total || DEFAULT_CARDS)));
+        } else {
+          BETWEEN_MS = 100;
+          concurrency = concurrencyFor(num("count", 1, MAX_CARDS, DEFAULT_CARDS));
+        }
+
+        var my = ++gen;
+        waitQueue = [];
+        startInflight = 0;
+
+        slots.forEach(function (s) {
+          if (!s || s.kind === "popunder") return;
+          stopWatch(s);
+          s.gen = my;
+          s.filled = false;
+          s.watching = false;
+          s.mounting = false;
+          s.triedAltLoader = false;
+          s.forceUnit = false;
+          s.mountedAt = 0;
+          if (s.card) s.card.classList.remove("is-filled", "is-fresh");
+          setSlotStatus(s, "queued", false, false);
+          setOverlay(s, "loading");
+          waitQueue.push(s);
+        });
+
+        setStatus(
+          "cycle #" + cycleCount + " · remounting all…",
+          lastFillRatio < 0.35 ? "warn" : "ok"
+        );
+        paintFills();
+        pumpQueue();
+        scheduleLoops();
+      }
+
       function scheduleLoops() {
         clearTimers();
         if (!document.getElementById("auto").checked) {
@@ -1204,6 +1267,9 @@
         }
         var retrySecs = num("retry", 2, 60, DEFAULT_RETRY);
         var reloadSecs = num("reload", 8, 300, DEFAULT_RELOAD);
+        // If last cycle filled poorly, stretch the next cycle automatically.
+        if (lastFillRatio < 0.35) reloadSecs = Math.max(reloadSecs, 45);
+        else if (lastFillRatio < 0.7) reloadSecs = Math.max(reloadSecs, 35);
         savePrefs();
         nextReloadAt = Date.now() + reloadSecs * 1000;
         retryTimer = setInterval(retryEmpties, retrySecs * 1000);
@@ -1214,12 +1280,10 @@
         paintTick();
         countdownTimer = setInterval(paintTick, 250);
         reloadTimer = setTimeout(function () {
-          // Hard full-page reload every cycle — including when every slot is filled.
-          try {
-            location.reload();
-          } catch (_) {
-            location.href = location.href;
-          }
+          popunderLoaded = false;
+          var old = document.getElementById("steady-lab-popunder");
+          if (old) old.remove();
+          cycleAllSlots();
         }, reloadSecs * 1000);
       }
 
