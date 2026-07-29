@@ -24,7 +24,15 @@
   <script>
     (function () {
       var KEY = "d737196962ef25449dcb66c5655248f1";
-      var DIRECT = "https://www.highperformanceformat.com/" + KEY + "/invoke.js";
+      var HOSTS = [
+        "https://www.highperformanceformat.com/",
+        "https://www.profitabledisplayformat.com/",
+      ];
+      var params = new URLSearchParams(location.search || "");
+      var hostIndex = parseInt(params.get("host") || "0", 10);
+      if (!isFinite(hostIndex) || hostIndex < 0) hostIndex = 0;
+      hostIndex = hostIndex % HOSTS.length;
+      var DIRECT = HOSTS[hostIndex] + KEY + "/invoke.js";
       var reported = "";
 
       function ping(msg) {
@@ -131,10 +139,29 @@
       s.setAttribute("data-cfasync", "false");
       s.src = DIRECT + "?cb=" + encodeURIComponent(Date.now());
       s.onload = function () {
-        ping({ steadyLab: "invoke", ok: true });
+        ping({ steadyLab: "invoke", ok: true, host: hostIndex });
       };
       s.onerror = function () {
-        ping({ steadyLab: "invoke", ok: false });
+        // One automatic CDN failover inside the unit itself.
+        if (hostIndex + 1 < HOSTS.length && !window.__steadyHostTried) {
+          window.__steadyHostTried = true;
+          hostIndex = (hostIndex + 1) % HOSTS.length;
+          DIRECT = HOSTS[hostIndex] + KEY + "/invoke.js";
+          var s2 = document.createElement("script");
+          s2.async = true;
+          s2.setAttribute("data-cfasync", "false");
+          s2.src = DIRECT + "?cb=" + encodeURIComponent(Date.now());
+          s2.onload = function () {
+            ping({ steadyLab: "invoke", ok: true, host: hostIndex });
+          };
+          s2.onerror = function () {
+            ping({ steadyLab: "invoke", ok: false, host: hostIndex });
+            report("error", { how: "script" });
+          };
+          document.body.appendChild(s2);
+          return;
+        }
+        ping({ steadyLab: "invoke", ok: false, host: hostIndex });
         report("error", { how: "script" });
       };
       document.body.appendChild(s);
