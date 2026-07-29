@@ -102,13 +102,6 @@
         } catch (_) {}
         return false;
       }
-
-      function scrubJargon() {
-        document.querySelectorAll("p,div,span,li").forEach(function (el) {
-          var t = el.textContent || "";
-          if (/Adsterra|Monetag|Hilltop|crypto payouts|not Google|USDT|BTC/i.test(t)) {
-            el.textContent = "A short sponsor keeps Steady free.";
-          }
         });
       }
 
@@ -129,14 +122,14 @@
       });
 
       async function run() {
-        scrubJargon();
         // Mount site banners into the visible stage so the user actually sees a sponsor.
         try {
           if (M && M.mountBanner) M.mountBanner(stage);
         } catch (_) {}
         try {
           const ok = await M.showRewarded({
-            autoComplete: fromApp,
+            autoComplete: false,
+            silent: false,
             statusEl: status,
             tickEl: tick,
             progressEl: document.getElementById("steady-watch-progress"),
