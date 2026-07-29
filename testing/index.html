@@ -478,7 +478,7 @@
       })();
       var WORKERS_LAB = "https://steady.less-phone.workers.dev/testing/";
       var PAGES_LAB = "https://labratkali.github.io/steady-web/testing/";
-      var LAB_BUILD = "2026-07-29a";
+      var LAB_BUILD = "2026-07-29b";
 
       var W = 300;
       var H = 250;
@@ -1257,6 +1257,9 @@
         paintFills();
         pumpQueue();
         scheduleLoops();
+        // Keep the wall watchdog alive across in-place cycles (it used to die
+        // after the first cycle because it was bound to render()'s gen).
+        armWallWatch();
       }
 
       function scheduleLoops() {
@@ -1413,23 +1416,56 @@
           concurrency;
         setStatus("loading wall…", "warn");
         scheduleLoops();
-        // Watchdog: keep the start queue moving if anything stalls.
+        armWallWatch();
+      }
+
+      function armWallWatch() {
         if (window.__steadyLabWatch) clearInterval(window.__steadyLabWatch);
+        var stuckSince = 0;
         window.__steadyLabWatch = setInterval(function () {
-          if (gen !== my) return;
           var liveStarts = 0;
+          var filled = 0;
+          var total = 0;
+          var loadingish = 0;
           slots.forEach(function (s) {
+            if (!s || s.kind === "popunder") return;
+            total++;
             if (s.mounting) liveStarts++;
+            if (s.filled) filled++;
+            else {
+              var t = (s.st && s.st.textContent) || "";
+              if (t === "loading" || t === "queued" || t === "retry") loadingish++;
+            }
           });
           if (startInflight !== liveStarts) startInflight = liveStarts;
           ensureQueued();
-          var filled = 0;
-          var total = 0;
-          slots.forEach(function (s) {
-            if (s.kind === "popunder") return;
-            total++;
-            if (s.filled) filled++;
-          });
+
+          // If nearly everything is stuck loading with no fills for a long stretch,
+          // soft-remount the unfinished slots (do not blank the whole page).
+          if (total && filled === 0 && loadingish >= Math.max(3, Math.floor(total * 0.7))) {
+            if (!stuckSince) stuckSince = Date.now();
+            else if (Date.now() - stuckSince > 18000) {
+              stuckSince = Date.now();
+              slots.forEach(function (s) {
+                if (!s || s.kind === "popunder" || s.filled) return;
+                stopWatch(s);
+                s.watching = false;
+                s.mounting = false;
+                s.triedAltLoader = false;
+                s.forceUnit = !s.forceUnit;
+                if (waitQueue.indexOf(s) < 0) waitQueue.push(s);
+                setSlotStatus(s, "queued", false, false);
+              });
+              startInflight = 0;
+              BETWEEN_MS = Math.max(BETWEEN_MS, 180);
+              concurrency = Math.max(2, Math.min(concurrency, 3));
+              setStatus("unstick remount…", "warn");
+              pumpQueue();
+            }
+          } else {
+            stuckSince = 0;
+          }
+
           if (total && filled === total) setStatus("all filled", "ok");
           else if (total) setStatus("filled " + filled + "/" + total, filled > 0 ? "ok" : "warn");
         }, 1500);
@@ -1474,6 +1510,39 @@
           history.replaceState(null, "", next);
         }
       })();
+
+      // Test / recovery hooks (used by soak scripts; harmless in normal use).
+      window.__steadyLab = {
+        build: LAB_BUILD,
+        cycle: function () {
+          cycleAllSlots();
+        },
+        snap: function () {
+          var counts = {};
+          var filled = 0;
+          var total = 0;
+          slots.forEach(function (s) {
+            if (!s || s.kind === "popunder") return;
+            total++;
+            if (s.filled) filled++;
+            var t = (s.st && s.st.textContent) || "?";
+            counts[t] = (counts[t] || 0) + 1;
+          });
+          return {
+            build: LAB_BUILD,
+            cycleCount: cycleCount,
+            fills: filled + "/" + total,
+            counts: counts,
+            ratio: lastFillRatio,
+            between: BETWEEN_MS,
+            concurrency: concurrency,
+          };
+        },
+      };
+
+      document.addEventListener("visibilitychange", function () {
+        if (document.visibilityState === "visible") ensureQueued();
+      });
 
       migratePrefs();
       countInput.value = String(loadCount());
