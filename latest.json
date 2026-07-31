@@ -1,9 +1,9 @@
 {
-  "version": "2.21.18",
-  "versionCode": 165,
+  "version": "2.21.19",
+  "versionCode": 166,
   "apkUrl": "https://github.com/LabRatKali/steady-web/releases/latest/download/steady-latest.apk",
-  "sha256": "7c35905a7b193e16905564ca84a852da35700ebda5827b5f8257f8921cf06aff",
-  "sizeBytes": 53445646,
-  "notes": "# Steady 2.21.18\n\n- **Room DB:** Removed silent `fallbackToDestructiveMigration()`. Explicit additive migrations v1\u2192v8, schema export on, pre-upgrade file backup. App categories / to-dos / usage no longer wiped on schema bumps. (PIN, schedules, and most rules already live in DataStore and were never in this DB.)\n- **Mail API:** Browser no longer ships or sends the Resend key. Worker mints a short-lived HMAC token (`/api/mail/token`) \u2014 same server-secret pattern as `LAB_GATE`.\n- **APK:** Resend API key no longer baked into BuildConfig.",
+  "sha256": "e3924602bbfdeea40dcf1c65240da1aea3b69999abb9f19e2a2d280850d150c8",
+  "sizeBytes": 53446502,
+  "notes": "# Steady 2.21.19\n\n- **VPN / time sync:** Always-allow NTP + system time hosts (`ntp.org`, `android.pool.ntp.org`, `time.nist.gov`, \u2026). Ground-rule DNS uses Cloudflare `1.1.1.1` with IPv4-only answers so date/time and Play connectivity keep working. Tunnel rebuild (`TUN_GEN=4`).\n- **Ask parent refresh:** \u201cCheck if parent approved\u201d on Guardian gate, Settings, Home ask/site dialogs, lock screen, and remote-wait \u2014 same pull as Home Refresh.\n- **Clock skew:** Parent Approves stay valid with up to 2 hours phone\u2194website clock drift.\n- **Lock asks:** Lock-screen asks now save a local pending row so Refresh/poll can apply the Approve.",
   "assetId": 0
 }
