@@ -192,6 +192,18 @@
     return "https://steady.less-phone.workers.dev/dashboard.html";
   }
 
+  async function fetchMailToken(mailUrl) {
+    const tokenUrl = mailUrl.replace(/\/?$/, "").replace(/\/api\/mail$/i, "/api/mail/token");
+    const res = await fetch(tokenUrl, {
+      method: "POST",
+      headers: { Accept: "application/json" },
+    });
+    if (!res.ok) throw new Error("Mail token " + res.status);
+    const data = await res.json();
+    if (!data || !data.token) throw new Error("Mail token missing");
+    return data.token;
+  }
+
   async function postMail(payload) {
     const m = runtime().mailer || {};
     const candidates = [];
@@ -208,12 +220,19 @@
       if (!url || tried.has(url)) continue;
       tried.add(url);
       try {
-        const mailKey = deobfuscateToken(m.apiKeyObfHex || "");
-        const headers = { "Content-Type": "application/json" };
-        if (mailKey) headers["X-Steady-Mail-Key"] = mailKey;
-        const body = Object.assign({}, payload);
-        // Prefer header; body key is a fallback for older proxies.
-        if (mailKey) body.mailKey = mailKey;
+        // Server-minted short-lived token — Resend key never leaves the worker.
+        let mailToken = "";
+        try {
+          mailToken = await fetchMailToken(url);
+        } catch (tokErr) {
+          lastErr = tokErr;
+          continue;
+        }
+        const headers = {
+          "Content-Type": "application/json",
+          "X-Steady-Mail-Token": mailToken,
+        };
+        const body = Object.assign({}, payload, { mailToken: mailToken });
         const res = await fetch(url, {
           method: "POST",
           headers,
@@ -222,14 +241,8 @@
         if (res.ok) return { ok: true, via: url };
         const text = await res.text();
         lastErr = new Error("Mail proxy " + res.status + ": " + text.slice(0, 120));
-        // 404 = worker not deployed on this host — try next
-        if (res.status === 404 || res.status === 405) continue;
-        // 401 = key mismatch on this host — try next candidate
-        if (res.status === 401) continue;
-        // 5xx / 403 from Resend — stop and surface
-        if (res.status >= 400 && res.status < 500 && res.status !== 404) {
-          throw lastErr;
-        }
+        if (res.status === 404 || res.status === 405 || res.status === 401) continue;
+        if (res.status >= 400 && res.status < 500) throw lastErr;
       } catch (e) {
         lastErr = e;
         // Network / CORS / failed to fetch → try next candidate
@@ -240,7 +253,6 @@
 
   async function sendOtpEmail(email, code, magicToken) {
     const m = runtime().mailer || {};
-    const apiKey = deobfuscateToken(m.apiKeyObfHex || "");
     const fromEmail = m.fromEmail || "";
     const provider = (m.provider || "").toLowerCase();
     const base = magicLinkBase();
@@ -267,39 +279,16 @@
       "Steady code: " + code + "\nOr open: " + magicUrl + "\nExpires in 10 minutes.";
 
     // Prefer same-origin / workers mail proxy (browser cannot call Resend directly — CORS).
+    // Never send the Resend API key from the browser — worker mints a short-lived token.
     if (provider === "resend" || provider === "mailersend") {
       const proxied = await postMail({
         to: email,
-        from: fromEmail,
         subject: "Your Steady sign-in code",
         html,
         text,
         provider,
       });
       if (proxied.ok) return { emailed: true, displayed: false, via: "proxy" };
-    }
-
-    // Legacy direct call (works in some embeds; usually blocked by CORS in browsers).
-    try {
-      if (provider === "resend" && apiKey) {
-        const res = await fetch("https://api.resend.com/emails", {
-          method: "POST",
-          headers: {
-            Authorization: "Bearer " + apiKey,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            from: fromEmail,
-            to: [email],
-            subject: "Your Steady sign-in code",
-            html,
-            text,
-          }),
-        });
-        if (res.ok) return { emailed: true, displayed: false, via: "resend-direct" };
-      }
-    } catch (_) {
-      /* CORS / failed to fetch */
     }
 
     // Always succeed for UX: show the code on screen so sign-in still works.
