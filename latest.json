@@ -1,9 +1,9 @@
 {
-  "version": "2.21.20",
-  "versionCode": 167,
+  "version": "2.21.21",
+  "versionCode": 168,
   "apkUrl": "https://github.com/LabRatKali/steady-web/releases/latest/download/steady-latest.apk",
-  "sha256": "447901c67ffec25d0159c0955931602ee8082406725e0af1a6c6c358312e1f00",
-  "sizeBytes": 53464426,
-  "notes": "# 2.21.20\n\n- **Reinforce protection** in Settings \u2014 one tap to re-arm watching after a cancelled uninstall or if you turned Accessibility back on yourself (locks, Enforcement, filter).\n- Turning Accessibility back on also auto-reinforces so the phone is not left unprotected.\n- Uninstall / \u201cGet your phone back\u201d path clarified in Settings.\n- Website **Settings unlock** now pushes immediately and softens Device Owner session locks (so Settings is not still grayed by accessibility/DO), then re-locks when the window ends.\n- Home edit: hold any app to move it (all layout modes); drag dock icons to reorder while editing.",
+  "sha256": "0634bb7aedf4770fb24d24dfa3c87a2bb57842d6b4910e8f640aec3236140fac",
+  "sizeBytes": 53464430,
+  "notes": "# 2.21.21\n\n- **Reinforce** is full-strength again: clears Settings unlock, repair windows, and pauses; re-applies Device Owner session locks so Settings / user switch are watched. Old website unlock windows cannot soft-open the phone after Reinforce.\n- Ask-again wait shows **remaining time** (\u201cWait 30 seconds\u2026\u201d / minutes) instead of a vague message.\n- **Check if parent approved** advances the gate / dismisses ask dialogs when Approve lands (Nearby no longer blocks the check for 90s).\n- Website **Budgets \u2192 Ask again wait (seconds)** controls the cooldown on the kid phone (push with Save & push).",
   "assetId": 0
 }
