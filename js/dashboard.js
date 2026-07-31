@@ -1382,20 +1382,22 @@
   });
 
   if ($("btn-unlock-settings")) {
-    $("btn-unlock-settings").addEventListener("click", () => {
+    $("btn-unlock-settings").addEventListener("click", async () => {
       const mins = Number(($("quick-unlock") && $("quick-unlock").value) || 15) || 15;
       mutatePolicyLocal((p) => {
         p.settingsUnlockUntil = Date.now() + mins * 60 * 1000;
       });
-      flashOk(`Settings unlock ${mins} min — tap Save & push`);
+      flashBusy(`Unlocking Settings ${mins} min and pushing…`);
+      await pushPolicyToKid();
     });
   }
   if ($("btn-unlock-10")) {
-    $("btn-unlock-10").addEventListener("click", () => {
+    $("btn-unlock-10").addEventListener("click", async () => {
       mutatePolicyLocal((p) => {
         p.settingsUnlockUntil = Date.now() + 10 * 60 * 1000;
       });
-      flashOk("Settings unlock 10 min — tap Save & push");
+      flashBusy("Unlocking Settings 10 min and pushing…");
+      await pushPolicyToKid();
     });
   }
   function softBreak(minutes) {
