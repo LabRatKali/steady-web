@@ -333,6 +333,14 @@
       color: transparent;
       animation: none;
     }
+    .overlay.trying {
+      flex-direction: column;
+      gap: 0.15rem;
+      color: #6a7a72;
+      background: rgba(242, 245, 243, 0.92);
+      animation: none;
+    }
+    .overlay.trying strong { color: #4a5c52; font-size: 12px; }
     .overlay.empty {
       flex-direction: column;
       gap: 0.2rem;
@@ -461,6 +469,7 @@
   <section id="help">
     <p><strong>/testing/</strong> — every display unit is a fitted <strong>300×250</strong> (your working Adsterra banner zone).</p>
     <p>When the timer hits <strong>0</strong>, <strong>every card remounts</strong> (including filled ones) in place — you should see a brief loading shimmer, then new creatives. No full-page white screen.</p>
+    <p>Empty slots show <strong>still trying…</strong> instead of a blank white box while retries run. Coming back to a background tab remounts anything that timed out while timers were throttled.</p>
     <p>If <strong>one browser never fills</strong> but another does: that browser’s Tracking Protection / shields / Secure DNS is usually blocking Adsterra hosts (not an extension). Click the shield icon near the URL → allow trackers for this site, or open <a href="https://steady.less-phone.workers.dev/testing/" target="_blank" rel="noopener">workers.dev/testing/</a>. Hard-refresh after updates (Ctrl+F5).</p>
   </section>
 
@@ -492,10 +501,11 @@
       })();
       var WORKERS_LAB = "https://steady.less-phone.workers.dev/testing/";
       var PAGES_LAB = "https://labratkali.github.io/steady-web/testing/";
-      var LAB_BUILD = "2026-07-29f";
+      var LAB_BUILD = "2026-07-30a";
       var rotateArmedAt = 0;
       var preferredHostIndex = 0;
       var zeroFillSince = 0;
+      var checkingBannerAt = 0;
 
       var W = 300;
       var H = 250;
@@ -542,6 +552,7 @@
         embedded: false,
         invokeFailedConfirmed: false,
         blockedLikely: false,
+        checkingAds: false,
       };
 
       function setStatus(msg, kind) {
@@ -726,6 +737,9 @@
         if (filledCount() > 0) {
           hideEnvBanner();
           zeroFillSince = 0;
+          checkingBannerAt = 0;
+          netState.checkingAds = false;
+          netState.blockedLikely = false;
           return;
         }
         if (netState.embedded) {
@@ -783,6 +797,18 @@
               document.getElementById("btn-refresh").click();
             });
           }
+          return;
+        }
+        // Early soft hint (Bug 3) — don't wait 12s of blank cards with no explanation.
+        if (netState.checkingAds) {
+          showEnvBanner(
+            "<strong>Checking ad settings…</strong> If cards stay empty, this browser’s Tracking Protection " +
+              "or Secure DNS may be blocking Adsterra — even with no ad-blocker installed. " +
+              "You can keep waiting, or try <a href=\"" +
+              WORKERS_LAB +
+              "\" target=\"_blank\" rel=\"noopener\">workers.dev/testing/</a>.",
+            false
+          );
           return;
         }
         hideEnvBanner();
@@ -894,6 +920,10 @@
         if (mode === "loading") {
           slot.overlay.className = "overlay loading show";
           slot.overlay.textContent = "loading…";
+        } else if (mode === "trying") {
+          // Keep covering blank iframes — only uncover when we have a creative (or empty).
+          slot.overlay.className = "overlay trying show";
+          slot.overlay.innerHTML = "<strong>still trying…</strong><span>waiting for ad</span>";
         } else if (mode === "waiting" || mode === "reveal") {
           // Do not cover the creative — many browsers paint ads while detection lags.
           slot.overlay.className = "overlay reveal";
@@ -1262,16 +1292,23 @@
         slot.mounting = false;
         releaseStart();
 
-        // After a short shimmer, always uncover the iframe so a painted ad is visible
-        // even if fill-detection is slow on that browser.
+        // After a short shimmer: reveal only if a creative is present/pending.
+        // Otherwise show "still trying…" — never uncover a blank white iframe (Bug 2).
         if (slot.revealTimer) clearTimeout(slot.revealTimer);
         slot.revealTimer = setTimeout(function () {
           if (!slot || slot.gen !== gen || slot.filled) return;
-          setOverlay(slot, "reveal");
+          var creative = null;
+          try {
+            creative = findCreative(iframe.contentDocument);
+          } catch (_) {}
+          if (creative) {
+            setOverlay(slot, "reveal");
+          } else {
+            setOverlay(slot, "trying");
+            setSlotStatus(slot, "loading", false, false);
+          }
         }, 2200);
 
-        var checks = 0;
-        var maxChecks = Math.ceil(FILL_WAIT_MS / CHECK_MS);
         var bonusChecks = 0;
         slot.watchIv = setInterval(function () {
           if (slot.gen !== gen) {
@@ -1279,7 +1316,8 @@
             slot.watching = false;
             return;
           }
-          checks += 1;
+          // Wall-clock elapsed time — survives background-tab timer throttling (Bug 1).
+          var elapsed = Date.now() - (slot.mountedAt || Date.now());
           var creative = null;
           try {
             creative = findCreative(iframe.contentDocument);
@@ -1292,14 +1330,13 @@
           if (creative && creative.pending && bonusChecks < 40) {
             bonusChecks += 1;
             setOverlay(slot, "reveal");
-            // After structure is stable for a bit, count as filled (visible creative).
             if (bonusChecks >= 8) {
               markFilled(slot);
               return;
             }
             return;
           }
-          if (checks >= maxChecks + bonusChecks) markEmpty(slot);
+          if (elapsed >= FILL_WAIT_MS + bonusChecks * CHECK_MS) markEmpty(slot);
         }, CHECK_MS);
       }
 
@@ -1621,18 +1658,71 @@
 
           if (total && filled === 0) {
             if (!zeroFillSince) zeroFillSince = Date.now();
-            else if (Date.now() - zeroFillSince > 12000) {
+            var zeroFor = Date.now() - zeroFillSince;
+            // Soft hint at ~3s (before blank cards look "broken"), full diagnosis ~7s.
+            if (zeroFor > 3000 && !netState.blockedLikely && !netState.invokeFailedConfirmed) {
+              netState.checkingAds = true;
+              updateEnvBannerFromState();
+            }
+            if (zeroFor > 7000) {
+              netState.checkingAds = false;
               netState.blockedLikely = true;
               updateEnvBannerFromState();
             }
           } else {
             zeroFillSince = 0;
+            checkingBannerAt = 0;
             netState.blockedLikely = false;
+            netState.checkingAds = false;
           }
 
           if (total && filled === total) setStatus("all filled", "ok");
           else if (total) setStatus("filled " + filled + "/" + total, filled > 0 ? "ok" : "warn");
         }, 1500);
+      }
+
+      function reconcileAfterBackground() {
+        var now = Date.now();
+        var remounted = 0;
+        slots.forEach(function (s) {
+          if (!s || s.kind === "popunder" || s.filled) return;
+          var age = s.mountedAt ? now - s.mountedAt : 0;
+          // Slot timed out in wall-clock while timers were throttled — remount now.
+          if (s.mountedAt && age >= FILL_WAIT_MS && (s.watching || s.mounting ||
+              (s.st && /loading|queued|retry|empty/.test(s.st.textContent || "")))) {
+            stopWatch(s);
+            s.watching = false;
+            s.mounting = false;
+            s.triedAltLoader = false;
+            s.forceLoader = null;
+            s.hostIndex = nextHostIndex(s.hostIndex);
+            preferredHostIndex = s.hostIndex;
+            if (waitQueue.indexOf(s) < 0) waitQueue.push(s);
+            setSlotStatus(s, "queued", false, false);
+            setOverlay(s, "loading");
+            remounted += 1;
+          } else if (
+            age > 2500 &&
+            s.st &&
+            s.st.textContent === "loading" &&
+            s.overlay &&
+            /overlay reveal/.test(s.overlay.className || "")
+          ) {
+            // Don't leave a blank white reveal after backgrounding.
+            setOverlay(s, "trying");
+          }
+        });
+        if (remounted) {
+          startInflight = 0;
+          setStatus("catch-up remount " + remounted + "…", "warn");
+        }
+        ensureQueued();
+        pumpQueue();
+        // If the auto-reload was due while we were backgrounded, remount now.
+        if (document.getElementById("auto").checked && nextReloadAt && now >= nextReloadAt) {
+          cycleAllSlots();
+        }
+        updateEnvBannerFromState();
       }
 
       document.getElementById("presets").addEventListener("click", function (e) {
@@ -1708,7 +1798,13 @@
       };
 
       document.addEventListener("visibilitychange", function () {
-        if (document.visibilityState === "visible") ensureQueued();
+        if (document.visibilityState === "visible") {
+          reconcileAfterBackground();
+        }
+      });
+      // Some browsers fire pageshow (bfcache) instead of / in addition to visibilitychange.
+      window.addEventListener("pageshow", function (ev) {
+        if (ev.persisted) reconcileAfterBackground();
       });
 
       migratePrefs();
