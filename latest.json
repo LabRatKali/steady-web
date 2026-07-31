@@ -1,9 +1,9 @@
 {
-  "version": "2.21.19",
-  "versionCode": 166,
+  "version": "2.21.20",
+  "versionCode": 167,
   "apkUrl": "https://github.com/LabRatKali/steady-web/releases/latest/download/steady-latest.apk",
-  "sha256": "e3924602bbfdeea40dcf1c65240da1aea3b69999abb9f19e2a2d280850d150c8",
-  "sizeBytes": 53446502,
-  "notes": "# Steady 2.21.19\n\n- **VPN / time sync:** Always-allow NTP + system time hosts (`ntp.org`, `android.pool.ntp.org`, `time.nist.gov`, \u2026). Ground-rule DNS uses Cloudflare `1.1.1.1` with IPv4-only answers so date/time and Play connectivity keep working. Tunnel rebuild (`TUN_GEN=4`).\n- **Ask parent refresh:** \u201cCheck if parent approved\u201d on Guardian gate, Settings, Home ask/site dialogs, lock screen, and remote-wait \u2014 same pull as Home Refresh.\n- **Clock skew:** Parent Approves stay valid with up to 2 hours phone\u2194website clock drift.\n- **Lock asks:** Lock-screen asks now save a local pending row so Refresh/poll can apply the Approve.",
+  "sha256": "447901c67ffec25d0159c0955931602ee8082406725e0af1a6c6c358312e1f00",
+  "sizeBytes": 53464426,
+  "notes": "# 2.21.20\n\n- **Reinforce protection** in Settings \u2014 one tap to re-arm watching after a cancelled uninstall or if you turned Accessibility back on yourself (locks, Enforcement, filter).\n- Turning Accessibility back on also auto-reinforces so the phone is not left unprotected.\n- Uninstall / \u201cGet your phone back\u201d path clarified in Settings.\n- Website **Settings unlock** now pushes immediately and softens Device Owner session locks (so Settings is not still grayed by accessibility/DO), then re-locks when the window ends.\n- Home edit: hold any app to move it (all layout modes); drag dock icons to reorder while editing.",
   "assetId": 0
 }
