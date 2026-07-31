@@ -1,9 +1,9 @@
 {
-  "version": "2.21.17",
-  "versionCode": 164,
+  "version": "2.21.18",
+  "versionCode": 165,
   "apkUrl": "https://github.com/LabRatKali/steady-web/releases/latest/download/steady-latest.apk",
-  "sha256": "be427fcae77478b37224eb93b5cba73202b50aa45f4f8c6f844dc2d4dff15573",
+  "sha256": "7c35905a7b193e16905564ca84a852da35700ebda5827b5f8257f8921cf06aff",
   "sizeBytes": 53445646,
-  "notes": "# Steady 2.21.17\n\n- **VPN / Steady sites:** Synthetic DNS A answers (with Cloudflare upstream first) for GitHub Pages + Workers; empty AAAA so Chrome uses IPv4; tunnel rebuild (`TUN_GEN=3`) so sticky VPN picks up the fix. Fixes Chrome dino / offline on Steady websites while the filter is on.\n- **Mail API:** `/api/mail` now requires `X-Steady-Mail-Key`, allowlisted CORS, rate limits, fixed From, and Steady-auth-only payloads.\n- **Ad lab:** Public `/live` `/ads` `/lab` aliases return 404 unless `?gate=` matches worker `LAB_GATE` secret.\n- **Together Mode (no camera yet):** Hang tight \u2192 who\u2019s around \u2192 last check \u2192 unlock window \u2192 still-together check-back; daily cap + cooldown; parent sees usage in unlock log, never photos.\n- **Home:** One-tap Soft / Bold / Minimal / Warm style presets; clipboard backup & restore of layout.",
+  "notes": "# Steady 2.21.18\n\n- **Room DB:** Removed silent `fallbackToDestructiveMigration()`. Explicit additive migrations v1\u2192v8, schema export on, pre-upgrade file backup. App categories / to-dos / usage no longer wiped on schema bumps. (PIN, schedules, and most rules already live in DataStore and were never in this DB.)\n- **Mail API:** Browser no longer ships or sends the Resend key. Worker mints a short-lived HMAC token (`/api/mail/token`) \u2014 same server-secret pattern as `LAB_GATE`.\n- **APK:** Resend API key no longer baked into BuildConfig.",
   "assetId": 0
 }
