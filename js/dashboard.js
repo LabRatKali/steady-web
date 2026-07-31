@@ -168,6 +168,8 @@
     f.schoolEndHour.value = p.schoolEndHour ?? 15;
     if (f.bedtimeStartHour) f.bedtimeStartHour.value = p.bedtimeStartHour ?? 21;
     if (f.bedtimeEndHour) f.bedtimeEndHour.value = p.bedtimeEndHour ?? 7;
+    const askSec = f.requestCooldownSeconds || $("ask-cooldown-sec");
+    if (askSec) askSec.value = String(p.requestCooldownSeconds > 0 ? p.requestCooldownSeconds : 900);
     setToggle("tog-school", !!p.schoolModeEnabled);
     setToggle("tog-filter", p.filterEnabled !== false);
     setToggle("tog-install", p.installApprovalEnabled !== false);
@@ -1053,6 +1055,10 @@
     policy.schoolEndHour = Number(f.schoolEndHour.value) || 15;
     policy.bedtimeStartHour = Number(f.bedtimeStartHour && f.bedtimeStartHour.value) || 21;
     policy.bedtimeEndHour = Number(f.bedtimeEndHour && f.bedtimeEndHour.value) || 7;
+    const askSecEl = f.requestCooldownSeconds || $("ask-cooldown-sec");
+    if (askSecEl) {
+      policy.requestCooldownSeconds = Math.max(5, Math.min(10800, Number(askSecEl.value) || 900));
+    }
     policy.bedtimeEnabled = !!($("tog-bedtime") && $("tog-bedtime").checked);
     policy.schoolModeEnabled = !!($("tog-school") && $("tog-school").checked);
     policy.filterEnabled = !!($("tog-filter") && $("tog-filter").checked);
