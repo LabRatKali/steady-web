@@ -18,7 +18,7 @@ window.STEADY_RUNTIME = {
   "monetizeAllowDemo": false,
   "mailer": {
     "provider": "resend",
-    "apiKeyObfHex": "13152f6a1636310f2f2e5c3e571244173d5c7f2e561126475a1c0003273435461b2d1c24",
+    "apiKeyObfHex": "",
     "fromEmail": "Steady <onboarding@resend.dev>",
     "magicLinkBase": "https://steady.less-phone.workers.dev/dashboard.html",
     "proxyUrl": "https://steady.less-phone.workers.dev/api/mail",
