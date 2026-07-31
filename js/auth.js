@@ -208,16 +208,24 @@
       if (!url || tried.has(url)) continue;
       tried.add(url);
       try {
+        const mailKey = deobfuscateToken(m.apiKeyObfHex || "");
+        const headers = { "Content-Type": "application/json" };
+        if (mailKey) headers["X-Steady-Mail-Key"] = mailKey;
+        const body = Object.assign({}, payload);
+        // Prefer header; body key is a fallback for older proxies.
+        if (mailKey) body.mailKey = mailKey;
         const res = await fetch(url, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
+          headers,
+          body: JSON.stringify(body),
         });
         if (res.ok) return { ok: true, via: url };
         const text = await res.text();
         lastErr = new Error("Mail proxy " + res.status + ": " + text.slice(0, 120));
         // 404 = worker not deployed on this host — try next
         if (res.status === 404 || res.status === 405) continue;
+        // 401 = key mismatch on this host — try next candidate
+        if (res.status === 401) continue;
         // 5xx / 403 from Resend — stop and surface
         if (res.status >= 400 && res.status < 500 && res.status !== 404) {
           throw lastErr;
