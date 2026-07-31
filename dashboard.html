@@ -352,6 +352,10 @@
                 </label>
                 <label>Bedtime start <input name="bedtimeStartHour" type="number" min="0" max="23" /></label>
                 <label>Bedtime end <input name="bedtimeEndHour" type="number" min="0" max="23" /></label>
+                <label class="span-form">Ask again wait (seconds)
+                  <input name="requestCooldownSeconds" id="ask-cooldown-sec" type="number" min="5" max="10800" value="900" />
+                  <small class="muted">How long the kid must wait between Ask parent taps (30, 45, 900…).</small>
+                </label>
               </form>
             </article>
           </div>
